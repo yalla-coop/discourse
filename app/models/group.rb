@@ -3,6 +3,8 @@
 require "net/imap"
 
 class Group < ActiveRecord::Base
+  self.ignored_columns = %w[flair_url] # TODO: Remove when 20240212034010_drop_deprecated_columns has been promoted to pre-deploy
+
   include HasCustomFields
   include AnonCacheInvalidator
   include HasDestroyedWebHook
