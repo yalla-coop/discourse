@@ -13,6 +13,10 @@ class UserOption < ActiveRecord::Base
     # 8 => reserved for "hot"
   }
 
+  self.ignored_columns = [
+    "sidebar_list_destination", # TODO: Remove when 20240212034010_drop_deprecated_columns has been promoted to pre-deploy
+  ]
+
   self.primary_key = :user_id
   belongs_to :user
   before_create :set_defaults
