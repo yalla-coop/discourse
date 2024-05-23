@@ -507,6 +507,7 @@ hy:
       topic_count_long: "Ստեղծված Թեմա"
       post_count: "Պատասխան"
       post_count_long: "Հրապարակված Պատասխան"
+      no_results_with_search: "Արդյունքներ չեն գտնվել:"
       days_visited: "Այցելություն"
       days_visited_long: "Այցելության Օր"
       posts_read: "Կարդացած"
@@ -3753,6 +3754,7 @@ hy:
           exists: "Արդեն գոյություն ունի"
           upload: "Վերբեռնել ֆայլից"
           upload_successful: "Վերբեռնումը հաջող էր: Բառերն ավելացվել են:"
+          html_label: "HTML"
         test:
           button_label: "Փորձարկել"
           description: "Մուտքագրեք տեքստը ներքևում՝ դիտված բառերի համընկնումները ստուգելու համար"

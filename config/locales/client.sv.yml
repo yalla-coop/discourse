@@ -689,6 +689,7 @@ sv:
       topic_count_long: "Ämnen skapade"
       post_count: "Svar"
       post_count_long: "Svar publicerade"
+      no_results_with_search: "Inga resultat hittades."
       days_visited: "Besök"
       days_visited_long: "Dagar besökta"
       posts_read: "Lästa"
@@ -5595,6 +5596,7 @@ sv:
           upload_successful: "Uppladdning lyckades. Ord har lagts till."
           case_sensitivity_label: "Är skiftlägeskänsligt"
           case_sensitivity_description: "Endast ord med bokstäver i samma skiftläge"
+          html_label: "HTML"
         test:
           button_label: "Testa"
           modal_title: "%{action}: Testa bevakade ord"

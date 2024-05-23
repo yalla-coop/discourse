@@ -572,6 +572,7 @@ gl:
       topic_count_long: "Temas creados"
       post_count: "Respostas"
       post_count_long: "Respostas publicadas"
+      no_results_with_search: "Non se atoparon resultados."
       days_visited: "Visitas"
       days_visited_long: "Días visitados"
       posts_read: "Lidos"
@@ -4309,6 +4310,7 @@ gl:
           exists: "Xa existe"
           upload: "Engadir desde ficheiro"
           upload_successful: "Carga realizada correctamente. Engadíronse palabras."
+          html_label: "HTML"
         test:
           button_label: "Proba"
           description: "Escriba texto a continuación para comprobar coincidencias con palabras observadas"

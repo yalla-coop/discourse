@@ -690,6 +690,7 @@ te:
       topic_count_long: "విషయాలు సృష్టించబడ్డాయి"
       post_count: "ప్రత్యుత్తరాలు"
       post_count_long: "ప్రత్యుత్తరాలు పోస్ట్ చేయబడ్డాయి"
+      no_results_with_search: "ఫలితాలు ఏవీ కనుగొనబడలేదు."
       days_visited: "సందర్శనాలు"
       days_visited_long: "దర్శించిన రోజులు"
       posts_read: "చదివిన"
@@ -5656,6 +5657,7 @@ te:
           upload_successful: "అప్‌లోడ్ విజయవంతమైంది. పదాలు జోడించబడ్డాయి."
           case_sensitivity_label: "కేస్ సెన్సిటివ్"
           case_sensitivity_description: "సరిపోలే క్యారెక్టర్ కేసింగ్ ఉన్న పదాలు మాత్రమే"
+          html_label: "HTML"
         test:
           button_label: "పరీక్షించండి"
           modal_title: "%{action}: అనుసరిస్తున్న పదాలను పరీక్షించండి"

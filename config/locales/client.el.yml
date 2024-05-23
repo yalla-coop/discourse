@@ -584,6 +584,7 @@ el:
       topic_count_long: "Δημιουργημένα Νήματα"
       post_count: "Απαντήσεις"
       post_count_long: "Αναρτημένες Απαντήσεις"
+      no_results_with_search: "Δεν βρέθηκαν αποτελέσματα."
       days_visited: "Επισκέψεις"
       days_visited_long: "Ημέρες Επίσκεψης"
       posts_read: "Διαβασμένο"
@@ -4242,6 +4243,7 @@ el:
           exists: "Υπάρχει ήδη"
           upload: "Προσθήκη από αρχείο"
           upload_successful: "Επιτυχημένη μεταφόρτωση. Οι λέξεις προστέθηκαν."
+          html_label: "HTML"
         test:
           button_label: "Δοκιμή"
           description: "Εισαγάγετε κείμενο παρακάτω για να ελέγξετε για αντιστοιχίες με τις παρακολουθούμενες λέξεις"

@@ -647,6 +647,7 @@ fa_IR:
       topic_count_long: "موضوعات ساخته شده"
       post_count: "پاسخ‌ها"
       post_count_long: "پاسخ‌های نوشته شده"
+      no_results_with_search: "نتیجه ای یافت نشد."
       days_visited: "بازدید‌ها"
       days_visited_long: "روز‌های بازدید شده"
       posts_read: "خواندن"
@@ -4276,6 +4277,7 @@ fa_IR:
           success: "موفقیت"
           upload_successful: "بارگذاری با موفقیت انجام شد. واژه‌ها اضافه شدند."
           case_sensitivity_label: "به حروف بزرگ و کوچک حساس است"
+          html_label: "HTML"
         test:
           no_matches: "چیزی یافت نشد."
       form_templates:

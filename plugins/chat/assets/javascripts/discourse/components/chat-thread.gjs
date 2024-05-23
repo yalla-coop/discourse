@@ -223,11 +223,12 @@ export default class ChatThread extends Component {
 
     this.messagesManager.clear();
 
-    findArgs.targetMessageId ??=
+    findArgs.target_message_id ??=
+      findArgs.targetMessageId ||
       this.args.targetMessageId ||
       this.args.thread.currentUserMembership?.lastReadMessageId;
 
-    if (!findArgs.targetMessageId) {
+    if (!findArgs.target_message_id) {
       findArgs.direction = FUTURE;
     }
 
@@ -572,7 +573,10 @@ export default class ChatThread extends Component {
       />
 
       {{#if this.chatThreadPane.selectingMessages}}
-        <ChatSelectionManager @pane={{this.chatThreadPane}} />
+        <ChatSelectionManager
+          @pane={{this.chatThreadPane}}
+          @messagesManager={{this.messagesManager}}
+        />
       {{else}}
         <ChatComposerThread
           @channel={{@channel}}

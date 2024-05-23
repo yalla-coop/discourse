@@ -48,6 +48,37 @@ RSpec.describe Jobs::UserEmail do
       expect(ActionMailer::Base.deliveries).to eq([])
     end
 
+    it "doesn't call the mailer when the user is suspended" do
+      suspended.update!(last_seen_at: 8.days.ago, last_emailed_at: 8.days.ago)
+      Jobs::UserEmail.new.execute(type: :digest, user_id: suspended.id)
+      expect(ActionMailer::Base.deliveries).to eq([])
+    end
+
+    it "doesn't call the mailer when the user is not active" do
+      user.update!(active: false)
+      Jobs::UserEmail.new.execute(type: :digest, user_id: user.id)
+      expect(ActionMailer::Base.deliveries).to eq([])
+    end
+
+    it "doesn't call the mailer when the user has disabled email digests" do
+      user.user_option.update!(email_digests: false)
+      Jobs::UserEmail.new.execute(type: :digest, user_id: user.id)
+      expect(ActionMailer::Base.deliveries).to eq([])
+    end
+
+    it "doesn't call the mailer when the user has enabled mailing list mode" do
+      SiteSetting.disable_mailing_list_mode = false
+      user.user_option.update!(mailing_list_mode: true)
+      Jobs::UserEmail.new.execute(type: :digest, user_id: user.id)
+      expect(ActionMailer::Base.deliveries).to eq([])
+    end
+
+    it "doesn't call the mailer when the user's digest_after_minute is 0" do
+      user.user_option.update!(digest_after_minutes: 0)
+      Jobs::UserEmail.new.execute(type: :digest, user_id: user.id)
+      expect(ActionMailer::Base.deliveries).to eq([])
+    end
+
     context "when not emailed recently" do
       before do
         freeze_time

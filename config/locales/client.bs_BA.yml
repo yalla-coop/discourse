@@ -572,6 +572,7 @@ bs_BA:
       topic_count_long: "Kreirano temi"
       post_count: "Replike"
       post_count_long: "Odgovoreno"
+      no_results_with_search: "Bez rezultata pretrage."
       days_visited: "Posjete"
       days_visited_long: "Dani posjete"
       posts_read: "Čitaj"
@@ -3918,6 +3919,7 @@ bs_BA:
           exists: "Već postoji"
           upload: "Dodaj iz datoteke"
           upload_successful: "Otpremanje je uspješno. Riječi su dodane."
+          html_label: "HTML"
         test:
           no_matches: "Nije pronađen traženi pojam"
       form_templates:
