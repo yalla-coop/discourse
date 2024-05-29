@@ -393,6 +393,11 @@ Discourse::Application.routes.draw do
           post "preview" => "badges#preview"
         end
       end
+      namespace :config, constraints: StaffConstraint.new do
+        resources :flags, only: %i[index] do
+          put "toggle"
+        end
+      end
     end # admin namespace
 
     get "email/unsubscribe/:key" => "email#unsubscribe", :as => "email_unsubscribe"
@@ -1583,6 +1588,9 @@ Discourse::Application.routes.draw do
            constraints: HomePageConstraint.new("#{filter}"),
            as: "list_#{filter}"
     end
+
+    get "/t/:topic_id/view-stats.json" => "topic_view_stats#index"
+
     # special case for categories
     root to: "categories#index",
          constraints: HomePageConstraint.new("categories"),
