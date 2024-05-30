@@ -14,7 +14,7 @@ module Jobs
         @chat_channel = @chat_message.chat_channel
         @is_direct_message_channel = @chat_channel.direct_message_channel?
 
-        always_notification_level = ::Chat::UserChatChannelMembership::NOTIFICATION_LEVELS[:always]
+        # always_notification_level = ::Chat::UserChatChannelMembership::NOTIFICATION_LEVELS[:always]
 
         members =
           ::Chat::UserChatChannelMembership
@@ -24,12 +24,9 @@ module Jobs
             .where.not(user_id: args[:except_user_ids])
             .where(chat_channel_id: @chat_channel.id)
             .where(following: true)
-            .where(
-              "desktop_notification_level = ? OR mobile_notification_level = ?",
-              always_notification_level,
-              always_notification_level,
-            )
             .merge(User.not_suspended)
+        # commenting this as we need to notify all users in the group
+        # .where("desktop_notification_level = ? OR mobile_notification_level = ?", always_notification_level, always_notification_level)
 
         if @is_direct_message_channel
           ::UserCommScreener
@@ -100,6 +97,33 @@ module Jobs
         if membership.mobile_notifications_always? && !membership.muted?
           ::PostAlerter.push_notification(user, payload)
         end
+
+        create_notification_record(membership)
+      end
+
+      def create_notification_record(membership)
+        notification_data = {
+          chat_message_id: @chat_message.id,
+          chat_channel_id: @chat_channel.id,
+          channel_name: @chat_channel.name,
+          sender: @creator.username,
+          is_direct_message_channel: @chat_channel.direct_message_channel?,
+          message: @chat_message.message,
+        }
+
+        notification_data[:chat_channel_title] = @chat_channel.title(
+          membership.user,
+        ) unless @is_direct_message_channel
+        notification_data[:chat_channel_slug] = @chat_channel.slug unless @is_direct_message_channel
+
+        is_read = ::Chat::Notifier.user_has_seen_message?(membership, @chat_message.id)
+        ::Notification.create!(
+          notification_type: ::Notification.types[:chat_message],
+          user_id: membership.user_id,
+          high_priority: true,
+          data: notification_data.to_json,
+          read: is_read,
+        )
       end
     end
   end
