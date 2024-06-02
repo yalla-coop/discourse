@@ -142,6 +142,11 @@ after_initialize do
     Chat::Channel.public_channels
   end
 
+  # add the ingored ignored_usernames to the user serializer
+  add_to_serializer(:user, :ignored_usernames) do
+    IgnoredUser.where(user_id: object.id).joins(:ignored_user).pluck(:username)
+  end
+
   add_to_serializer(:user_card, :can_chat_user) do
     return false if !SiteSetting.chat_enabled
     return false if scope.user.blank? || scope.user.id == object.id
