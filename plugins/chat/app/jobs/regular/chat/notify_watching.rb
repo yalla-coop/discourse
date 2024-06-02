@@ -124,6 +124,12 @@ module Jobs
           data: notification_data.to_json,
           read: is_read,
         )
+        DiscourseEvent.trigger(
+          :created_chat_notification,
+          notification_data,
+          membership.user_id,
+          ::Notification.types[:chat_message],
+        )
       end
     end
   end
