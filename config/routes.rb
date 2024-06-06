@@ -98,14 +98,6 @@ Discourse::Application.routes.draw do
     get "wizard/steps/:id" => "wizard#index"
     put "wizard/steps/:id" => "steps#update"
 
-    namespace :admin_revamp,
-              path: "admin-revamp",
-              module: "admin",
-              constraints: StaffConstraint.new do
-      get "" => "admin#index"
-      get "config/:area" => "admin#index"
-    end
-
     namespace :admin, constraints: StaffConstraint.new do
       get "" => "admin#index"
 
@@ -391,6 +383,16 @@ Discourse::Application.routes.draw do
           get "types" => "badges#badge_types"
           post "badge_groupings" => "badges#save_badge_groupings"
           post "preview" => "badges#preview"
+        end
+      end
+      namespace :config, constraints: StaffConstraint.new do
+        resources :flags, only: %i[index] do
+          put "toggle"
+          put "reorder/:direction" => "flags#reorder"
+        end
+
+        resources :about, constraints: AdminConstraint.new, only: %i[index] do
+          collection { put "/" => "about#update" }
         end
       end
     end # admin namespace
@@ -1101,6 +1103,8 @@ Discourse::Application.routes.draw do
     delete "admin/groups/:id/members" => "groups#remove_member", :constraints => AdminConstraint.new
     put "admin/groups/:id/members" => "groups#add_members", :constraints => AdminConstraint.new
 
+    put "bookmarks/bulk"
+
     resources :posts, only: %i[show update create destroy] do
       delete "bookmark", to: "posts#destroy_bookmark"
       put "wiki"
@@ -1166,10 +1170,11 @@ Discourse::Application.routes.draw do
 
     get "/c", to: redirect(relative_url_root + "categories")
 
-    resources :categories, except: %i[show new edit]
+    resources :categories, only: %i[index create update destroy]
     post "categories/reorder" => "categories#reorder"
     get "categories/find" => "categories#find"
-    get "categories/search" => "categories#search"
+    post "categories/search" => "categories#search"
+    get "categories/:parent_category_id" => "categories#index"
 
     scope path: "category/:category_id" do
       post "/move" => "categories#move"
@@ -1211,6 +1216,9 @@ Discourse::Application.routes.draw do
           :constraints => {
             format: "html",
           }
+
+      get "/subcategories" => "categories#index"
+
       get "/" => "list#category_default", :as => "category_default"
     end
 
@@ -1577,6 +1585,9 @@ Discourse::Application.routes.draw do
            constraints: HomePageConstraint.new("#{filter}"),
            as: "list_#{filter}"
     end
+
+    get "/t/:topic_id/view-stats.json" => "topic_view_stats#index"
+
     # special case for categories
     root to: "categories#index",
          constraints: HomePageConstraint.new("categories"),

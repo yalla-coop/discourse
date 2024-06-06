@@ -77,6 +77,7 @@ class User < ActiveRecord::Base
           dependent: :destroy
   has_one :invited_user, dependent: :destroy
   has_one :user_notification_schedule, dependent: :destroy
+  has_many :passwords, class_name: "UserPassword", dependent: :destroy
 
   # delete all is faster but bypasses callbacks
   has_many :bookmarks, dependent: :delete_all
@@ -141,6 +142,7 @@ class User < ActiveRecord::Base
   belongs_to :uploaded_avatar, class_name: "Upload"
 
   has_many :sidebar_section_links, dependent: :delete_all
+  has_many :embeddable_hosts
 
   delegate :last_sent_email_address, to: :email_logs
 
@@ -171,6 +173,7 @@ class User < ActiveRecord::Base
   after_create :set_default_categories_preferences
   after_create :set_default_tags_preferences
   after_create :set_default_sidebar_section_links
+  after_create :refresh_user_directory, if: Proc.new { SiteSetting.bootstrap_mode_enabled }
   after_update :set_default_sidebar_section_links, if: Proc.new { self.saved_change_to_staged? }
 
   after_update :trigger_user_updated_event,
@@ -786,18 +789,6 @@ class User < ActiveRecord::Base
     Reviewable.list_for(self, include_claimed_by_others: false).count
   end
 
-  def saw_notification_id(notification_id)
-    Discourse.deprecate(<<~TEXT, since: "2.9", drop_from: "3.0")
-      User#saw_notification_id is deprecated. Please use User#bump_last_seen_notification! instead.
-    TEXT
-    if seen_notification_id.to_i < notification_id.to_i
-      update_columns(seen_notification_id: notification_id.to_i)
-      true
-    else
-      false
-    end
-  end
-
   def bump_last_seen_notification!
     query = self.notifications.visible
     query = query.where("notifications.id > ?", seen_notification_id) if seen_notification_id
@@ -908,7 +899,7 @@ class User < ActiveRecord::Base
 
   def password=(password)
     # special case for passwordless accounts
-    @raw_password = password unless password.blank?
+    @raw_password = password if password.present?
   end
 
   def password
@@ -934,6 +925,15 @@ class User < ActiveRecord::Base
 
   def password_validator
     PasswordValidator.new(attributes: :password).validate_each(self, :password, @raw_password)
+  end
+
+  def password_expired?(password)
+    passwords
+      .where("password_expired_at IS NOT NULL AND password_expired_at < ?", Time.zone.now)
+      .any? do |user_password|
+        user_password.password_hash ==
+          hash_password(password, user_password.password_salt, user_password.password_algorithm)
+      end
   end
 
   def confirm_password?(password)
@@ -1495,7 +1495,7 @@ class User < ActiveRecord::Base
     end
 
     # mark all the user's quoted posts as "needing a rebake"
-    Post.rebake_all_quoted_posts(self.id) if self.will_save_change_to_uploaded_avatar_id?
+    Post.rebake_all_quoted_posts(self.id) if saved_change_to_uploaded_avatar_id?
   end
 
   def first_post_created_at
@@ -1787,6 +1787,10 @@ class User < ActiveRecord::Base
 
   def username_equals_to?(another_username)
     username_lower == User.normalize_username(another_username)
+  end
+
+  def relative_url
+    "#{Discourse.base_path}/u/#{encoded_username}"
   end
 
   def full_url
@@ -2168,6 +2172,10 @@ class User < ActiveRecord::Base
 
   def validate_status!(status)
     UserStatus.new(status).validate!
+  end
+
+  def refresh_user_directory
+    DirectoryItem.refresh!
   end
 end
 

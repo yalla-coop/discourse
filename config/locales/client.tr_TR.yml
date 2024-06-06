@@ -354,11 +354,20 @@ tr_TR:
       search_placeholder: "Yer imlerini ada, konu başlığına veya gönderi içeriğine göre arayın"
       search: "Ara"
       bookmark: "Yer İmi Ekle"
+      bulk:
+        select_all: "Tümünü Seç"
+        clear_all: "Tümünü Temizle"
+        selected_count:
+          one: "%{count} adet seçildi"
+          other: "%{count} adet seçildi"
       reminders:
         today_with_time: "bugün %{time}"
         tomorrow_with_time: "yarın %{time}"
         at_time: "%{date_time}"
         existing_reminder: "Bu yer imi için %{at_date_time} tarihine ayarlanmış bir anımsatıcınız var"
+    bookmark_bulk_actions:
+      delete_bookmarks:
+        name: "Yer İmini Sil"
     copy_codeblock:
       copied: "kopyalandı!"
       copy: "kodu panoya kopyala"
@@ -698,6 +707,7 @@ tr_TR:
       topic_count_long: "Oluşturulan Konular"
       post_count: "Yanıtlar"
       post_count_long: "Gönderilen Yanıtlar"
+      no_results_with_search: "Sonuç bulunamadı."
       days_visited: "Ziyaretler"
       days_visited_long: "Ziyaret edilen günler"
       posts_read: "Okundu"
@@ -2179,6 +2189,8 @@ tr_TR:
           title: "Kategorileri yönetin"
         bulk_select_topics_dropdown:
           title: "Toplu Eylemler"
+        bulk_select_bookmarks_dropdown:
+          title: "Toplu Eylemler"
     date_time_picker:
       from: Kimden
       to: Kime
@@ -2785,15 +2797,13 @@ tr_TR:
         filter: "Başka konu kalmadı."
     topic_bulk_actions:
       close_topics:
-        name: "Konuları Kapat"
+        name: "Bitir"
         note: "Not"
         optional: (isteğe bağlı)
       archive_topics:
-        name: "Konuları Arşivle"
-      unlist_topics:
-        name: "Konuları listeden kaldır"
-      relist_topics:
-        name: "Konuları yeniden listele"
+        name: "Arşiv"
+      move_messages_to_inbox:
+        name: "Gelen kutusuna taşı"
       remove_tags:
         name: "Etiketleri Kaldır"
       append_tags:
@@ -2801,7 +2811,7 @@ tr_TR:
       replace_tags:
         name: "Etiketleri Değiştir"
       delete_topics:
-        name: "Konuları sil"
+        name: "Sil"
       update_category:
         name: "Kategoriyi Güncelle"
         description: "Seçilen konular için yeni kategoriyi seçin"
@@ -4355,7 +4365,7 @@ tr_TR:
       panels:
         forum:
           label: Forum
-      filter: "Filtrele"
+      filter: "Filtrele..."
       clear_filter: "Filtreyi temizle"
       no_results:
         title: "Sonuç yok"
@@ -4576,6 +4586,9 @@ tr_TR:
               label: Kategori
             include_subcategories:
               label: "Alt Kategorileri Dahil Et"
+      flags:
+        description: "Açıklama"
+        enabled: "Etkin mi?"
       groups:
         new:
           title: "Yeni Grup"
@@ -5674,6 +5687,7 @@ tr_TR:
           upload_successful: "Yükleme başarılı. Kelimeler eklendi."
           case_sensitivity_label: "büyük/küçük harfe duyarlı"
           case_sensitivity_description: "Sadece eşleşen karakter muhafazası olan kelimeler"
+          html_label: "HTML"
         test:
           button_label: "Test"
           modal_title: "%{action}: İzlenen Kelimeleri Test Et"
@@ -6058,6 +6072,7 @@ tr_TR:
         name: "Alan Adı"
         type: "Alan Türü"
         description: "Alan Açıklaması"
+        preferences: "Tercihler"
         save: "Kaydet"
         edit: "Düzenle"
         delete: "Sil"
@@ -6068,6 +6083,9 @@ tr_TR:
           title: "Kayıt sırasında gerekli"
           enabled: "gerekli"
           disabled: "gerekli değil"
+        requirement:
+          optional:
+            title: "İsteğe bağlı"
         editable:
           title: "Kayıttan sonra düzenlenebilir"
           enabled: "düzenlenebilir"

@@ -14,11 +14,11 @@
     "start": "ember serve"
   },
   "dependencies": {
-    "@babel/core": "^7.24.5",
+    "@babel/core": "^7.24.7",
     "discourse-common": "1.0.0",
     "ember-cli-babel": "^8.2.0",
     "ember-cli-htmlbars": "^6.3.0",
-    "ember-template-imports": "^4.1.0"
+    "ember-template-imports": "^4.1.1"
   },
   "devDependencies": {
     "@ember/optional-features": "^2.1.0",

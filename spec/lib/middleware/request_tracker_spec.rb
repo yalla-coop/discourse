@@ -369,6 +369,31 @@ RSpec.describe Middleware::RequestTracker do
       end
     end
 
+    describe "crawler rate limits" do
+      context "when there are multiple matching crawlers" do
+        before { SiteSetting.slow_down_crawler_user_agents = "badcrawler2|badcrawler22" }
+
+        it "only checks limits for the first match" do
+          env = env("HTTP_USER_AGENT" => "badcrawler")
+
+          status, _ = middleware.call(env)
+          expect(status).to eq(200)
+        end
+      end
+
+      it "compares user agents in a case-insensitive manner" do
+        SiteSetting.slow_down_crawler_user_agents = "BaDCRawLer"
+        env1 = env("HTTP_USER_AGENT" => "bADcrAWLer")
+        env2 = env("HTTP_USER_AGENT" => "bADcrAWLer")
+
+        status, _ = middleware.call(env1)
+        expect(status).to eq(200)
+
+        status, _ = middleware.call(env2)
+        expect(status).to eq(429)
+      end
+    end
+
     describe "register_ip_skipper" do
       before do
         Middleware::RequestTracker.register_ip_skipper { |ip| ip == "1.1.1.2" }
@@ -814,6 +839,24 @@ RSpec.describe Middleware::RequestTracker do
       tracker.call(env("HTTP_DONT_CHUNK" => "True", :path => "/message-bus/abcde/poll"))
       expect(@data[:is_background]).to eq(true)
       expect(@data[:background_type]).to eq("message-bus-dontchunk")
+    end
+  end
+
+  describe "error handling" do
+    before do
+      @original_logger = Rails.logger
+      Rails.logger = @fake_logger = FakeLogger.new
+    end
+
+    after { Rails.logger = @original_logger }
+
+    it "logs requests even if they cause exceptions" do
+      app = lambda { |env| raise RateLimiter::LimitExceeded, 1 }
+      tracker = Middleware::RequestTracker.new(app)
+      expect { tracker.call(env) }.to raise_error(RateLimiter::LimitExceeded)
+      CachedCounting.flush
+      expect(ApplicationRequest.stats).to include("http_total_total" => 1)
+      expect(@fake_logger.warnings).to be_empty
     end
   end
 end

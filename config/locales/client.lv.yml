@@ -284,11 +284,17 @@ lv:
       search_placeholder: "Meklējiet grāmatzīmes pēc nosaukuma, tēmas nosaukuma vai ziņas satura"
       search: "Meklēt"
       bookmark: "Grāmatzīmes"
+      bulk:
+        select_all: "Izvēlēties visu"
+        clear_all: "Noņemt visu"
       reminders:
         today_with_time: "šodien %{time}"
         tomorrow_with_time: "rīt %{time}"
         at_time: "%{date_time}"
         existing_reminder: "Šai grāmatzīmei ir iestatīts atgādinājums, kas tiks nosūtīts %{at_date_time}"
+    bookmark_bulk_actions:
+      delete_bookmarks:
+        name: "Dzēst grāmatzīmi"
     copy_codeblock:
       copied: "nokopēts!"
     drafts:
@@ -530,6 +536,7 @@ lv:
       topic_count_long: "Izveidotās tēmas"
       post_count: "Atbildes"
       post_count_long: "Ierakstītās atbildes"
+      no_results_with_search: "Nav rezultātu."
       days_visited: "Apmeklējumi"
       days_visited_long: "Apmeklējuma dienas"
       posts_read: "Lasīts"
@@ -1619,6 +1626,8 @@ lv:
       components:
         bulk_select_topics_dropdown:
           title: "Darbības ar vairumu"
+        bulk_select_bookmarks_dropdown:
+          title: "Darbības ar vairumu"
     date_time_picker:
       from: "No"
       to: Kam
@@ -1894,20 +1903,18 @@ lv:
         bookmarks: "Vairāk grāmatzīmēs ievietoto tēmu nav. "
     topic_bulk_actions:
       close_topics:
-        name: "Slēgt tēmas"
+        name: "Aizvērt"
         optional: (pēc izvēles)
       archive_topics:
-        name: "Arhivēt tēmas"
-      unlist_topics:
-        name: "Izņemt no sarakstiem tēmas"
-      relist_topics:
-        name: "Atkal padarīt tēmas redzamas sarakstiem"
+        name: "Arhīvs"
+      move_messages_to_inbox:
+        name: "Pārvietot uz iesūtni"
       append_tags:
         name: "Pievienot tagus"
       replace_tags:
         name: "Aizvietot tagus"
       delete_topics:
-        name: "Dzēst tēmas"
+        name: "Dzēst"
     topic:
       filter_to:
         zero: "tēmā ziņu nav"
@@ -2782,7 +2789,7 @@ lv:
               content: "Mani ieraksti"
             review:
               content: "Pārskats"
-      filter: "Filtrs"
+      filter: "Filtri..."
     form_templates:
       upload_field:
         upload: "Augšupielādēt"
@@ -2864,6 +2871,9 @@ lv:
               label: Grupa
             category:
               label: Sadaļa
+      flags:
+        description: "Apraksts"
+        enabled: "Ieslēgts?"
       groups:
         new:
           title: "Jauna grupa"
@@ -3341,6 +3351,7 @@ lv:
           add: "Pievienot"
           success: "Veiksmīgi"
           upload_successful: "Augšupielāde ir veiksmīga. Vārdi ir pievienoti."
+          html_label: "HTML"
       form_templates:
         nav_title: "Veidnes"
         list_table:
@@ -3557,6 +3568,7 @@ lv:
         name: "Lauka nosaukums"
         type: "Lauka veids"
         description: "Lauka apraksts"
+        preferences: "Iestatījumi"
         save: "Saglabāt"
         edit: "Labot"
         delete: "Dzēst"
@@ -3567,6 +3579,9 @@ lv:
           title: "Nepieciešams pierakstoties"
           enabled: "obligāts"
           disabled: "nav obligāts"
+        requirement:
+          optional:
+            title: "Pēc izvēles"
         editable:
           title: "Labot pēc pierakstīšanās"
           enabled: "labojams"

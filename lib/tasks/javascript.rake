@@ -164,6 +164,8 @@ task "javascript:update_constants" => :environment do
     export const MAX_NOTIFICATIONS_LIMIT_PARAMS = #{NotificationsController::INDEX_LIMIT};
 
     export const TOPIC_VISIBILITY_REASONS = #{Topic.visibility_reasons.to_json};
+
+    export const SYSTEM_FLAG_IDS = #{PostActionType.types.to_json}
   JS
 
   pretty_notifications = Notification.types.map { |n| "  #{n[0]}: #{n[1]}," }.join("\n")
@@ -279,7 +281,7 @@ task "javascript:clean_up" do
     next if processed.include?(package_dir_name)
 
     versions = Dir["#{File.join(public_js, package_dir_name)}/*"].collect { |p| p.split("/").last }
-    next unless versions.present?
+    next if versions.blank?
 
     versions = versions.sort { |a, b| Gem::Version.new(a) <=> Gem::Version.new(b) }
     puts "Keeping #{package_dir_name} version: #{versions[-1]}"

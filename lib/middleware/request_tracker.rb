@@ -120,7 +120,10 @@ class Middleware::RequestTracker
 
   def self.get_data(env, result, timing, request = nil)
     status, headers = result
+
+    # result may be nil if the downstream app raised an exception
     status = status.to_i
+    headers ||= {}
 
     request ||= Rack::Request.new(env)
     helper = Middleware::AnonymousCache::Helper.new(env, request)
@@ -264,6 +267,20 @@ class Middleware::RequestTracker
       end
       return 429, headers, [message]
     end
+
+    if !cookie
+      if error_details = check_crawler_limits(env)
+        available_in, error_code = error_details
+        message = "Too many crawling requests. Error code: #{error_code}."
+        headers = {
+          "Content-Type" => "text/plain",
+          "Retry-After" => available_in.to_s,
+          "Discourse-Rate-Limit-Error-Code" => error_code,
+        }
+        return 429, headers, [message]
+      end
+    end
+
     env["discourse.request_tracker"] = self
 
     MethodProfiler.start
@@ -439,5 +456,31 @@ class Middleware::RequestTracker
         nil
       end
     end
+  end
+
+  def check_crawler_limits(env)
+    slow_down_agents = SiteSetting.slow_down_crawler_user_agents
+    return if slow_down_agents.blank?
+
+    user_agent = env["HTTP_USER_AGENT"]&.downcase
+    return if user_agent.blank?
+
+    return if !CrawlerDetection.crawler?(user_agent)
+
+    slow_down_agents
+      .downcase
+      .split("|")
+      .each do |crawler|
+        if user_agent.include?(crawler)
+          key = "#{crawler}_crawler_rate_limit"
+          limiter =
+            RateLimiter.new(nil, key, 1, SiteSetting.slow_down_crawler_rate, error_code: key)
+          limiter.performed!
+          break
+        end
+      end
+    nil
+  rescue RateLimiter::LimitExceeded => e
+    [e.available_in, e.error_code]
   end
 end

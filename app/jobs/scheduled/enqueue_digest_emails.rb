@@ -20,17 +20,23 @@ module Jobs
         User
           .real
           .activated
-          .not_suspended
           .not_staged
+          .not_suspended
           .joins(:user_option, :user_stat, :user_emails)
           .where("user_options.email_digests")
+          .where(
+            "COALESCE(user_options.digest_after_minutes, ?) > 0",
+            SiteSetting.default_email_digest_frequency,
+          )
           .where("user_stats.bounce_score < ?", SiteSetting.bounce_score_threshold)
           .where("user_emails.primary")
           .where(
-            "COALESCE(user_stats.digest_attempted_at, '2010-01-01') <= CURRENT_TIMESTAMP - ('1 MINUTE'::INTERVAL * user_options.digest_after_minutes)",
+            "COALESCE(user_stats.digest_attempted_at, '2010-01-01') <= CURRENT_TIMESTAMP - ('1 MINUTE'::INTERVAL * COALESCE(user_options.digest_after_minutes, ?))",
+            SiteSetting.default_email_digest_frequency,
           )
           .where(
-            "COALESCE(last_seen_at, '2010-01-01') <= CURRENT_TIMESTAMP - ('1 MINUTE'::INTERVAL * user_options.digest_after_minutes)",
+            "COALESCE(last_seen_at, '2010-01-01') <= CURRENT_TIMESTAMP - ('1 MINUTE'::INTERVAL * COALESCE(user_options.digest_after_minutes, ?))",
+            SiteSetting.default_email_digest_frequency,
           )
           .where(
             "COALESCE(last_seen_at, '2010-01-01') >= CURRENT_TIMESTAMP - ('1 DAY'::INTERVAL * ?)",
