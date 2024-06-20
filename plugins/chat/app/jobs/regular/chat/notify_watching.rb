@@ -14,19 +14,21 @@ module Jobs
         @chat_channel = @chat_message.chat_channel
         @is_direct_message_channel = @chat_channel.direct_message_channel?
 
-        # always_notification_level = ::Chat::UserChatChannelMembership::NOTIFICATION_LEVELS[:always]
+        # never: 0, mention: 1, always: 2
+        never_notification_level = 0
 
         members =
           ::Chat::UserChatChannelMembership
             .includes(user: :groups)
             .joins(user: :user_option)
             .where(user_option: { chat_enabled: true })
-            .where.not(user_id: args[:except_user_ids])
             .where(chat_channel_id: @chat_channel.id)
             .where(following: true)
             .merge(User.not_suspended)
-        # commenting this as we need to notify all users in the group
-        # .where("desktop_notification_level = ? OR mobile_notification_level = ?", always_notification_level, always_notification_level)
+            .where("mobile_notification_level != ?", never_notification_level)
+
+        always_notification_level = "always"
+        mention_notification_level = "mention"
 
         if @is_direct_message_channel
           ::UserCommScreener
@@ -36,7 +38,14 @@ module Jobs
               send_notifications(members.find { |member| member.user_id == user_id })
             end
         else
-          members.each { |member| send_notifications(member) }
+          members.each do |member|
+            if args[:mentioned_user_ids].include?(member.user_id) &&
+                 member.mobile_notification_level == mention_notification_level
+              send_notifications(member)
+            elsif member.mobile_notification_level == always_notification_level
+              send_notifications(member)
+            end
+          end
         end
       end
 

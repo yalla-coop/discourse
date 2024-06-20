@@ -75,8 +75,7 @@ module Chat
 
       notify_creator_of_inaccessible_mentions(inaccessible)
 
-      notify_mentioned_users(to_notify)
-      notify_watching_users(except: all_mentioned_user_ids << @user.id)
+      notify_watching_users(mentioned_users: all_mentioned_user_ids << @user.id)
 
       to_notify
     end
@@ -369,10 +368,14 @@ module Chat
       )
     end
 
-    def notify_watching_users(except: [])
+    def notify_watching_users(mentioned_users: [])
       Jobs.enqueue(
         Jobs::Chat::NotifyWatching,
-        { chat_message_id: @chat_message.id, except_user_ids: except, timestamp: @timestamp.to_s },
+        {
+          chat_message_id: @chat_message.id,
+          mentioned_user_ids: mentioned_users,
+          timestamp: @timestamp.to_s,
+        },
       )
     end
   end
