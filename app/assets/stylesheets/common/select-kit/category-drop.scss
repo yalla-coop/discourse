@@ -19,6 +19,15 @@
         }
       }
 
+      &.has-selection {
+        .category-drop-header {
+          border-color: var(--quaternary);
+          .caret-icon {
+            color: var(--quaternary);
+          }
+        }
+      }
+
       .select-kit-row {
         flex-direction: column;
         align-items: flex-start;

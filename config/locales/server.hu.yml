@@ -406,6 +406,8 @@ hu:
         raw: "Törzs"
       user_profile:
         bio_raw: "Bemutatkozás"
+      user:
+        password: "Jelszó"
     errors:
       models:
         topic:
@@ -1900,6 +1902,7 @@ hu:
     rate_limit_error: "A bejegyzések naponta csak egyszer töltetők le. Kérünk, próbáld újra holnap."
   guidelines_topic:
     title: "GYIK/Irányelvek"
+    guidelines_title: "Irányelvek"
   tos_topic:
     title: "Szolgáltatási feltételek"
   privacy_topic:

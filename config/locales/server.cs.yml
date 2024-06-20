@@ -474,6 +474,8 @@ cs:
         raw: "Tělo"
       user_profile:
         bio_raw: "O mně"
+      user:
+        password: "Heslo"
     errors:
       models:
         topic:
@@ -1658,6 +1660,7 @@ cs:
     Upravte první příspěvek v tomto tématu a změňte obsah stránky %{page_name}.
   guidelines_topic:
     title: "FAQ/Pokyny"
+    guidelines_title: "Pokyny"
   tos_topic:
     title: "Podmínky služby"
   privacy_topic:

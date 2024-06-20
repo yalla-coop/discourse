@@ -647,6 +647,8 @@ pl_PL:
         raw: "Treść"
       user_profile:
         bio_raw: "O mnie"
+      user:
+        password: "Hasło"
     errors:
       models:
         topic:
@@ -1723,7 +1725,6 @@ pl_PL:
     content_security_policy_collect_reports: "Włącz zbieranie raportów o naruszeniach CSP na / csp_reports"
     content_security_policy_frame_ancestors: "Określ, kto może osadzić tę witrynę w ramkach iframe za pośrednictwem CSP. Kontroluj dozwolone hosty w <a href='%{base_path}/admin/customize/embedding'>ustawieniach osadzania</a>"
     content_security_policy_script_src: "Dodatkowe dopuszczalne źródła skryptów. Domyślnie uwzględniony jest bieżący host i CDN. Więcej informacji znajdziesz w temacie <a href='https://meta.discourse.org/t/mitigate-xss-attacks-with-content-security-policy/104243' target='_blank'>Łagodzenie ataków XSS za pomocą Content Security Policy (CSP)</a>. Źródła hosta będą ignorowane, gdy włączona jest opcja content_security_policy_strict_dynamic."
-    content_security_policy_strict_dynamic: "Użyj rygorystycznej, dynamicznej polityki bezpieczeństwa treści (CSP), aby zmniejszyć potrzebę ręcznej konfiguracji. Więcej informacji znajdziesz <a href='https://meta.discourse.org/t/298172' target='_blank'>w ogłoszeniu</a>. Możliwość wyłączenia tego ustawienia zostanie wkrótce usunięta."
     invalidate_inactive_admin_email_after_days: "Konta administracyjne, które nie odwiedzały witryny w tej liczbie dni, będą musiały ponownie zweryfikować swój adres e-mail przed zalogowaniem. Ustaw na 0, aby wyłączyć."
     include_secure_categories_in_tag_counts: "Gdy opcja ta jest włączona, liczba tematów dla tagu będzie obejmować tematy, które znajdują się w kategoriach z ograniczeniami odczytu dla wszystkich użytkowników. Gdy opcja ta jest wyłączona, zwykłym użytkownikom wyświetlana jest tylko liczba tematów dla tagu, w którym wszystkie tematy znajdują się w kategoriach publicznych."
     display_personal_messages_tag_counts: "Gdy ta opcja jest włączona, zostanie wyświetlona liczba wiadomości osobistych oznaczonych danym tagiem."
@@ -1832,7 +1833,6 @@ pl_PL:
     s3_endpoint: "Punkt końcowy można zmodyfikować, aby utworzyć kopię zapasową w usłudze zgodnej z S3, takiej jak DigitalOcean Spaces lub Minio. OSTRZEŻENIE: Pozostaw puste, jeśli używasz AWS S3."
     s3_configure_tombstone_policy: "Włącz zasady automatycznego usuwania przy przesyłaniu nagrobków. WAŻNE: Jeśli ta opcja jest wyłączona, nie zostanie odzyskane żadne miejsce po usunięciu przesłanych plików."
     s3_disable_cleanup: "Zapobiegaj usuwaniu starych kopii zapasowych z S3, gdy jest ich więcej niż dozwolone maksimum."
-    enable_s3_inventory: "Generuj raporty i weryfikuj przesyłane materiały za pomocą zasobów Amazon S3. WAŻNE: wymaga prawidłowych poświadczeń S3 (zarówno identyfikator klucza dostępu, jak i tajny klucz dostępu)."
     s3_use_acls: "AWS zaleca, aby nie używać list ACL w zasobnikach S3; jeśli postępujesz zgodnie z tą radą, odznacz tę opcję. Ta opcja musi być włączona, jeśli korzystasz z bezpiecznego przesyłania."
     backup_time_of_day: "Godzina (UTC) wykonania kopii zapasowej."
     backup_with_uploads: "Uwzględniaj przesyły w zaplanowanych backupach. Wyłączenie tej opcji spowoduje backup jedynie bazy danych."
@@ -4118,6 +4118,7 @@ pl_PL:
     Edytuj pierwszy wpis w tym temacie by zmienić zawartość strony %{page_name}.
   guidelines_topic:
     title: "FAQ/Przewodnik"
+    guidelines_title: "Wytyczne"
   tos_topic:
     title: "Warunki użytkowania"
     body: |

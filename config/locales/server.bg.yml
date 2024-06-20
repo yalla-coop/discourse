@@ -257,6 +257,8 @@ bg:
         raw: "Тяло"
       user_profile:
         bio_raw: "За мен"
+      user:
+        password: "Парола"
     errors:
       models:
         topic:
@@ -1203,6 +1205,7 @@ bg:
     Редактирайте първата публикация в тази тема за да промените съдаржанието на страница %{page_name}.
   guidelines_topic:
     title: "FAQ/Насоки"
+    guidelines_title: "Насоки"
   tos_topic:
     title: "Правила за ползване"
     body: |
