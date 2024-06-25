@@ -16,7 +16,7 @@ class AddExcerptToTopics < ActiveRecord::Migration[4.2]
           "cooked"
         ]
       if cooked
-        excerpt = ExcerptParser.get_excerpt(cooked, 220, strip_links: true)
+        excerpt = ExcerptParser.get_excerpt(cooked, 220, strip_links: false)
         execute "UPDATE topics SET excerpt = #{ActiveRecord::Base.sanitize(excerpt)} WHERE id = #{topic_id}"
       end
     end

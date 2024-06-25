@@ -532,8 +532,8 @@ class Post < ActiveRecord::Base
     Post.excerpt(
       cooked,
       SiteSetting.topic_excerpt_maxlength,
-      strip_links: true,
-      strip_images: true,
+      strip_links: false,
+      strip_images: false,
       post: self,
     )
   end
