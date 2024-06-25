@@ -14,22 +14,21 @@ module Jobs
         @chat_channel = @chat_message.chat_channel
         @is_direct_message_channel = @chat_channel.direct_message_channel?
 
-        always_notification_level = ::Chat::UserChatChannelMembership::NOTIFICATION_LEVELS[:always]
+        # never: 0, mention: 1, always: 2
+        never_notification_level = 0
 
         members =
           ::Chat::UserChatChannelMembership
             .includes(user: :groups)
             .joins(user: :user_option)
             .where(user_option: { chat_enabled: true })
-            .where.not(user_id: args[:except_user_ids])
             .where(chat_channel_id: @chat_channel.id)
             .where(following: true)
-            .where(
-              "desktop_notification_level = ? OR mobile_notification_level = ?",
-              always_notification_level,
-              always_notification_level,
-            )
             .merge(User.not_suspended)
+            .where("mobile_notification_level != ?", never_notification_level)
+
+        always_notification_level = "always"
+        mention_notification_level = "mention"
 
         if @is_direct_message_channel
           ::UserCommScreener
@@ -39,7 +38,14 @@ module Jobs
               send_notifications(members.find { |member| member.user_id == user_id })
             end
         else
-          members.each { |member| send_notifications(member) }
+          members.each do |member|
+            if args[:mentioned_user_ids].include?(member.user_id) &&
+                 member.mobile_notification_level == mention_notification_level
+              send_notifications(member)
+            elsif member.mobile_notification_level == always_notification_level
+              send_notifications(member)
+            end
+          end
         end
       end
 
@@ -100,6 +106,39 @@ module Jobs
         if membership.mobile_notifications_always? && !membership.muted?
           ::PostAlerter.push_notification(user, payload)
         end
+
+        create_notification_record(membership)
+      end
+
+      def create_notification_record(membership)
+        notification_data = {
+          chat_message_id: @chat_message.id,
+          chat_channel_id: @chat_channel.id,
+          channel_name: @chat_channel.name,
+          sender: @creator.username,
+          is_direct_message_channel: @chat_channel.direct_message_channel?,
+          message: @chat_message.message,
+        }
+
+        notification_data[:chat_channel_title] = @chat_channel.title(
+          membership.user,
+        ) unless @is_direct_message_channel
+        notification_data[:chat_channel_slug] = @chat_channel.slug unless @is_direct_message_channel
+
+        is_read = ::Chat::Notifier.user_has_seen_message?(membership, @chat_message.id)
+        ::Notification.create!(
+          notification_type: ::Notification.types[:chat_message],
+          user_id: membership.user_id,
+          high_priority: true,
+          data: notification_data.to_json,
+          read: is_read,
+        )
+        DiscourseEvent.trigger(
+          :created_chat_notification,
+          notification_data,
+          membership.user_id,
+          ::Notification.types[:chat_message],
+        )
       end
     end
   end

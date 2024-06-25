@@ -32,6 +32,7 @@ module Chat
             identifier: "g-#{group.id}",
             model: ::Chat::ChatableGroupSerializer.new(group, scope: scope, root: false),
             type: "group",
+            users: serialize_group_users(group),
           }
         end
         .as_json
@@ -77,6 +78,16 @@ module Chat
 
     def channel_membership(channel_id)
       object.memberships.find { |membership| membership.chat_channel_id == channel_id }
+    end
+
+    def serialize_group_users(group)
+      group.users.map do |user|
+        {
+          identifier: "u-#{user.id}",
+          model: ::Chat::ChatableUserSerializer.new(user, scope: scope, root: false),
+          type: "user",
+        }
+      end
     end
   end
 end
