@@ -6,10 +6,10 @@ class SearchTopicListItemSerializer < ListableTopicSerializer
   attributes :category_id
 
   def include_image_url?
-    false
+    true
   end
 
   def include_thumbnails?
-    false
+    true
   end
 end
