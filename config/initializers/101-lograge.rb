@@ -6,11 +6,17 @@ Rails.application.config.to_prepare do
     require "lograge"
 
     if Rails.configuration.multisite
-      Rails.logger.formatter = ActiveSupport::Logger::SimpleFormatter.new
+      Rails.logger.formatter =
+        ActiveSupport::Logger::SimpleFormatter.new.extend(ActiveSupport::TaggedLogging::Formatter)
     end
 
     Rails.application.configure do
       config.lograge.enabled = true
+
+      # Monkey patch Rails::Rack::Logger#logger to silence its logs.
+      # The `lograge` gem is supposed to do this but it broke after we upgraded to Rails 7.1.
+      # This patch is a temporary workaround until we find a proper fix.
+      Rails::Rack::Logger.prepend(Module.new { def logger = (@logger ||= Logger.new(IO::NULL)) })
 
       Lograge.ignore(
         lambda do |event|
@@ -101,18 +107,29 @@ Rails.application.config.to_prepare do
           end
         end
 
-      if ENV["LOGSTASH_URI"]
+      if ENV["ENABLE_LOGSTASH_LOGGER"] == "1"
         config.lograge.formatter = Lograge::Formatters::Logstash.new
 
         require "discourse_logstash_logger"
 
         config.lograge.logger =
-          DiscourseLogstashLogger.logger(uri: ENV["LOGSTASH_URI"], type: :rails)
+          DiscourseLogstashLogger.logger(
+            logdev: Rails.root.join("log", "#{Rails.env}.log"),
+            type: :rails,
+            customize_event:
+              lambda do |event|
+                event["database"] = RailsMultisite::ConnectionManagement.current_db
+              end,
+          )
 
-        # Remove ActiveSupport::Logger from the chain and replace with Lograge's
-        # logger
-        Rails.logger.chained.pop
-        Rails.logger.chain(config.lograge.logger)
+        # Stop broadcasting to Rails' default logger
+        Rails.logger.stop_broadcasting_to(
+          Rails.logger.broadcasts.find { |logger| logger.is_a?(ActiveSupport::Logger) },
+        )
+
+        Logster.logger.subscribe do |severity, message, progname, opts, &block|
+          config.lograge.logger.add_with_opts(severity, message, progname, opts, &block)
+        end
       end
     end
   end

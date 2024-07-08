@@ -28,7 +28,6 @@ class CurrentUserSerializer < BasicUserSerializer
              :can_post_anonymously,
              :can_ignore_users,
              :can_delete_all_posts_and_topics,
-             :can_summarize,
              :custom_fields,
              :muted_category_ids,
              :indirectly_muted_category_ids,
@@ -77,7 +76,8 @@ class CurrentUserSerializer < BasicUserSerializer
              :use_admin_sidebar,
              :can_view_raw_email,
              :use_glimmer_topic_list?,
-             :login_method
+             :login_method,
+             :show_experimental_flags_admin_page
 
   delegate :user_stat, to: :object, private: true
   delegate :any_posts, :draft_count, :pending_posts_count, :read_faq?, to: :user_stat
@@ -138,7 +138,15 @@ class CurrentUserSerializer < BasicUserSerializer
     object.staff? && object.in_any_groups?(SiteSetting.admin_sidebar_enabled_groups_map)
   end
 
-  def include_user_admin_sidebar?
+  def include_use_admin_sidebar?
+    object.staff?
+  end
+
+  def show_experimental_flags_admin_page
+    object.in_any_groups?(SiteSetting.experimental_flags_admin_page_enabled_groups_map)
+  end
+
+  def include_show_experimental_flags_admin_page?
     object.admin?
   end
 
@@ -148,15 +156,11 @@ class CurrentUserSerializer < BasicUserSerializer
   end
 
   def can_ignore_users
-    !is_anonymous && object.in_any_groups?(SiteSetting.ignore_allowed_groups_map)
+    scope.can_ignore_users?
   end
 
   def can_delete_all_posts_and_topics
     object.in_any_groups?(SiteSetting.delete_all_posts_and_topics_allowed_groups_map)
-  end
-
-  def can_summarize
-    object.in_any_groups?(SiteSetting.custom_summarization_allowed_groups_map)
   end
 
   def can_upload_avatar
@@ -299,7 +303,7 @@ class CurrentUserSerializer < BasicUserSerializer
   end
 
   def featured_topic
-    object.user_profile.featured_topic
+    BasicTopicSerializer.new(object.user_profile.featured_topic, scope: scope, root: false).as_json
   end
 
   def has_topic_draft
