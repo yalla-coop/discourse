@@ -30,7 +30,8 @@ module Chat
   class Notifier
     class << self
       def user_has_seen_message?(membership, chat_message_id)
-        (membership.last_read_message_id || 0) >= chat_message_id
+        (membership.last_read_message_id || 0) >= chat_message_id &&
+          membership.created_at <= chat_message.created_at
       end
 
       def push_notification_tag(type, chat_channel_id)
