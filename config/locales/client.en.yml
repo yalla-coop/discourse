@@ -873,11 +873,17 @@ en:
           prefill:
             title: "Prefill with settings for:"
             gmail: "Gmail"
+            outlook: "Outlook.com"
+            office365: "Microsoft 365"
+          ssl_modes:
+            none: "None"
+            ssl_tls: "SSL/TLS"
+            starttls: "STARTTLS"
           credentials:
             title: "Credentials"
             smtp_server: "SMTP Server"
             smtp_port: "SMTP Port"
-            smtp_ssl: "Use SSL for SMTP"
+            smtp_ssl_mode: "SSL Mode"
             imap_server: "IMAP Server"
             imap_port: "IMAP Port"
             imap_ssl: "Use SSL for IMAP"
@@ -2091,6 +2097,25 @@ en:
     modal:
       close: "close"
       dismiss_error: "Dismiss error"
+    form_kit:
+      reset: Reset
+      optional: optional
+      errors_summary_title: "This form contains errors:"
+      dirty_form: "You didn't submit your changes! Are you sure you want to leave?"
+      errors:
+        required: "Required"
+        invalid_url: "Must be a valid URL"
+        not_accepted: "Must be accepted"
+        not_a_number: "Must be a number"
+        too_high: "Must be at most %{count}"
+        too_low: "Must be at least %{count}"
+        too_long:
+          one: "Must be at most %{count} character"
+          other: "Must be at most %{count} characters"
+        too_short:
+          one: "Must be at least %{count} character"
+          other: "Must be at least %{count} characters"
+
     close: "Close"
     assets_changed_confirm: "This site just received a software update. Get the latest version now?"
     logout: "You were logged out."
@@ -5512,6 +5537,8 @@ en:
             non_editable: "You cannot edit this flag because it is a system flag or has already been used in the review system, however you can still disable it."
             delete_flag: "Delete flag"
             non_deletable: "You cannot delete this flag because it is a system flag or has already been used in the review system, however you can still disable it."
+            require_message: "Prompt users to provide additional reasons"
+            require_message_description: "When this flag is selected, a text field will be displayed for the user to provide additional detail about why they are flagging the content"
           more_options:
             title: "More options"
             move_up: "Move up"
@@ -6196,6 +6223,8 @@ en:
             create_flag: "create flag"
             update_flag: "update flag"
             delete_flag: "delete flag"
+            topic_slow_mode_set: "set topic slow mode"
+            topic_slow_mode_removed: "remove topic slow mode"
         screened_emails:
           title: "Screened Emails"
           description: "When someone tries to create a new account, the following email addresses will be checked and the registration will be blocked, or some other action performed."
@@ -6867,6 +6896,8 @@ en:
             confirm: "Yes, update password policy"
 
       badges:
+        disable_system: This badge is a system badge and cannot be disabled and/or deleted.
+        status: Status
         title: Badges
         new_badge: New Badge
         new: New
@@ -6874,8 +6905,8 @@ en:
         badge: Badge
         display_name: Display Name
         description: Description
-        long_description: Long Description
-        badge_type: Badge Type
+        long_description: Long description
+        badge_type: Badge type
         badge_grouping: Group
         badge_groupings:
           modal_title: Badge Groupings
@@ -6904,10 +6935,10 @@ en:
         icon: Icon
         image: Image
         graphic: Graphic
+        icon_or_image: A badge requires an icon or an image
         icon_help: "Enter a Font Awesome icon name (use prefix 'far-' for regular icons and 'fab-' for brand icons)"
-        image_help: "Uploading an image overrides icon field if both are set."
-        select_an_icon: "Select an Icon"
-        upload_an_image: "Upload an Image"
+        select_an_icon: "Select an icon"
+        upload_an_image: "Upload an image"
         read_only_setting_help: "Customize text"
         query: Badge Query (SQL)
         target_posts: Query targets posts

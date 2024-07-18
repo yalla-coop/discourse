@@ -341,7 +341,6 @@ $mobile-breakpoint: 700px;
 }
 
 .admin-content {
-  margin-bottom: 50px;
   .admin-contents {
     padding: 0 0 8px 0;
     @include clearfix();
@@ -1045,6 +1044,7 @@ a.inline-editable-field {
 
 // Styles for subtabs in admin
 @import "common/admin/dashboard";
+@import "common/admin/sidebar";
 @import "common/admin/settings";
 @import "common/admin/users";
 @import "common/admin/penalty";
