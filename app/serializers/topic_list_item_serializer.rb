@@ -15,7 +15,8 @@ class TopicListItemSerializer < ListableTopicSerializer
              :featured_link,
              :featured_link_root_domain,
              :allowed_user_count,
-             :participant_groups
+             :participant_groups,
+             :flagged_by_user
 
   has_many :posters, serializer: TopicPosterSerializer, embed: :objects
   has_many :participants, serializer: TopicPosterSerializer, embed: :objects
@@ -92,5 +93,9 @@ class TopicListItemSerializer < ListableTopicSerializer
 
   def include_allowed_user_count?
     object.private_message?
+  end
+
+  def flagged_by_user
+    scope.current_user ? object.flagged_by_user?(scope.current_user) : false
   end
 end
