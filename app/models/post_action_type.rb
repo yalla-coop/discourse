@@ -21,7 +21,6 @@ class PostActionType < ActiveRecord::Base
     def replace_flag_settings(settings)
       Discourse.deprecate("Flags should not be replaced. Insert custom flags as database records.")
       @flag_settings = settings || FlagSettings.new
-      @all_flags = nil
     end
 
     def types
@@ -31,8 +30,12 @@ class PostActionType < ActiveRecord::Base
       Enum.new(like: 2).merge(flag_types)
     end
 
+    def expire_cache
+      Discourse.redis.keys("post_action_types_*").each { |key| Discourse.redis.del(key) }
+      Discourse.redis.keys("post_action_flag_types_*").each { |key| Discourse.redis.del(key) }
+    end
+
     def reload_types
-      @all_flags = nil
       @flag_settings = FlagSettings.new
       ReviewableScore.reload_types
       PostActionType.new.expire_cache
@@ -43,7 +46,7 @@ class PostActionType < ActiveRecord::Base
     end
 
     def all_flags
-      @all_flags ||= Flag.unscoped.order(:position).all
+      Flag.unscoped.order(:position).all
     end
 
     def auto_action_flag_types
