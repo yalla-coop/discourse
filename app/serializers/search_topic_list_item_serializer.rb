@@ -12,4 +12,8 @@ class SearchTopicListItemSerializer < ListableTopicSerializer
   def include_thumbnails?
     true
   end
+
+  def include_flagged_by_user?
+    true
+  end
 end

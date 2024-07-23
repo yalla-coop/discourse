@@ -27,7 +27,8 @@ class ListableTopicSerializer < BasicTopicSerializer
              :unicode_title,
              :unread_by_group_member,
              :thumbnails,
-             :visibility_reason_id
+             :visibility_reason_id,
+             :flagged_by_user
 
   has_one :last_poster, serializer: BasicUserSerializer, embed: :objects
 
@@ -174,5 +175,9 @@ class ListableTopicSerializer < BasicTopicSerializer
 
   def theme_modifier_helper
     @theme_modifier_helper ||= ThemeModifierHelper.new(request: scope.request)
+  end
+
+  def flagged_by_user
+    object.flagged_by_user?(scope.user)
   end
 end
