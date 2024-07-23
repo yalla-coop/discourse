@@ -101,6 +101,7 @@ import { cloneJSON, deepMerge } from "discourse-common/lib/object";
 import { clearResolverOptions } from "discourse-common/resolver";
 import I18n from "discourse-i18n";
 import { _clearSnapshots } from "select-kit/components/composer-actions";
+import { setupFormKitAssertions } from "./form-kit-assertions";
 import { cleanupTemporaryModuleRegistrations } from "./temporary-module-helper";
 
 export function currentUser() {
@@ -447,7 +448,7 @@ export function controllerFor(controller, model) {
   deprecated(
     'controllerFor is deprecated. Use the standard `getOwner(this).lookup("controller:NAME")` instead',
     {
-      id: "controller-for",
+      id: "discourse.controller-for",
       since: "3.0.0.beta14",
     }
   );
@@ -504,6 +505,8 @@ QUnit.assert.containsInstance = function (collection, klass, message) {
     message,
   });
 };
+
+setupFormKitAssertions();
 
 export async function selectDate(selector, date) {
   const elem = document.querySelector(selector);
