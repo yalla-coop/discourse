@@ -46,13 +46,15 @@ export default class TopicFromParams extends DiscourseRoute {
       this.pmTopicTrackingState.startTracking();
     }
 
-    this.header.enterTopic(topic, model.nearPost);
+    const isLoadingFirstPost =
+      topic.postStream.firstPostPresent &&
+      !(model.nearPost && model.nearPost > 1);
+    this.header.enterTopic(topic, isLoadingFirstPost);
   }
 
   deactivate() {
     super.deactivate(...arguments);
     this.controllerFor("topic").unsubscribe();
-    this.header.clearTopic();
   }
 
   setupController(controller, params, { _discourse_anchor }) {
@@ -122,8 +124,14 @@ export default class TopicFromParams extends DiscourseRoute {
   }
 
   @action
-  willTransition() {
+  willTransition(transition) {
     this.controllerFor("topic").set("previousURL", document.location.pathname);
+
+    transition.followRedirects().finally(() => {
+      if (!this.router.currentRouteName.startsWith("topic.")) {
+        this.header.clearTopic();
+      }
+    });
 
     // NOTE: omitting this return can break the back button when transitioning quickly between
     // topics and the latest page.

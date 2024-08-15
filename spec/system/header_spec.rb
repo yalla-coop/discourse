@@ -262,7 +262,7 @@ RSpec.describe "Glimmer Header", type: :system do
 
   describe "mobile topic-info" do
     fab!(:topic)
-    fab!(:posts) { Fabricate.times(5, :post, topic: topic) }
+    fab!(:posts) { Fabricate.times(21, :post, topic: topic) }
 
     it "only shows when scrolled down", mobile: true do
       visit "/t/#{topic.slug}/#{topic.id}"
@@ -285,6 +285,35 @@ RSpec.describe "Glimmer Header", type: :system do
 
       expect(page).not_to have_css("header.d-header .auth-buttons .login-button") # No header buttons
       expect(page).to have_css("header.d-header .title-wrapper .topic-link") # Title is shown in header
+    end
+
+    it "shows when jumping from OP to much later post", mobile: true do
+      visit "/t/#{topic.slug}/#{topic.id}"
+
+      expect(page).to have_css("#topic-title") # Main topic title
+      expect(page).to have_css("header.d-header .auth-buttons .login-button") # header buttons visible when no topic-info in header
+
+      page.execute_script("Discourse.visit('/t/#{topic.slug}/#{topic.id}/21');")
+
+      expect(page).to have_css("#post_21")
+
+      expect(page).not_to have_css("header.d-header .auth-buttons .login-button") # No header buttons
+      expect(page).to have_css("header.d-header .title-wrapper .topic-link") # Title is shown in header
+    end
+
+    it "shows and hides do-not-disturb icon" do
+      sign_in current_user
+      visit "/"
+
+      header = find(".d-header")
+      expect(header).not_to have_css(".do-not-disturb-background")
+
+      current_user.publish_do_not_disturb(ends_at: 1.hour.from_now)
+      expect(header).to have_css(".d-header .do-not-disturb-background")
+
+      current_user.publish_do_not_disturb(ends_at: 1.second.from_now)
+
+      expect(header).not_to have_css(".d-header .do-not-disturb-background")
     end
   end
 end

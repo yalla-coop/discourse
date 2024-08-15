@@ -370,7 +370,8 @@ module Chat
     end
 
     def notify_watching_users(mentioned_users: [])
-      Jobs.enqueue(
+      Jobs.enqueue_in(
+        5.seconds,
         Jobs::Chat::NotifyWatching,
         {
           chat_message_id: @chat_message.id,

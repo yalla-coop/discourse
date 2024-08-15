@@ -1,20 +1,34 @@
-article {
+.topic-map.--op {
   // topic map under OP
-  .topic-map {
-    border-top: 1px solid var(--primary-low);
-    border-bottom: none;
-  }
+  border-top: 1px solid var(--primary-low);
+  border-bottom: none;
+
+  padding-left: calc(
+    var(--topic-body-width-padding) + var(--topic-avatar-width)
+  );
 }
 
-.container.posts {
+.topic-map.--bottom {
   // topic map at bottom of topic
-  > .topic-map {
-    grid-area: posts;
-    grid-row: 2;
-    max-width: calc(
-      var(--topic-avatar-width) + var(--topic-body-width) +
-        (var(--topic-body-width-padding) * 2)
-    );
+  grid-area: posts;
+  grid-row: 2;
+  max-width: calc(
+    var(--topic-avatar-width) + var(--topic-body-width) +
+      (var(--topic-body-width-padding) * 2)
+  );
+}
+
+body:not(.archetype-private_message) {
+  .topic-map {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+
+    &:has(.topic-map__additional-contents *) {
+      column-gap: 0.75em;
+    }
   }
 }
 
@@ -34,6 +48,13 @@ article {
     font-size: var(--font-down-1);
   }
 
+  &.--op,
+  &.--bottom {
+    @media screen and (max-width: 500px) {
+      padding-left: 0;
+    }
+  }
+
   .--users-summary {
     display: flex;
     flex-wrap: wrap;
@@ -43,6 +64,8 @@ article {
     align-self: center;
     flex: 1 2 0;
     gap: 0.25em;
+    min-width: 2em;
+    width: 0;
 
     .avatar {
       width: 2em;
@@ -102,12 +125,8 @@ article {
   }
 
   &__contents {
-    padding: 0.5em 0 0.5em
-      calc(var(--topic-body-width-padding) + var(--topic-avatar-width));
-
-    @media screen and (max-width: 500px) {
-      padding: 0.5em 0;
-    }
+    padding-block: 0.5em;
+    flex-grow: 1;
 
     .number {
       font-size: var(--font-up-1);
@@ -142,6 +161,7 @@ article {
 
         .number {
           color: var(--tertiary);
+          white-space: nowrap;
         }
 
         .topic-map__stat-label {
@@ -153,16 +173,6 @@ article {
           @include ellipsis;
         }
       }
-    }
-  }
-
-  &__additional-contents {
-    padding-left: calc(
-      var(--topic-body-width-padding) + var(--topic-avatar-width)
-    );
-
-    @media screen and (max-width: 500px) {
-      padding-left: 0;
     }
   }
 
@@ -304,9 +314,10 @@ article {
 
 // DMenu popups
 
-.topic-map__likes-content {
+.topic-map__likes-content.fk-d-menu__content {
   .fk-d-menu__inner-content,
   .d-modal__body {
+    padding-bottom: 0.5em;
     ul {
       margin: 0;
       padding: 0;
@@ -449,14 +460,18 @@ article {
       color: var(--primary-medium);
     }
 
-    .link-summary .btn {
+    .link-summary {
       width: 100%;
-      .d-icon {
-        color: var(--primary-high);
-      }
-      .discourse-no-touch & {
-        &:hover {
-          background: var(--primary-low);
+
+      .btn {
+        width: 100%;
+        .d-icon {
+          color: var(--primary-high);
+        }
+        .discourse-no-touch & {
+          &:hover {
+            background: var(--primary-low);
+          }
         }
       }
     }
