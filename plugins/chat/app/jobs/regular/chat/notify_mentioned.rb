@@ -112,7 +112,12 @@ module Jobs
 
       def create_notification!(membership, mention, mention_type)
         notification_data = build_data_for(membership, identifier_type: mention_type)
-        is_read = ::Chat::Notifier.user_has_seen_message?(membership, @chat_message.id)
+        is_read =
+          ::Chat::Notifier.user_has_seen_message?(
+            membership,
+            @chat_message.id,
+            @chat_message.created_at,
+          )
         notification =
           ::Notification.create!(
             notification_type: ::Notification.types[:chat_mention],

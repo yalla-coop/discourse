@@ -52,7 +52,13 @@ module Jobs
       def send_notifications(membership)
         user = membership.user
         return unless user.guardian.can_join_chat_channel?(@chat_channel)
-        return if ::Chat::Notifier.user_has_seen_message?(membership, @chat_message.id)
+        if ::Chat::Notifier.user_has_seen_message?(
+             membership,
+             @chat_message.id,
+             @chat_message.created_at,
+           )
+          return
+        end
 
         translation_key =
           (
@@ -125,7 +131,12 @@ module Jobs
         ) unless @is_direct_message_channel
         notification_data[:chat_channel_slug] = @chat_channel.slug unless @is_direct_message_channel
 
-        is_read = ::Chat::Notifier.user_has_seen_message?(membership, @chat_message.id)
+        is_read =
+          ::Chat::Notifier.user_has_seen_message?(
+            membership,
+            @chat_message.id,
+            @chat_message.created_at,
+          )
         ::Notification.create!(
           notification_type: ::Notification.types[:chat_message],
           user_id: membership.user_id,
