@@ -861,4 +861,29 @@ class UserNotifications < ActionMailer::Base
         .count
         .tap { Discourse.redis.setex(key, 1.day, _1) }
   end
+
+  def self.user_locale(user)
+    user.effective_locale
+  end
+
+  def self.notify_group_owner(user_name, user_email, group_name, group_owner_email, url)
+    I18n.with_locale(SiteSetting.default_locale) do
+      subject = I18n.t("user_notifications.notify_group_owner.subject_template")
+      body =
+        I18n.t(
+          "user_notifications.notify_group_owner.text_body_template",
+          user_name: user_name,
+          user_email: user_email,
+          group_name: group_name,
+          url: url,
+        )
+
+      build_email(
+        group_owner_email,
+        subject: subject,
+        body: body,
+        locale: SiteSetting.default_locale,
+      ).deliver_now
+    end
+  end
 end
