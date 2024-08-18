@@ -13,13 +13,11 @@ DiscourseEvent.on(:user_confirmed_email) do |user|
     if owners.any?
       # Send an email to each group owner
       owners.each do |owner|
-        url = "#{Discourse.base_url}/admin/users/#{user.id}/#{user.username}"
         UserNotifications.notify_group_owner(
           user.username,
           user.email,
           group.full_name,
           owner.email,
-          url,
         )
       end
     end
