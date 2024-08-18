@@ -869,7 +869,7 @@ class UserNotifications < ActionMailer::Base
   def self.notify_group_owner(user_name, user_email, group_name, group_owner_email, url)
     I18n.with_locale(SiteSetting.default_locale) do
       subject = I18n.t("user_notifications.notify_group_owner.subject_template")
-      body =
+      body_markdown =
         I18n.t(
           "user_notifications.notify_group_owner.text_body_template",
           user_name: user_name,
@@ -877,11 +877,12 @@ class UserNotifications < ActionMailer::Base
           group_name: group_name,
           url: url,
         )
+      body_html = PrettyText.cook(body_markdown).html_safe
 
       build_email(
         group_owner_email,
         subject: subject,
-        body: body,
+        body: body_html,
         locale: SiteSetting.default_locale,
       ).deliver_now
     end
