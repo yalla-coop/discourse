@@ -4,7 +4,6 @@ import {
   acceptance,
   count,
   exists,
-  query,
 } from "discourse/tests/helpers/qunit-helpers";
 import selectKit from "discourse/tests/helpers/select-kit-helper";
 
@@ -60,13 +59,6 @@ acceptance("Dashboard", function (needs) {
       exists(".admin-report.new-contributors"),
       "new-contributors report"
     );
-    assert.strictEqual(
-      query(
-        ".section.dashboard-problems .problem-messages ul li:first-child"
-      ).innerHTML.trim(),
-      "Houston...",
-      "displays problems"
-    );
   });
 
   test("moderation tab", async function (assert) {
@@ -83,10 +75,12 @@ acceptance("Dashboard", function (needs) {
   test("activity metrics", async function (assert) {
     await visit("/admin");
 
-    assert.ok(exists(".admin-report.page-view-total-reqs .today-count"));
-    assert.ok(exists(".admin-report.page-view-total-reqs .yesterday-count"));
-    assert.ok(exists(".admin-report.page-view-total-reqs .sevendays-count"));
-    assert.ok(exists(".admin-report.page-view-total-reqs .thirty-days-count"));
+    assert.dom(".admin-report.page-view-total-reqs .today-count").exists();
+    assert.dom(".admin-report.page-view-total-reqs .yesterday-count").exists();
+    assert.dom(".admin-report.page-view-total-reqs .sevendays-count").exists();
+    assert
+      .dom(".admin-report.page-view-total-reqs .thirty-days-count")
+      .exists();
   });
 
   test("reports tab", async function (assert) {

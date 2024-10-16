@@ -141,7 +141,6 @@ te:
       topic_html: 'విషయం: <span class="topic-title">%{topicTitle}</span>'
       post: "@%{username}ద్వారా పోస్ట్ #%{postNumber}"
       close: "మూసివేయండి"
-      twitter: "ట్విట్టర్లో షేర్ చేయండి"
       facebook: "ఫేస్బుక్లో షేర్ చేయండి"
       email: "ఇమెయిల్ ద్వారా పంపండి"
       url: "లింక్ ని కాపీ చేసి షేర్ చేయండి"
@@ -295,6 +294,7 @@ te:
       pill: "సూచించినవి"
       pm_title: "సూచించిన సందేశాలు"
     about:
+      edit: "ఈ పేజీని సవరించండి"
       simple_title: "మా సంఘం గురించి"
       title: "%{title} గురించి"
       stats: "సైటు గణాంకాలు"
@@ -312,7 +312,6 @@ te:
       user_count: "మంది చేరారు"
       active_user_count: "క్రియాశీల సభ్యులు"
       contact: "మమ్మల్ని సంప్రదించండి"
-      contact_info: "ఈ సంధర్భంలో క్లిష్టమైన సమస్య లేదా అత్యవసర విషయం సైట్ ను ప్రభావితం చేస్తుంది, దయచేసి మమ్మల్ని సంప్రదించండి %{contact_info}."
       activities:
         topics:
           one: "%{formatted_number} విషయం"
@@ -1488,7 +1487,6 @@ te:
         add_email: "ప్రత్యామ్నాయ ఇమెయిల్‌ను జోడించండి"
         auth_override_instructions: "ప్రామాణీకరణ ప్రొవైడర్ నుండి ఇమెయిల్ను నవీకరించవచ్చు."
         no_secondary: "ద్వితీయ ఇమెయిల్‌లు లేవు"
-        instructions: "బహిరంగ ఎప్పుడు చూపించబడదు"
         admin_note: "గమనిక: అడ్మిన్ సభ్యుడు మరొక నాన్-అడ్మిన్ సభ్యుడు యొక్క ఇమెయిల్‌ను మార్చడం వలన సభ్యుడు వారి అసలు ఇమెయిల్ ఖాతాకు ప్రాప్యతను కోల్పోయారని సూచిస్తుంది. కాబట్టి రీసెట్ పాస్‌వర్డ్ ఇమెయిల్ వారి కొత్త చిరునామాకు పంపబడుతుంది. పాస్‌వర్డ్ రీసెట్ ప్రక్రియను పూర్తి చేసే వరకు సభ్యుడు ఇమెయిల్ మారదు."
         ok: "ద్రువపరుచుటకు మీకు ఈమెయిల్ పంపాము"
         required: "దయచేసి ఇమెయిల్ చిరునామాను నమోదు చేయండి"
@@ -1519,14 +1517,13 @@ te:
         approval_required: "ఈ ఫోరమ్ మీరు వాడేముందు ఒక నిర్వాహకుడు మీ ఖాతాను అంగీకరించాలి. మీ ఖాతా అంగీకరించగానే మీకు ఒక ఈమెయిల్ వస్తుంది."
       name:
         title: "పేరు"
-        instructions: "మీ పూర్తి పేరు (ఐచ్ఛికం)."
-        instructions_required: "మీ పూర్తి పేరు."
+        instructions: "మీ పూర్తి పేరు (ఐచ్ఛికం)"
+        instructions_required: "మీ పూర్తి పేరు"
         required: "దయచేసి పేరును నమోదు చేయండి"
         too_short: "మీ పేరు మరీ చిన్నది"
         ok: "మీ పేరు బాగుంది"
       username:
         title: "సభ్యనామం"
-        instructions: "ప్రత్యేకమైనది, ఖాళీలు ఉండకూడదు, చిన్నది."
         short_instructions: "జనాలు మిమ్మల్ని @%{username} అని ప్రస్తావించవచ్చు"
         available: "మీ సభ్యనామం అందుబాటులో ఉంది."
         not_available: "అందుబాటులో లేదు. %{suggestion} ప్రయత్నించండి?"
@@ -1963,6 +1960,10 @@ te:
       associate: "ఖాతా కలిగి ఉన్నారా? మీ %{provider} ఖాతాను లింక్ చేయడానికి <a href='%{associate_link}'>లాగిన్</a> చేయండి."
       activation_title: "మీ ఖాతాను సక్రియం చేయండి"
       already_have_account: "ఖాతా కలిగి ఉన్నారా?"
+      progress_bar:
+        signup: "సైన్ అప్"
+        approve: "ఆమోదించండి"
+        login: "లాగిన్"
     forgot_password:
       title: "పాస్వర్డ్ రీసెట్"
       action: "నేను నా సంకేతపదాన్ని మర్చిపోయాను"
@@ -4408,6 +4409,7 @@ te:
           save: "ఇలా సేవ్ చేయండి..."
   admin_js:
     type_to_filter: "ఫిల్టర్ చేయడానికి టైప్ చేయండి…"
+    settings: "అమరికలు"
     admin:
       title: "డిస్కోర్స్ అడ్మిన్"
       moderator: "నిర్వాహకుడు"
@@ -4438,6 +4440,7 @@ te:
         installed_version: "ప్రతిష్టించబడింది"
         latest_version: "తాజా"
         problems_found: "మీ ప్రస్తుత సైట్ సెట్టింగ్‌ల ఆధారంగా కొన్ని సలహాలు"
+        dismiss_notice: "రద్దుచేయండి"
         new_features:
           title: "కొత్తది ఏమిటి"
           previous_announcements: "మీరు మునుపటి కొత్త ఫీచర్ ప్రకటనలను <a href='%{url}' target='_blank'>డిస్కోర్స్ మెటా</a>లో చూడవచ్చు"
@@ -4875,8 +4878,11 @@ te:
           screened_ips: "స్క్రీన్ చేసిన ఐపీలు"
           screened_urls: "స్క్రీన్ చేసిన యూఆర్ యల్ లు"
           search_logs: "లాగ్‌లను శోధించండి"
-          security: "సెక్యూరిటీ"
-          spam: "స్పామ్"
+      section_landing_pages:
+        account:
+          title: "ఖాతా"
+          backups:
+            title: "బ్యాకప్పులు"
       config_areas:
         about:
           header: "మీ సైట్ గురించి"
@@ -4897,6 +4903,7 @@ te:
           edit: "సవరించండి"
           delete: "తొలగించండి"
           delete_confirm: 'మీరు "%{name}"ని ఖచ్చితంగా తొలగించాలనుకుంటున్నారా?'
+          flags_tab: "ఫిర్యాదులు"
           form:
             save: "సేవ్ చేయండి"
             name: "పేరు"
@@ -4906,7 +4913,6 @@ te:
             post: "టపాలు"
       plugins:
         title: "చొప్పింతలు"
-        installed: "ప్రతిష్టించిన చొప్పింతలు"
         name: "పేరు"
         none_installed: "ఎటువంటి చొప్పింతలు ప్రతిష్టించిలేవు."
         version: "సంస్కరణ"
@@ -4943,7 +4949,6 @@ te:
         menu:
           backups: "బ్యాకప్పులు"
           logs: "లాగులు"
-        none: "ఎట్టి బ్యాకప్పులూ లేవు"
         read_only:
           enable:
             title: "చదవడానికి మాత్రమే మోడ్‌ని ప్రారంభించండి"
@@ -4981,12 +4986,10 @@ te:
           download:
             label: "దిగుమతి"
             title: "డౌన్‌లోడ్ లింక్‌తో ఇమెయిల్ పంపండి"
-            alert: "ఈ బ్యాకప్‌ని డౌన్‌లోడ్ చేయడానికి లింక్ మీకు ఇమెయిల్ చేయబడింది."
           destroy:
             title: "బ్యాకప్‌ని తీసివేయండి"
             confirm: "మీరు నిజంగానే బ్యాకప్ ను నాశనం చేయాలనుకుంటున్నారా?"
           restore:
-            is_disabled: "సైట్ అమరికల్లో పునరుద్ధరణ నిలిపివేయబడింది."
             label: "పునరుద్ధరించండి"
             title: "బ్యాకప్‌ని పునరుద్ధరించండి"
             confirm: "మీరు ఖచ్చితంగా ఈ బ్యాకప్‌ని పునరుద్ధరించాలనుకుంటున్నారా?"
@@ -4995,7 +4998,6 @@ te:
             title: "డాటాబేసును గత పనిచేసే స్థితికి రోల్ బ్యాక్ చేయి"
             confirm: "మీరు ఖచ్చితంగా డేటాబేస్‌ని మునుపటి పని స్థితికి తిరిగి మార్చాలనుకుంటున్నారా?"
         location:
-          local: "స్థానిక నిల్వ"
           s3: "S3"
         backup_storage_error: "బ్యాకప్ నిల్వను యాక్సెస్ చేయడంలో విఫలమైంది: %{error_message}"
       export_csv:
@@ -6213,10 +6215,6 @@ te:
             with_post: <span class="username">%{username}</span> %{link} లో పోస్ట్ కోసం
             with_post_time: <span class="username">%{username}</span> %{link} లో <span class="time">%{time}</span> లో పోస్ట్ కోసం
             with_time: <span class="username">%{username}</span> వద్ద <span class="time">%{time}</span>
-        badge_intro:
-          title: "ప్రారంభించడానికి ఇప్పటికే ఉన్న బ్యాడ్జ్‌ని ఎంచుకోండి లేదా కొత్తదాన్ని సృష్టించండి"
-          what_are_badges_title: "బ్యాడ్జ్‌లు అంటే ఏమిటి?"
-          badge_query_examples_title: "బ్యాడ్జ్ క్వరీ ఉదాహరణలు"
         mass_award:
           title: బల్క్ అవార్డు
           description: ఒకేసారి చాలా మంది విషయాలకు ఒకే బ్యాడ్జ్‌ని అందించండి.

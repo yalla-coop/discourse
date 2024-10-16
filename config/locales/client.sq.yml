@@ -200,6 +200,7 @@ sq:
     suggested_topics:
       pm_title: "Mesazhet e sugjeruara"
     about:
+      edit: "Modifiko këtë faqe"
       simple_title: "Rreth Faqes"
       title: "Rreth %{title}"
       stats: "Statistikat e faqjes"
@@ -209,7 +210,6 @@ sq:
       like_count: "Pëlqime"
       topic_count: "Tema"
       post_count: "Postime"
-      contact_info: "Në rast të një problemi madhor ose të një çështjeje urgjente që prek faqen, ju lutemi të kontaktoni %{contact_info}."
       activities:
         topics:
           one: "%{formatted_number} temë"
@@ -696,7 +696,7 @@ sq:
         primary_label: "parësor"
         resent_label: "emaili u dërgua"
         update_email: "Ndrysho email"
-        instructions: "Mos e shfaq në publik."
+        instructions: "Mos e shfaq në publik"
         ok: "Do ju nisim emailin e konfirmimit"
         invalid: "Ju lutemi të vendosni një email të vlefshëm"
         authenticated: "Emaili juaj është verifikuar nga %{provider}"
@@ -715,8 +715,8 @@ sq:
         approval_required: "A moderator must manually approve your new account before you can access this forum. You'll get an email when your account is approved!"
       name:
         title: "Emri juaj"
-        instructions: "Emri i plotë (opsional)."
-        instructions_required: "Emri i plotë."
+        instructions: "Emri i plotë (opsional)"
+        instructions_required: "Emri i plotë"
         too_short: "Emri juaj është shumë i shkurtër"
         ok: "Emri duket në rregull"
       username:
@@ -959,6 +959,10 @@ sq:
       header_title: "Mirë se vini!"
       title: "Regjistrohu"
       failed: "Diçka nuk funksionoi siç duhet, mbase kjo adresë emaili është e regjistruar në faqe. Provoni butonin e fjalëkalimit të humbur. "
+      progress_bar:
+        signup: "Regjistrohu"
+        approve: "Aprovo"
+        login: "Identifikohu"
     forgot_password:
       title: "Rivendos fjalëkalimin"
       action: "Kam harruar fjalëkalimin"
@@ -2010,6 +2014,7 @@ sq:
         show: "Shfaq"
         about: "Rreth"
   admin_js:
+    settings: "Rregullimet"
     admin:
       title: "Administrator"
       moderator: "Moderator"
@@ -2030,6 +2035,7 @@ sq:
         stale_data: "Verifikimi i updejteve nuk është kryer këto kohët e fundit. Sigurohuni që sidekiq punon. "
         installed_version: "Instaluar"
         latest_version: "Të fundit"
+        dismiss_notice: "Hiqe"
         new_features:
           learn_more: "Mëso më shumë..."
         last_checked: "Verifikimi i fundit"
@@ -2167,8 +2173,11 @@ sq:
           screened_emails: "Kontroll Email-ash"
           screened_ips: "Kontroll IP-sh"
           screened_urls: "Kontroll URL-sh"
-          security: "Siguria"
-          spam: "Spam"
+      section_landing_pages:
+        account:
+          title: "Llogaria"
+          backups:
+            title: "Rezervat"
       config_areas:
         about:
           saved: "u ruajt!"
@@ -2177,6 +2186,7 @@ sq:
           enabled: "Aktivizuar?"
           edit: "Redakto"
           delete: "Fshij"
+          flags_tab: "Sinjalizime"
           form:
             save: "Ruaj"
             name: "Emri"
@@ -2186,7 +2196,6 @@ sq:
             post: "postime"
       plugins:
         title: "Pluginet"
-        installed: "Pluginet e instaluar"
         name: "Emri"
         none_installed: "Nuk keni instaluar asnjë plugin. "
         version: "Versioni"
@@ -2215,7 +2224,7 @@ sq:
         menu:
           backups: "Rezervat"
           logs: "Logs"
-        none: "Nuk ka asnjë kopje."
+        none: "Nuk ka asnjë kopje"
         read_only:
           enable:
             title: "Aktivizo mënyrën vetëm-lexo"
@@ -2248,7 +2257,6 @@ sq:
             title: "Remove the backup"
             confirm: "Are you sure you want to destroy this backup?"
           restore:
-            is_disabled: "Restore is disabled in the site settings."
             label: "Rikthe"
             title: "Restore the backup"
             confirm: "Are you sure you want to restore this backup?"

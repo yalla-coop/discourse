@@ -67,6 +67,16 @@ module PageObjects
         expect(self.value).to eq(expected_value)
       end
 
+      def has_errors?(*messages)
+        within component do
+          messages.all? { |m| find(".form-kit__errors", text: m) }
+        end
+      end
+
+      def has_no_errors?
+        !has_css?(".form-kit__errors")
+      end
+
       def control_type
         component["data-control-type"]
       end
@@ -84,7 +94,7 @@ module PageObjects
 
       def fill_in(value)
         case control_type
-        when "input-text", "password"
+        when "input-text", "password", "input-date"
           component.find("input").fill_in(with: value)
         when "textarea", "composer"
           component.find("textarea").fill_in(with: value, visible: :all)

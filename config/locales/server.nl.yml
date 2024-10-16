@@ -686,7 +686,6 @@ nl:
               same_as_username: "is hetzelfde als je gebruikersnaam. Gebruik een veiliger wachtwoord."
               same_as_email: "is hetzelfde als je e-mailadres. Gebruik een veiliger wachtwoord."
               same_as_current: "is hetzelfde als je huidige wachtwoord."
-              same_as_previous: "is hetzelfde als je vorige wachtwoord."
               same_as_name: "is hetzelfde als je naam."
               unique_characters: "heeft te veel herhaalde tekens. Gebruik een veiliger wachtwoord."
             username:
@@ -696,6 +695,15 @@ nl:
             ip_address:
               blocked: "Nieuwe registraties zijn niet toegestaan vanaf jouw IP-adres."
               max_new_accounts_per_registration_ip: "Nieuwe registraties zijn niet toegestaan vanaf jouw IP-adres (maximumlimiet bereikt). Neem contact op met een medewerker."
+        user_password:
+          attributes:
+            password:
+              common: "is een van de 10.000 meest gebruikte wachtwoorden. Gebruik een veiliger wachtwoord."
+              same_as_username: "is hetzelfde als je gebruikersnaam. Gebruik een veiliger wachtwoord."
+              same_as_email: "is hetzelfde als je e-mailadres. Gebruik een veiliger wachtwoord."
+              same_as_current: "is hetzelfde als je huidige wachtwoord."
+              same_as_name: "is hetzelfde als je naam."
+              unique_characters: "heeft te veel herhaalde tekens. Gebruik een veiliger wachtwoord."
         user_profile:
           attributes:
             featured_topic_id:
@@ -1257,7 +1265,9 @@ nl:
         page_view_crawler: "Bekende crawler"
         page_view_other: "Andere paginaweergaven"
       yaxis: "Dag"
-      description: "Paginaweergaven voor aangemelde gebruikers, anonieme gebruikers, bekende crawlers en meer. Dit experimentele rapport zorgt ervoor dat verzoeken van aangemelde/anonieme gebruikers afkomstig zijn van echte browsers voordat ze worden meegeteld."
+    site_traffic:
+      yaxis: "Day"
+      description_link: "https://meta.discourse.org/t/understanding-pageviews-and-the-site-traffic-report/324062"
     dau_by_mau:
       title: "DAU/MAU"
       xaxis: "Dag"
@@ -1737,7 +1747,6 @@ nl:
     blocked_ip_blocks: "Een lijst van private IP-blokken die nooit door Discourse mogen worden verkend"
     allowed_internal_hosts: "Een lijst van interne hosts die Discourse veilig kan verkennen voor oneboxing en andere doeleinden"
     allowed_onebox_iframes: "Een lijst van iframe-src-domeinen die zijn toegestaan via Onebox-insluitingen. `*` staat alle standaard Onebox-engines toe."
-    allowed_iframes: "Een lijst van 'iframe src'-domeinvoorvoegsels die Discourse veilig kan toestaan in berichten"
     allowed_crawler_user_agents: "Useragents van webcrawlers die toegang tot de website dienen te hebben. WAARSCHUWING! INSTELLEN HIERVAN BLOKKEERT ALLE CRAWLERS DIE HIER NIET WORDEN VERMELD!"
     blocked_crawler_user_agents: "Uniek hoofdletterongevoelig woord in de useragent-string waarmee webcrawlers worden herkend die geen toegang tot de website mogen hebben. Niet van toepassing als toelatingslijst is opgegeven."
     slow_down_crawler_user_agents: 'Useragents van webcrawlers waarvan de snelheid moet worden beperkt, zoals geconfigureerd in de instelling ''crawlersnelheid vertragen''. Elke waarde moet minimaal 3 tekens lang zijn.'
@@ -1751,8 +1760,6 @@ nl:
     include_secure_categories_in_tag_counts: "Indien ingeschakeld, omvat het aantal topics voor een tag ook topics die in leesbeperkte categorieën staan voor alle gebruikers. Indien uitgeschakeld, krijgen normale gebruikers alleen het aantal topics voor een tag te zien waarbij alle topics in openbare categorieën staan."
     display_personal_messages_tag_counts: "Indien ingeschakeld, wordt het aantal persoonlijke berichten weergegeven dat is getagd met een bepaalde tag."
     top_menu: "Bepaal welke items in de startpaginanavigatie worden weergegeven en in welke volgorde."
-    post_menu: "Bepaal welke items in het berichtmenu worden weergegeven en in welke volgorde."
-    post_menu_hidden_items: "De menu-items die standaard in het berichtmenu moeten worden verborgen, totdat er op een uitvouw-ellipsis wordt geklikt."
     share_links: "Bepaal welke items in de deeldialoog worden weergegeven en in welke volgorde."
     allow_username_in_share_links: "Sta toe dat gebruikersnamen worden opgenomen in gedeelde links. Dit is handig om badges toe te kennen op basis van unieke bezoekers."
     site_contact_username: "Een geldige gebruikersnaam van een medewerker waarvandaan alle automatische berichten worden verzonden. Wanneer leeg gelaten, wordt de standaardaccount van het systeem gebruikt."
@@ -1767,6 +1774,7 @@ nl:
     max_reply_history: "Maximale aantal uit te vouwen antwoorden bij uitvouwen van 'in antwoord op'"
     topics_per_period_in_top_summary: "Aantal weergegeven toptopics in het standaard toptopics-overzicht."
     topics_per_period_in_top_page: "Aantal weergegeven toptopics in de uitgevouwen 'Meer weergeven'-toptopics."
+    redirect_users_to_top_page: "Stuur nieuwe en lang afwezige gebruikers automatisch door naar de bovenste pagina. Wordt alleen toegepast als 'top' aanwezig is in de site-instelling 'top menu'."
     top_page_default_timeframe: "Standaard tijdsperiode voor de toppagina voor anonieme gebruikers (wordt automatisch aangepast voor aangemelde gebruikers op basis van hun laatste bezoek)."
     moderators_view_emails: "Sta moderators toe om het e-mailadres van gebruikers te bekijken."
     prioritize_username_in_ux: "Eerst gebruikersnaam weergeven op gebruikerspagina, gebruikerskaart en in berichten (wanneer uitgeschakeld, wordt eerst de naam weergegeven)"
@@ -1968,6 +1976,7 @@ nl:
     min_trust_to_edit_post: "Het minimale vertrouwensniveau dat nodig is om berichten te bewerken."
     edit_post_allowed_groups: "Groepen die berichten kunnen bewerken. Beheerders en moderators kunnen berichten altijd bewerken."
     min_trust_to_allow_self_wiki: "Het minimale vertrouwensniveau dat nodig is om een gebruiker een eigen bericht naar een wiki te laten omzetten."
+    self_wiki_allowed_groups: "Sta gebruikers in deze groepen toe om hun eigen berichtenwiki te maken. Beheerders en moderators kunnen altijd hun eigen berichtenwiki maken."
     min_trust_to_send_messages: "VEROUDERD, gebruik in plaats daarvan de instelling 'groepen met persoonlijke berichten ingeschakeld'. Het minimale vertrouwensniveau dat vereist is om nieuwe persoonlijke berichten te maken."
     min_trust_to_send_email_messages: "Het minimale vertrouwensniveau dat vereist is om persoonlijke berichten te sturen via e-mail."
     send_email_messages_allowed_groups: "Groepen die persoonlijke berichten kunnen sturen via e-mail. Beheerders en moderators kunnen altijd persoonlijke berichten sturen via e-mail."
@@ -2041,6 +2050,7 @@ nl:
     tos_url: "Als je ergens anders een document met Algemene voorwaarden hebt gehost, geef hier dan de volledige URL op."
     privacy_policy_url: "Als je ergens anders een document met een Privacybeleid hebt gehost, geef hier dan de volledige URL op."
     log_anonymizer_details: "Of de gegevens van een gebruiker in de log moeten worden bewaard nadat ze zijn geanonimiseerd."
+    display_eu_visitor_stats: "Geef het aantal bezoekers wereldwijd en in de EU weer op de /about-pagina."
     newuser_spam_host_threshold: "Hoe vaak een nieuwe gebruiker een link naar dezelfde host kan plaatsen binnen de 'newuser_spam_host_threshold' berichten ervan voordat deze als spam wordt beschouwd."
     allowed_spam_host_domains: "Een lijst met domeinen die niet op spam worden gecontroleerd. Nieuwe gebruikers kunnen onbeperkt links naar deze domeinen plaatsen."
     staff_like_weight: "Hoeveel gewicht om aan likes van medewerkers te geven (likes die niet van medewerkers zijn, hebben een gewicht van 1)."
@@ -2097,7 +2107,6 @@ nl:
     reset_bounce_score_after_days: "Bouncescore na X dagen automatisch resetten."
     blocked_attachment_content_types: "Lijst van trefwoorden voor het blokkeren van bijlagen op basis van het type inhoud."
     blocked_attachment_filenames: "Lijst van trefwoorden voor het blokkeren van bijlagen op basis van de bestandsnaam."
-    forwarded_emails_behaviour: "Hoe een doorgestuurde e-mail naar Discourse te behandelen"
     always_show_trimmed_content: "Altijd afgekapt deel van inkomende e-mails weergeven. WAARSCHUWING: kan e-mailadressen onthullen."
     trim_incoming_emails: "Knip het deel van inkomende e-mails dat niet relevant is."
     private_email: "Geen inhoud van berichten of topics opnemen in titel of tekst van e-mail. OPMERKING: schakelt ook digest-e-mails uit."
@@ -2216,7 +2225,6 @@ nl:
     auto_handle_queued_age: "Records die dit aantal dagen op beoordeling wachten automatisch verwijderen. Markeringen worden genegeerd. Berichten en gebruikers in de wachtrij worden geweigerd. Stel dit in op 0 om deze functie uit te schakelen."
     penalty_step_hours: "Standaardstraffen bij demping of schorsing van gebruikers in uren. Bij de eerste overtreding wordt standaard de eerste waarde gebruikt, bij de tweede overtreding de tweede waarde, enz."
     penalty_include_post_message: "Beledigend bericht automatisch opnemen in e-mailberichtsjabloon bij dempen of schorsen van een gebruiker"
-    svg_icon_subset: "Extra FontAwesome 5-pictogrammen toevoegen die je in je assets wilt opnemen. Gebruik het voorvoegsel 'fa-' voor effen pictogrammen, 'far-' voor normale pictogrammen en 'fab-' voor merkpictogrammen."
     max_prints_per_hour_per_user: "Maximale aantal /print-pagina-impressies (stel dit in op 0 om afdrukken uit te schakelen)"
     full_name_required: "Volledige naam is een verplicht veld van een gebruikersprofiel."
     enable_names: "Volledige naam van gebruiker weergeven op profiel, gebruikerskaart en e-mails. Schakel dit uit om de volledige naam overal te verbergen."
@@ -2241,7 +2249,7 @@ nl:
     embed_username_required: "De gebruikersnaam voor het maken van topics is vereist."
     notify_about_reviewable_item_after: "Stuur een privébericht naar moderators als er na dit aantal uren beoordeelbare items zijn die nog niet zijn afgehandeld. Stel dit in op 0 om het uit te schakelen."
     delete_drafts_older_than_n_days: "Verwijder concepten die meer dan (n) dagen niet zijn gewijzigd."
-    bootstrap_mode_min_users: "Minimale aantal vereiste gebruikers om bootstrapmodus uit te schakelen en de knop Aan de slag te verwijderen (stel dit in op 0 om het uit te schakelen, dit kan tot 24 uur duren)"
+    delete_merged_stub_topics_after_days: "Aantal dagen dat moet worden gewacht voordat volledig samengevoegde stubtopics automatisch worden verwijderd. Stel dit in op -1 om nooit te verwijderen of op 0 om direct te verwijderen."
     prevent_anons_from_downloading_files: "Voorkom dat anonieme gebruikers bijlagen downloaden."
     secure_uploads: 'Beperkt de toegang tot ALLE uploads (afbeeldingen, video, audio, tekst, pdf''s, zips en andere). Als ''aanmelding vereist'' is ingeschakeld, hebben alleen aangemelde gebruikers toegang tot uploads. Anders is de toegang alleen beperkt voor media-uploads in privéberichten en privécategorieën. WAARSCHUWING: deze instelling is complex en vereist diepgaande beheerkennis. Zie <a target="_blank" href="https://meta.discourse.org/t/-/140017">het onderwerp Veilige uploads op Meta</a> voor meer informatie.'
     secure_uploads_allow_embed_images_in_emails: "Staat het insluiten van beveiligde afbeeldingen toe die normaal gesproken zouden worden geredigeerd in e-mails, als hun grootte kleiner is dan de instelling 'veilige uploads max. afbeeldingsgrootte insluiten in e-mail kb'."
@@ -2385,6 +2393,8 @@ nl:
     use_email_for_username_and_name_suggestions: "Gebruik het eerste deel van e-mailadressen als suggestie voor namen en gebruikersnamen. Merk op dat dit het voor mensen eenvoudiger maakt om volledige e-mailadressen van gebruikers te raden (omdat een groot deel van de mensen veelgebruikte diensten zoals 'gmail.com' deelt)."
     use_name_for_username_suggestions: "Gebruik de volledige naam van een gebruiker bij het voorstellen van gebruikersnamen."
     suggest_weekends_in_date_pickers: "Neem weekenden (zaterdag en zondag) op in suggesties voor datumkiezers (schakel dit uit als je Discourse alleen op weekdagen gebruikt, maandag t/m vrijdag)."
+    show_bottom_topic_map: "Geeft de topickaart onderaan het topic weer wanneer er 10 of meer antwoorden zijn."
+    show_topic_map_in_topics_without_replies: "Geeft de onderwerpkaart weer, ook als er geen antwoorden op het topic zijn."
     splash_screen: "Geeft een tijdelijk laadscherm weer terwijl website-items worden geladen"
     navigation_menu: "Geef een vervolgkeuzelijst voor de zijbalk of koptekst op als het hoofdnavigatiemenu voor je site. Zijbalk wordt aanbevolen."
     default_navigation_menu_categories: "De geselecteerde categorieën worden standaard weergegeven in de sectie Categorieën van het navigatiemenu."
@@ -2426,6 +2436,7 @@ nl:
       invalid_reply_by_email_address: "Waarde moet '%{reply_key}' bevatten en afwijken van de melding per e-mail."
       invalid_alternative_reply_by_email_addresses: "Alle waarden moeten '%{reply_key}' bevatten en afwijken van de melding per e-mail."
       invalid_domain_hostname: "Mag niet de tekens * en ? bevatten."
+      invalid_allowed_iframes_url: "Iframe-URL's moeten beginnen met http:// of https:// en minimaal één extra '/' bevatten"
       invalid_csp_script_src: "De waarde moet 'unsafe-eval'' of 'wasm-unsafe-eval' zijn, of de vorm '<hash algorithm>-<base64 value>' hebben, waarbij de ondersteunde hashalgoritmen sha256, sha384 en sha512 zijn. Zorg dat je invoer tussen enkele aanhalingstekens staat."
       pop3_polling_host_is_empty: "Je moet een 'pop3 polling host' instellen voordat je POP3-polling inschakelt."
       pop3_polling_username_is_empty: "Je moet een 'pop3 polling username' instellen voordat je POP3-polling inschakelt."
@@ -2612,6 +2623,7 @@ nl:
     autoclosed_disabled: "Dit topic is nu geopend. Nieuwe antwoorden zijn toegestaan."
     autoclosed_disabled_lastpost: "Dit topic is nu geopend. Nieuwe antwoorden zijn toegestaan."
     auto_deleted_by_timer: "Automatisch verwijderd door timer."
+    auto_deleted_by_merge: "Automatisch verwijderd door samenvoeging."
   login:
     invalid_second_factor_method: "De geselecteerde methode voor tweeledige verificatie is ongeldig."
     not_enabled_second_factor_method: "De geselecteerde methode voor tweeledige verificatie is niet ingeschakeld voor je account."
@@ -4866,18 +4878,31 @@ nl:
           default_locale:
             label: "Taal"
       privacy:
+        title: "Ledentoegang"
         fields:
           login_required:
             label: "Zichtbaarheid"
+            description: "Is je community openbaar of privé?"
             choices:
               public:
                 label: "Openbaar"
               private:
                 label: "Privé"
           invite_only:
+            label: "Registratie"
+            description: "Hoe kunnen mensen lid worden van deze community?"
             choices:
+              sign_up:
+                label: "Registreren"
               invite_only:
                 label: "Alleen op uitnodiging"
+          must_approve_users:
+            description: "Wil je accounts van leden goedkeuren?"
+            choices:
+              "no":
+                label: "Nee, nieuwe mensen kunnen direct lid worden"
+              "yes":
+                label: "Ja, nieuwe mensen moeten door moderators worden goedgekeurd"
           chat_enabled:
             placeholder: "Chat inschakelen"
             extra_description: "Ga in realtime in gesprek met je leden"

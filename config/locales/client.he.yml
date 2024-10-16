@@ -197,7 +197,7 @@ he:
       topic_html: 'נושא: <span class="topic-title">%{topicTitle}</span>'
       post: "פוסט מס׳ %{postNumber} מאת ‎@%{username}"
       close: "סגירה"
-      twitter: "שיתוף בטוויטר"
+      twitter: "שתפו ב-X"
       facebook: "שיתוף בפייסבוק"
       email: "שליחה בדוא״ל"
       url: "העתקה ושיתוף של כתובת"
@@ -327,6 +327,7 @@ he:
     now: "ממש עכשיו"
     read_more: "מידע נוסף"
     more: "עוד"
+    more_options: "אפשרויות נוספות"
     x_more:
       one: "עוד %{count}"
       two: "עוד %{count}"
@@ -360,6 +361,7 @@ he:
       pill: "מוצע"
       pm_title: "הודעות מוצעות"
     about:
+      edit: "עריכת עמוד זה"
       simple_title: "על אודות"
       title: "על %{title}"
       stats: "סטטיסטיקת אתר"
@@ -376,8 +378,10 @@ he:
       post_count: "פוסטים"
       user_count: "הרשמות"
       active_user_count: "משתמשים פעילים"
+      visitor_count: "מבקרים"
+      eu_visitor_count: "מבקרים מהאיחוד האירופי"
       contact: "יצירת קשר אתנו"
-      contact_info: "במקרה של בעיה קריטית או דחופה המשפיעה על אתר זה, נא ליצור אתנו קשר דרך: %{contact_info}."
+      contact_info: "במקרה של בעיה קריטית או דחופה המשפיעה על אתר זה, נא ליצור קשר דרך: %{contact_info}."
       site_activity: "פעילות באתר"
       view_more: "להציג עוד"
       view_less: "להציג פחות"
@@ -407,6 +411,18 @@ he:
           two: "שני לייקים"
           many: "%{formatted_number} לייקים"
           other: "%{formatted_number} לייקים"
+        visitors_MF: |
+          { total_count, plural,
+              one {מבקר או מבקרת}
+              two {שני או שתי מבקרים או מבקרות}
+              many {{total_formatted_number} מבקרים או מבקרות}
+            other {{total_formatted_number} מבקרים או מבקרות}
+          }, בערך { eu_count, plural,
+              one {{eu_formatted_number}}
+              two {{eu_formatted_number}}
+              many {{eu_formatted_number}}
+            other {{eu_formatted_number}}
+          } מהאיחוד האירופי
         periods:
           last_7_days: "ב־7 הימים האחרונים"
           today: "היום"
@@ -1727,7 +1743,7 @@ he:
         add_email: "הוספת כתובת דוא״ל חלופית"
         auth_override_instructions: "ניתן לעדכן את כתובת הדוא״ל דרך ספק האימות."
         no_secondary: "אין כתובות דוא״ל משניות"
-        instructions: "לעולם לא מוצג לציבור."
+        instructions: "לעולם לא מוצג לציבור"
         admin_note: "הערה: משתמש ניהולי שמשנה כתובת דוא״ל למשתמש שאינו ניהולי מציינת שהגישה של המשתמש לכתובת הדוא״ל המקורית אבדה, לכן תישלח הודעת איפוס סיסמה לכתובת החדשה בדוא״ל. כתובת הדוא״ל של המשתמש לא תוחלף עד לביצוע תהליך איפוס הסיסמה."
         ok: "נשלח אליכם דואר אלקטרוני לאישור"
         required: "נא למלא כתובת דוא״ל"
@@ -1760,14 +1776,14 @@ he:
         approval_required: "על מפקח לאשר את החשבון החדש שלך ידנית בטרם תתאפשר גישתך לפורום. כאשר חשבונך יאושר תישלח אליך הודעה בדוא״ל!"
       name:
         title: "שם"
-        instructions: "שמך המלא (רשות)."
-        instructions_required: "שמך המלא."
+        instructions: "שמך המלא (רשות)"
+        instructions_required: "שמך המלא"
         required: "נא למלא שם"
         too_short: "השם שלך קצר מידי"
         ok: "השם נראה טוב"
       username:
         title: "שם משתמש/ת"
-        instructions: "ייחודי, ללא רווחים, קצר."
+        instructions: "ייחודי, ללא רווחים, קצר"
         short_instructions: "אנשים יכולים לאזכר אותך בתור ‎@%{username}"
         available: "שם המשתמש שלך פנוי"
         not_available: "לא זמין. נסו %{suggestion}?"
@@ -1989,9 +2005,9 @@ he:
         ok: "הסיסמה שלך נראית טוב."
         instructions:
           one: "תו אחד לפחות"
-          two: "לפחות %{count} תווים."
-          many: "לפחות %{count} תווים."
-          other: "לפחות %{count} תווים."
+          two: "שני תווים לפחות"
+          many: "%{count} תווים לפחות"
+          other: "%{count} תווים לפחות"
         required: "נא למלא סיסמה"
         confirm: "אישור"
         incorrect_password: "הסיסמה שמילאת שגויה."
@@ -2221,6 +2237,7 @@ he:
           other {# שגיאות בדקה}
         }.
     learn_more: "מידע נוסף…"
+    learn_more_with_link: "<a href='%{url}' target='_blank'>מידע נוסף…</a>"
     mute: השתק
     unmute: ביטול השתקה
     last_post: פורסמו
@@ -2305,6 +2322,11 @@ he:
       associate: "כבר יש לך חשבון? ניתן <a href='%{associate_link}'>להיכנס</a> כדי לקשר את חשבון ה־%{provider} שלך."
       activation_title: "הפעלת החשבון שלך"
       already_have_account: "כבר יש לך חשבון?"
+      progress_bar:
+        signup: "הרשמה"
+        activate: "הפעלה"
+        approve: "אישור"
+        login: "כניסה"
     forgot_password:
       title: "אתחול סיסמה"
       action: "שכחתי את הסיסמה שלי"
@@ -2511,6 +2533,7 @@ he:
     file_size_input:
       error:
         size_too_large: "%{provided_file_size} גדול מהגודל המרבי המותר %{max_file_size}"
+        size_too_small: "%{provided_file_size} קטן מהגודל המזערי המותר %{min_file_size}"
     emoji_picker:
       filter_placeholder: חיפוש אחר אמוג׳י
       smileys_&_emotion: חייכנים ורגש
@@ -3745,7 +3768,9 @@ he:
       show_hidden: "צפייה בתוכן שמיועד להתעלמות."
       deleted_by_author_simple: "(הפוסט נמחק על ידי הכותב)"
       collapse: "צמצום"
+      load_more_replies: "טעינת תגובות נוספות"
       sr_collapse_replies: "צמצום תשובות מוטמעות"
+      sr_load_more_replies: "טעינת תשובות מוטמעות נוספות"
       sr_date: "תאריך פרסום"
       sr_expand_replies:
         one: "לפוסט הזה יש תגובה אחת"
@@ -5102,6 +5127,7 @@ he:
     powered_by_discourse: "מופעל על גבי Discourse"
   admin_js:
     type_to_filter: "יש להקליד לסינון…"
+    settings: "הגדרות"
     admin:
       title: "ניהול Discourse"
       moderator: "מפקח"
@@ -5134,9 +5160,10 @@ he:
         installed_version: "הותקן"
         latest_version: "אחרונה"
         problems_found: "עצה שמבוססת על הגדרות האתר הנוכחיות שלך"
+        dismiss_notice: "התעלמות"
         new_features:
           title: "מה חדש"
-          subtitle: "לפרטים נוספים על יכולות חדשות השיפורים שאנו מוסיפים כל הזמן, כדאי לגשת אל <a href='https://meta.discourse.org/tags/c/announcements/67/release-notes' target='_blank'>הערות ההוצאה לאור</a>."
+          subtitle: "אנו מוציאים לאור יכולות ושיפורים חדשים כל הזמן. העמוד הזה מסקר את הנקודות החשובות אבל ניתן ללחוץ על ‚מידע נוסף’ כדי לצפות בהערות ההוצאה לאור המפורטות."
           previous_announcements: "אפשר לצפות בהכרזות הקודמות על יכולות ב־<a href='%{url}' target='_blank'>Discourse Meta</a>"
           learn_more: "מידע נוסף…"
         last_checked: "נבדק לאחרונה"
@@ -5258,6 +5285,7 @@ he:
             publish_read_state: "בהודעות קבוצתית לפרסם את מצב הקריאה של הקבוצה"
           membership:
             automatic: אוטומטי
+            automatic_tooltip: "הקבוצה הזאת היא אוטומטית, אי אפשר למחוק אותה והחברים נוספים ונמחקים ממנה אוטומטית"
             trust_levels_title: "דרגת אמון המוענקת אוטומטית למשתמשים כאשר הם נוספים:"
             effects: אפקטים
             trust_levels_none: "ללא"
@@ -5470,6 +5498,8 @@ he:
           post_edited: "פוסט מעודכן"
           post_destroyed: "פוסט נמחק"
           post_recovered: "נושא משוחזר"
+          category_experts_approved: "הפוסט סומן כפוסט מומחי קטגוריה"
+          category_experts_unapproved: "הוסר הסימון מהפוסט כפוסט מומחי קטגוריה"
         group_event:
           group_name: "אירועי קבוצה"
           group_created: "קבוצה נוצרה"
@@ -5617,12 +5647,22 @@ he:
           screened_ips: "כתובות IP מפוקחות"
           screened_urls: "כתובות מפוקחות"
           search_logs: "חיפוש ביומנים"
-          security: "אבטחה"
-          spam: "ספאם"
+          security: "הגדרות אבטחה"
+          spam: "הגדרות ספאם"
           staff_action_logs: "יומני פעולות סגל"
+      section_landing_pages:
+        account:
+          title: "חשבון"
+          backups:
+            title: "גיבויים"
+            description: "גיבוי נתוני האתר שלך"
+          whats_new:
+            title: "מה חדש"
+            description: "חשיפת מהדורות חדשות ושיפורים ב־Discourse"
       config_areas:
         about:
           header: "על האתר שלך"
+          description: "כאן יש לספק מידע על האתר והצוות שלך כדי שאנשים יוכלו ללמוד מה מהות הקהילה שלך, מי העומדים מאחרויה ואיך לפנות אליך אם קורה משהו."
           general_settings: "הגדרות כלליות"
           community_name: "שם הקהילה"
           community_name_placeholder: "קהילה לדוגמה"
@@ -5630,7 +5670,7 @@ he:
           community_description: "תיאור קהילה"
           banner_image: "תמונת כרזה"
           banner_image_help: |
-            ייעשה בזה שימוש בעמוד העל אודות שלך. הגודל המומלץ: ‎800×300 פיקסלים. סוגים מורשים: JPG,‏ PNG ו־SVG עד 10 מ״ב
+            ייעשה בזה שימוש בעמוד העל אודות שלך. הגודל המומלץ: ‎1100×300 פיקסלים. סוגים מורשים: JPG,‏ PNG ו־SVG עד 10 מ״ב
           contact_information: "פרטי קשר"
           community_owner: "בעלות על הקהילה"
           community_owner_placeholder: "יוסי כהן"
@@ -5674,6 +5714,7 @@ he:
           saved: "נשמר!"
         flags:
           header: "סימוני פיקוח"
+          edit_header: "עריכת סימון"
           subheader: "מערכת הסימון ב־Discourse מסייעת לך ולצוות הפיקוח שלך לנהל את התוכן ואת התנהגות המשתמשים ומעניקה לך כלים לשמור על קהילה מכבדת ובריאה. ברירות המחדל מתאימות לרוב הקהילות ואין צורך לשנות אותן. עם זאת, אם לאתר שלך יש דרישות מסוימות אפשר לבטל סוגי סימון שאינם נחוצים ולהוסיף סוגי סימון משלך."
           description: "תיאור"
           enabled: "מאופשר?"
@@ -5682,6 +5723,8 @@ he:
           back: "חזרה לסימונים"
           delete: "מחיקה"
           delete_confirm: 'למחוק את „%{name}”?'
+          flags_tab: "סימונים"
+          settings: "הגדרות סימונים"
           form:
             add_header: "הוספת סימון"
             edit_header: "עריכת סימון"
@@ -5707,7 +5750,8 @@ he:
             move_down: "העברה למטה"
       plugins:
         title: "הרחבות (Plugins)"
-        installed: "הרחבות מותקנות"
+        installed: "תוספים מותקנים"
+        description: "תוספי Discourse שהתקנת או תוספים שמותקנים באירוח של Discourse באופן מובנה, כל אלו יופיעו ברשימה הזאת."
         name: "שם"
         none_installed: "אין לך הרחבות מותקנות"
         version: "גרסה"
@@ -5745,10 +5789,13 @@ he:
         legacy: "מיושן"
       backups:
         title: "גיבויים"
+        files_title: "גיבוי קבצים"
+        description: "הגיבויים של Discourse כולל את מסד הנתונים המלא של האתר שמכיל את כל תוכן האתר: נושאים, פוסטים, משתמשים, קבוצות, הגדרות, ערכות עיצוב ועוד, הוא עשוי להכיל את הקבצים שהועלו כתלות באופן יצירת קובץ הגיבוי."
         menu:
           backups: "גיבויים"
+          backup_files: "גיבוי קבצים"
           logs: "יומנים"
-        none: "אין גיבוי זמין."
+        none: "אין גיבוי זמין"
         read_only:
           enable:
             title: "הפעלת מצב קריאה-בלבד"
@@ -5786,12 +5833,12 @@ he:
           download:
             label: "הורדה"
             title: "שליחת הודעה בדוא״ל עם קישור להורדה"
-            alert: "קישור להורדת גיבוי זה נשלח אליכם."
+            alert: "קישור להורדת גיבוי זה נשלח אליכם"
           destroy:
             title: "הסרת הגיבוי"
             confirm: "להשמיד את הגיבוי הזה?"
           restore:
-            is_disabled: "שחזור אינו מאופשר לפי הגדרות האתר."
+            is_disabled: "השחזור מושבת כעת. כדי להפעיל אותו, יש לגשת <a href='%{url}'>להגדרות האתר</a>."
             label: "שחזור"
             title: "שחזר את הגיבוי"
             confirm: "לשחזר את הגיבוי הזה?"
@@ -6390,6 +6437,10 @@ he:
             custom_emoji_destroy: "מחיקת אמוג׳י מותאם אישית"
             delete_post_permanently: "מחיקת פוסט לצמיתות"
             delete_topic_permanently: "מחיקת נושא לצמיתות"
+            tag_group_create: "יצירת קבוצת תגיות"
+            tag_group_destroy: "מחיקת קבוצת תגיות"
+            tag_group_change: "החלפת קבוצת תגיות"
+            delete_associated_accounts: "מחיקת חשבונות משויכים"
         screened_emails:
           title: "הודעות דואר מסוננות"
           description: "כשמישהו מנסה ליצור חשבון חדש, כתובות הדואר האלקטרוני הבאות ייבדקו וההרשמה תחסם או שיבוצו פעולות אחרות."
@@ -6617,6 +6668,9 @@ he:
         check_sso:
           title: "חשיפת מטען SSO"
           text: "הצגה"
+        delete_associated_accounts:
+          title: "מחיקת כל החשבונות שמשויכים למשתמש הזה"
+          text: "מחיקת חשבונות משויכים"
       user:
         suspend_failed: "משהו נכשל בהשעיית המשתמש הזה %{error}"
         unsuspend_failed: "משהו נכשל בביטול השעיית המשתמש הזה %{error}"
@@ -6712,6 +6766,7 @@ he:
         post_edits_count: "עריכות של פוסטים"
         anonymize: "הפיכת משתמשים לאלמוניים"
         anonymize_confirm: "<b>באמת<\\b> להפוך חשבון זה לאלמוני? פעולה זו תשנה את שם המשתמש ואת כתובת הדוא״ל ותאפס את כל נתוני הפרופיל."
+        delete_associated_accounts_confirm: "למחוק את החשבונות המשויכים מהחשבון הזה? המשתמש לא יוכל להיכנס או כתובת הדוא״ל שלו הוחלפה."
         anonymize_yes: "כן, נא להפוך חשבון זה לאלמוני"
         anonymize_failed: "אירעה תקלה בהפיכת חשבון זה לאלמוני."
         delete: "מחיקת משתמש"
@@ -6932,6 +6987,7 @@ he:
         show_overriden: "להציג רק את אלו שנדרסו"
         show_outdated: "להציג רק מיושן/שגוי"
         show_untranslated: "להציג רק לא מתורגמות"
+        only_show_selected_locale: "להציג תוצאות בשפה הנבחרת בלבד"
         locale: "שפה:"
         more_than_50_results: "יש למעלה מ־50 תוצאות. נא למקד את החיפוש שלך."
         no_results: "לא נמצאו טקסטים תואמים באתר"
@@ -7043,6 +7099,7 @@ he:
       badges:
         status: מצב
         title: עיטורים
+        page_description: עיטורים מתגמלים משתמשים על הפעילויות שלהם וההישגים כדי להוקיר, לתקף ולעודד התנהגות ומעורבות חיובית בתוך הקהילה.
         new_badge: עיטור חדש
         new: חדש
         name: שם
@@ -7051,6 +7108,7 @@ he:
         description: תיאור
         long_description: תיאור ארוך
         badge_type: סוג עיטור
+        group_settings: הגדרות קבוצתיות
         badge_grouping: קבוצה
         badge_groupings:
           modal_title: קבוצות עיטורים
@@ -7117,9 +7175,8 @@ he:
             with_post_time: <span class="username">%{username}</span> לפוסט ב %{link} ב <span class="time">%{time}</span>
             with_time: <span class="username">%{username}</span> ב <span class="time">%{time}</span>
         badge_intro:
-          title: "נא לבחור בעיטור קיים או ליצור אחד חדש כדי להתחיל"
-          what_are_badges_title: "מה הם עיטורים?"
-          badge_query_examples_title: "דוגמאות לתשאול עיטורים"
+          title: "נא לבחור עיטור או ליצור חדש"
+          description: "אפשר להתחיל על ידי בחירת עיטור לשינוי או ליצור עיטור חדש לגמרי."
         mass_award:
           title: חלוקת עיטורים
           description: להעניק את אותו העיטור למגוון משתמשים בו זמנית.

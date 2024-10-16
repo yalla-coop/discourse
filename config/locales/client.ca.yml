@@ -36,6 +36,7 @@ ca:
       long_with_year_no_time: "D MMM YYYY"
       full_with_year_no_time: "D MMMM YYYY"
       long_date_without_year: "MMM D, LT"
+      long_date_with_year_without_time: "MMM D, AAAA"
       long_date_without_year_with_linebreak: "D MMM <br/>HH:mm"
       wrap_ago: "fa %{date} "
       wrap_on: "el %{date}"
@@ -122,7 +123,6 @@ ca:
       topic_html: 'Tema: <span class="topic-title">%{topicTitle}</span>'
       post: "publicació #%{postNumber} de @%{username}"
       close: "tanca"
-      twitter: "Comparteix en Twitter"
       facebook: "Comparteix en Facebook"
       email: "Envia per correu electrònic"
       url: "Copiar i compartir URL"
@@ -255,6 +255,7 @@ ca:
     suggested_topics:
       pm_title: "Missatges recomanats"
     about:
+      edit: "Edita aquesta pàgina"
       simple_title: "Quant a"
       title: "Quant a %{title}"
       stats: "Estadístiques del lloc web"
@@ -264,7 +265,6 @@ ca:
       like_count: "'M'agrada'"
       topic_count: "Temes"
       post_count: "Publicacions"
-      contact_info: "En cas d'una qüestió urgent o greu que afecti aquest lloc web, contacteu amb nosaltres en: %{contact_info}."
       activities:
         topics:
           one: "%{formatted_number} tema"
@@ -1123,7 +1123,7 @@ ca:
         destroy: "Elimina el correu electrònic"
         add_email: "Afegeix un correu electrònic alternatiu"
         no_secondary: "Sense adreces de correu secundàries"
-        instructions: "No es mostra mai en públic."
+        instructions: "No es mostra mai en públic"
         ok: "Us enviarem un correu electrònic de confirmació"
         required: "Introduïu una adreça de correu electrònic"
         invalid: "Introduïu una adreça vàlida de correu electrònic"
@@ -1150,8 +1150,8 @@ ca:
         approval_required: "Cal que un moderador aprovi manualment el vostre nou compte abans no pugueu accedir al fòrum. Rebreu un correu quan el compte hagi estat aprovat!"
       name:
         title: "Nom"
-        instructions: "El vostre nom complet (opcional)."
-        instructions_required: "El vostre nom complet."
+        instructions: "El vostre nom complet (opcional)"
+        instructions_required: "El vostre nom complet"
         too_short: "El vostre nom és massa curt"
         ok: "El vostre nom sona bé"
       username:
@@ -1441,6 +1441,10 @@ ca:
       disclaimer: "Registrant-vos, accepteu la <a href='%{privacy_link}' target='blank'>política de privacitat</a> i les <a href='%{tos_link}' target='blank'>condicions del servei</a>."
       title: "Registre"
       failed: "Alguna cosa ha anat malament. Potser aquest correu electrònic ja ha estat registrat; proveu-ho amb l'enllaç de contrasenya oblidada"
+      progress_bar:
+        signup: "Registre"
+        approve: "Aprova"
+        login: "Inicia la sessió"
     forgot_password:
       title: "Restabliment de contrasenya"
       action: "He oblidat la contrasenya"
@@ -2960,6 +2964,7 @@ ca:
         show: "Mostra"
         about: "Quant a"
   admin_js:
+    settings: "Configuració"
     admin:
       title: "Administració de Discourse"
       moderator: "Moderador"
@@ -2987,6 +2992,7 @@ ca:
         installed_version: "Instal·lat"
         latest_version: "Més recents"
         problems_found: "Uns quants consells basats en la configuració actual del lloc web."
+        dismiss_notice: "Descarta-ho"
         new_features:
           learn_more: "Per a saber-ne més..."
         last_checked: "Comprovat per darrera vegada"
@@ -3249,8 +3255,11 @@ ca:
           screened_ips: "IPs sota supervisió"
           screened_urls: "URLs sota supervisió"
           search_logs: "Cerca els registres (logs)"
-          security: "Seguretat"
-          spam: "Brossa"
+      section_landing_pages:
+        account:
+          title: "Compte"
+          backups:
+            title: "Còpies de seguretat"
       config_areas:
         about:
           contact_url_placeholder: "https://johnny-smith.com/contact"
@@ -3262,6 +3271,7 @@ ca:
           edit: "Edita"
           delete: "Suprimeix"
           delete_confirm: 'Esteu segur que voleu suprimir "%{name}"?'
+          flags_tab: "Banderes"
           form:
             save: "Desa"
             name: "Nom"
@@ -3271,7 +3281,6 @@ ca:
             post: "publicacions"
       plugins:
         title: "Connectors"
-        installed: "Connectors instal·lats"
         name: "Nom"
         none_installed: "No teniu cap connector instal·lat."
         version: "Versió"
@@ -3300,7 +3309,7 @@ ca:
         menu:
           backups: "Còpies de seguretat"
           logs: "Registres"
-        none: "No hi ha cap còpia de seguretat disponible."
+        none: "No hi ha cap còpia de seguretat disponible"
         read_only:
           enable:
             title: "Activa el mode només de lectura"
@@ -3331,12 +3340,11 @@ ca:
           download:
             label: "Descarrega"
             title: "Envia correu amb enllaç de descàrrega"
-            alert: "Us hem enviat per correu un enllaç per a descarregar aquesta còpia de seguretat."
+            alert: "Us hem enviat per correu un enllaç per a descarregar aquesta còpia de seguretat"
           destroy:
             title: "Elimina la còpia de seguretat"
             confirm: "Esteu segur que voleu destruir aquesta còpia de seguretat?"
           restore:
-            is_disabled: "S'ha desactivat la restauració en la configuració del lloc web."
             label: "Restaura"
             title: "Restaura la còpia de seguretat"
             confirm: "Esteu segur que voleu restaurar aquesta còpia de seguretat?"
@@ -3345,7 +3353,6 @@ ca:
             title: "Reverteix la base de dades a l'estat de funcionament previ"
             confirm: "Esteu segur que voleu revertir la base de dades a l'estat de funcionament previ?"
         location:
-          local: "Emmagatzematge local"
           s3: "S3"
         backup_storage_error: "Error d'accés a l'emmagatzematge de còpia de seguretat: %{error_message}"
       export_csv:
@@ -4250,10 +4257,6 @@ ca:
             with_post: <span class="username">%{username}</span> per a publicació en %{link}
             with_post_time: <span class="username">%{username}</span> per a publicació en %{link} en <span class="time">%{time}</span>
             with_time: <span class="username">%{username}</span> en <span class="time">%{time}</span>
-        badge_intro:
-          title: "Seleccioneu una insígnia existent o creeu-ne una de nova per a començar."
-          what_are_badges_title: "Què són les insígnies (badges)?"
-          badge_query_examples_title: "Exemples de consulta d'insígnies"
       emoji:
         title: "Emoji"
         add: "Afegeix emoji nou"

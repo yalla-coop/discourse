@@ -142,6 +142,7 @@ export default function () {
       { path: "/backups", resetNamespace: true },
       function () {
         this.route("logs");
+        this.route("settings");
       }
     );
 
@@ -213,9 +214,13 @@ export default function () {
           this.route("index", { path: "/" });
           this.route("new");
           this.route("edit", { path: "/:flag_id" });
+          this.route("settings");
         });
 
         this.route("about");
+        this.route("lookAndFeel", { path: "/look-and-feel" }, function () {
+          this.route("themes");
+        });
       }
     );
 
@@ -234,5 +239,13 @@ export default function () {
       path: "/whats-new",
       resetNamespace: true,
     });
+
+    this.route(
+      "adminSection",
+      { path: "/section", resetNamespace: true },
+      function () {
+        this.route("account");
+      }
+    );
   });
 }

@@ -3,11 +3,13 @@
 // docs/CHANGELOG-JAVASCRIPT-PLUGIN-API.md whenever you change the version
 // using the format described at https://keepachangelog.com/en/1.0.0/.
 
-export const PLUGIN_API_VERSION = "1.36.0";
+export const PLUGIN_API_VERSION = "1.37.2";
 
 import $ from "jquery";
 import { h } from "virtual-dom";
+import { addAboutPageActivity } from "discourse/components/about-page";
 import { addBulkDropdownButton } from "discourse/components/bulk-select-topics-dropdown";
+import { addCardClickListenerSelector } from "discourse/components/card-contents-base";
 import {
   addApiImageWrapperButtonClickEvent,
   addComposerUploadHandler,
@@ -21,9 +23,7 @@ import { forceDropdownForMenuPanels as glimmerForceDropdownForMenuPanels } from 
 import { addGlobalNotice } from "discourse/components/global-notice";
 import { headerButtonsDAG } from "discourse/components/header";
 import { headerIconsDAG } from "discourse/components/header/icons";
-import MountWidget, {
-  addWidgetCleanCallback,
-} from "discourse/components/mount-widget";
+import { addWidgetCleanCallback } from "discourse/components/mount-widget";
 import { addPluginOutletDecorator } from "discourse/components/plugin-connector";
 import {
   addPluginReviewableParam,
@@ -38,12 +38,12 @@ import {
 } from "discourse/components/search-menu/results/random-quick-tip";
 import { addOnKeyUpCallback } from "discourse/components/search-menu/search-term";
 import { REFRESH_COUNTS_APP_EVENT_NAME as REFRESH_USER_SIDEBAR_CATEGORIES_SECTION_COUNTS_APP_EVENT_NAME } from "discourse/components/sidebar/user/categories-section";
-import { forceDropdownForMenuPanels } from "discourse/components/site-header";
 import { addTopicParticipantClassesCallback } from "discourse/components/topic-map/topic-participant";
 import { setDesktopScrollAreaHeight } from "discourse/components/topic-timeline/container";
 import { addTopicTitleDecorator } from "discourse/components/topic-title";
 import { setNotificationsLimit as setUserMenuNotificationsLimit } from "discourse/components/user-menu/notifications-list";
 import { addUserMenuProfileTabItem } from "discourse/components/user-menu/profile-tab-content";
+import { addLegacyStat as addLegacyAboutPageStat } from "discourse/controllers/about";
 import { addDiscoveryQueryParam } from "discourse/controllers/discovery/list";
 import { registerFullPageSearchType } from "discourse/controllers/full-page-search";
 import { registerCustomPostMessageCallback as registerCustomPostMessageCallback1 } from "discourse/controllers/topic";
@@ -61,6 +61,7 @@ import {
   PLUGIN_NAV_MODE_TOP,
   registerAdminPluginConfigNav,
 } from "discourse/lib/admin-plugin-config-nav";
+import { registerPluginHeaderActionComponent } from "discourse/lib/admin-plugin-header-actions";
 import classPrepend, {
   withPrependsRolledBack,
 } from "discourse/lib/class-prepend";
@@ -111,7 +112,6 @@ import {
 } from "discourse/lib/transformer";
 import { registerUserMenuTab } from "discourse/lib/user-menu/tab";
 import { replaceFormatter } from "discourse/lib/utilities";
-import { addCardClickListenerSelector } from "discourse/mixins/card-contents-base";
 import { addCustomUserFieldValidationCallback } from "discourse/mixins/user-fields-validation";
 import Composer, {
   registerCustomizationCallback,
@@ -125,7 +125,6 @@ import {
 import { setNewCategoryDefaultColors } from "discourse/routes/new-category";
 import { setNotificationsLimit } from "discourse/routes/user-notifications";
 import { addComposerSaveErrorCallback } from "discourse/services/composer";
-import { attachAdditionalPanel } from "discourse/widgets/header";
 import { addPostClassesCallback } from "discourse/widgets/post";
 import { addDecorator } from "discourse/widgets/post-cooked";
 import {
@@ -162,20 +161,6 @@ import {
 import { addImageWrapperButton } from "discourse-markdown-it/features/image-controls";
 import { CUSTOM_USER_SEARCH_OPTIONS } from "select-kit/components/user-chooser";
 import { modifySelectKit } from "select-kit/mixins/plugin-api";
-
-const DEPRECATED_HEADER_WIDGETS = [
-  "header",
-  "site-header",
-  "header-contents",
-  "header-buttons",
-  "user-status-bubble",
-  "sidebar-toggle",
-  "header-icons",
-  "header-topic-info",
-  "header-notifications",
-  "home-logo",
-  "user-dropdown",
-];
 
 const appliedModificationIds = new WeakMap();
 
@@ -520,17 +505,17 @@ class PluginApi {
    *
    *   // for the place in code that render a string
    *   string() {
-   *     return "<svg class=\"fa d-icon d-icon-far-smile svg-icon\" aria-hidden=\"true\"><use href=\"#far-smile\"></use></svg>";
+   *     return "<svg class=\"fa d-icon d-icon-far-face-smile svg-icon\" aria-hidden=\"true\"><use href=\"#far-face-smile\"></use></svg>";
    *   },
    *
    *   // for the places in code that render virtual dom elements
    *   node() {
    *     return h("svg", {
-   *          attributes: { class: "fa d-icon d-icon-far-smile", "aria-hidden": true },
+   *          attributes: { class: "fa d-icon d-icon-far-face-smile", "aria-hidden": true },
    *          namespace: "http://www.w3.org/2000/svg"
    *        },[
    *          h("use", {
-   *          "href": attributeHook("http://www.w3.org/1999/xlink", `#far-smile`),
+   *          "href": attributeHook("http://www.w3.org/1999/xlink", `#far-face-smile`),
    *          namespace: "http://www.w3.org/2000/svg"
    *        })]
    *     );
@@ -730,7 +715,7 @@ class PluginApi {
    **/
   decorateWidget(name, fn) {
     const widgetName = name.split(":")[0];
-    this.#deprecatedHeaderWidgetOverride(widgetName, "decorateWidget");
+    this.#deprecatedWidgetOverride(widgetName, "decorateWidget");
 
     decorateWidget(name, fn);
   }
@@ -761,7 +746,7 @@ class PluginApi {
       return;
     }
 
-    this.#deprecatedHeaderWidgetOverride(widget, "attachWidgetAction");
+    this.#deprecatedWidgetOverride(widget, "attachWidgetAction");
 
     widgetClass.prototype[actionName] = fn;
   }
@@ -795,7 +780,7 @@ class PluginApi {
    * api.addPostMenuButton('coffee', () => {
    *   return {
    *     action: 'drinkCoffee',
-   *     icon: 'coffee',
+   *     icon: 'mug-saucer',
    *     className: 'hot-coffee',
    *     title: 'coffee.title',
    *     position: 'first'  // can be `first`, `last` or `second-last-hidden`
@@ -824,7 +809,7 @@ class PluginApi {
    *        drinkCoffee(post);
    *        showFeedback('discourse_plugin.coffee.drink');
    *      },
-   *      icon: 'coffee',
+   *      icon: 'mug-saucer',
    *      className: 'hot-coffee',
    *    }
    *  }
@@ -845,7 +830,7 @@ class PluginApi {
    *     action: () => {
    *       alert('You clicked on the coffee button!');
    *     },
-   *     icon: 'coffee',
+   *     icon: 'mug-saucer',
    *     className: 'hot-coffee',
    *     label: 'coffee.title',
    *   };
@@ -869,7 +854,7 @@ class PluginApi {
    *     action: () => {
    *       alert('You clicked on the coffee button!');
    *     },
-   *     icon: 'coffee',
+   *     icon: 'mug-saucer',
    *     className: 'hot-coffee',
    *     label: 'coffee.title',
    *   };
@@ -959,6 +944,7 @@ class PluginApi {
    * @param {Object} opts - An Object.
    * @param {string} opts.icon - The name of the FontAwesome icon to display for the button.
    * @param {string} opts.label - The I18n translation key for the button's label.
+   * @param {string} opts.shortcut - The keyboard shortcut to apply, NOTE: this will unconditionally add CTRL/META key (eg: m means CTRL+m).
    * @param {action} opts.action - The action to perform when the button is clicked.
    * @param {condition} opts.condition - A condition that must be met for the button to be displayed.
    *
@@ -969,6 +955,7 @@ class PluginApi {
    *   },
    *   icon: 'far-bold',
    *   label: 'composer.bold_some_text',
+   *   shortcut: 'm',
    *   condition: (composer) => {
    *     return composer.editingPost;
    *   }
@@ -1104,7 +1091,7 @@ class PluginApi {
    *
    **/
   changeWidgetSetting(widgetName, settingName, newValue) {
-    this.#deprecatedHeaderWidgetOverride(widgetName, "changeWidgetSetting");
+    this.#deprecatedWidgetOverride(widgetName, "changeWidgetSetting");
     changeSetting(widgetName, settingName, newValue);
   }
 
@@ -1138,7 +1125,7 @@ class PluginApi {
    **/
 
   reopenWidget(name, args) {
-    this.#deprecatedHeaderWidgetOverride(name, "reopenWidget");
+    this.#deprecatedWidgetOverride(name, "reopenWidget");
     return reopenWidget(name, args);
   }
 
@@ -1165,16 +1152,12 @@ class PluginApi {
    * and returns a hash of values to pass to attach
    *
    **/
-  addHeaderPanel(name, toggle, transformAttrs) {
-    deprecated(
-      "addHeaderPanel will be removed as part of the glimmer header upgrade. Use api.headerIcons instead.",
-      {
-        id: "discourse.add-header-panel",
-        url: "https://meta.discourse.org/t/296544",
-      }
+  addHeaderPanel() {
+    // eslint-disable-next-line no-console
+    console.error(
+      consolePrefix(),
+      `api.addHeaderPanel: This API was decommissioned. Use api.headerIcons instead.`
     );
-    this.container.lookup("service:header").anyWidgetHeaderOverrides = true;
-    attachAdditionalPanel(name, toggle, transformAttrs);
   }
 
   /**
@@ -2137,19 +2120,12 @@ class PluginApi {
    * ```
    *
    **/
+  // eslint-disable-next-line no-unused-vars
   addToHeaderIcons(icon) {
-    deprecated(
-      "addToHeaderIcons has been deprecated. Use api.headerIcons instead.",
-      {
-        id: "discourse.add-header-icons",
-        url: "https://meta.discourse.org/t/296544",
-      }
-    );
-
-    this.headerIcons.add(
-      icon,
-      <template><MountWidget @widget={{icon}} /></template>,
-      { before: "search" }
+    // eslint-disable-next-line no-console
+    console.error(
+      consolePrefix(),
+      `api.addToHeaderIcons: This API was decommissioned. Use api.headerIcons instead.`
     );
   }
 
@@ -2206,7 +2182,7 @@ class PluginApi {
    *
    * ```
    * api.addQuickAccessProfileItem({
-   *   icon: "pencil-alt",
+   *   icon: "pencil",
    *   href: "/somewhere",
    *   content: I18n.t("user.somewhere")
    * })
@@ -2393,7 +2369,6 @@ class PluginApi {
    *
    */
   forceDropdownForMenuPanels(classNames) {
-    forceDropdownForMenuPanels(classNames);
     glimmerForceDropdownForMenuPanels(classNames);
   }
 
@@ -2672,7 +2647,7 @@ class PluginApi {
   /**
    * Changes the lock icon used for a sidebar category section link to indicate that a category is read restricted.
    *
-   * @param {String} Name of a FontAwesome 5 icon
+   * @param {String} Name of a FontAwesome icon
    */
   registerCustomCategorySectionLinkLockIcon(icon) {
     return registerCustomCategoryLockIcon(icon);
@@ -2696,7 +2671,7 @@ class PluginApi {
    * @param {string} arg.categoryId - The id of the category
    * @param {string} arg.prefixType - The type of prefix to use. Can be "icon", "image", "text" or "span".
    * @param {string} arg.prefixValue - The value of the prefix to use.
-   *                                    For "icon", pass in the name of a FontAwesome 5 icon.
+   *                                    For "icon", pass in the name of a FontAwesome icon.
    *                                    For "image", pass in the src of the image.
    *                                    For "text", pass in the text to display.
    *                                    For "span", pass in an array containing two hex color values. Example: `[FF0000, 000000]`.
@@ -2732,7 +2707,7 @@ class PluginApi {
    *
    * @param {Object} arg - An object
    * @param {string} arg.tagName - The name of the tag
-   * @param {string} arg.prefixValue - The name of a FontAwesome 5 icon.
+   * @param {string} arg.prefixValue - The name of a FontAwesome icon.
    * @param {string} arg.prefixColor - The color represented using hexadecimal to use for the prefix. Example: "#FF0000" or "#FFF".
    */
   registerCustomTagSectionLinkPrefixIcon({
@@ -2890,7 +2865,7 @@ class PluginApi {
    *     }
    *
    *     get actionsIcon() {
-   *       return "cog";
+   *       return "gear";
    *     }
    *
    *     get actions() {
@@ -2969,7 +2944,7 @@ class PluginApi {
    *             return "icon";
    *           }
    *           get hoverValue() {
-   *             return "times";
+   *             return "xmark";
    *           }
    *           get hoverAction() {
    *             return () => {};
@@ -3028,7 +3003,7 @@ class PluginApi {
    *   return class extends UserMenuTab {
    *     id = "custom-tab-id";
    *     panelComponent = MyCustomPanelGlimmerComponent;
-   *     icon = "some-fa5-icon";
+   *     icon = "some-fa-icon";
    *
    *     get shouldDisplay() {
    *       return this.siteSettings.enable_custom_tab && this.currentUser.admin;
@@ -3132,7 +3107,7 @@ class PluginApi {
    * ```
    * api.addBulkActionButton({
    *   label: "super_plugin.bulk.enhance",
-   *   icon: "magic",
+   *   icon: wand-magic,
    *   class: "btn-default",
    *   visible: ({ currentUser, siteSettings }) => siteSettings.super_plugin_enabled && currentUser.staff,
    *   async action({ setComponent }) {
@@ -3238,18 +3213,78 @@ class PluginApi {
     registerAdminPluginConfigNav(pluginId, mode, links);
   }
 
-  #deprecatedHeaderWidgetOverride(widgetName, override) {
-    if (DEPRECATED_HEADER_WIDGETS.includes(widgetName)) {
-      this.container.lookup("service:header").anyWidgetHeaderOverrides = true;
-      deprecated(
-        `The ${widgetName} widget has been deprecated and ${override} is no longer a supported override.`,
-        {
-          since: "v3.3.0.beta1-dev",
-          id: "discourse.header-widget-overrides",
-          url: "https://meta.discourse.org/t/316549",
-        }
-      );
-    }
+  /**
+   * Adds a custom site activity item in the new /about page. Requires using
+   * the `register_stat` server-side API to serialize the needed data to the
+   * frontend.
+   *
+   * ```
+   * api.addAboutPageActivity("released_songs", (periods) => {
+   *   return {
+   *     icon: "guitar",
+   *     class: "released-songs",
+   *     activityText: `${periods["last_year"]} released songs`,
+   *     period: "in the last year",
+   *   };
+   * });
+   * ```
+   *
+   * The above example would require the `register_stat` server-side API to be
+   * used like this:
+   *
+   * ```ruby
+   * register_stat("released_songs", expose_via_api: true) do
+   *   {
+   *     last_year: Songs.where("released_at > ?", 1.year.ago).count,
+   *     last_month: Songs.where("released_at > ?", 1.month.ago).count,
+   *   }
+   * end
+   * ```
+   *
+   * @callback activityItemConfig
+   * @param {Object} periods - an object containing the periods that the block given to the `register_stat` server-side API returns.
+   * @returns {Object} - configuration object for the site activity item. The object must contain the following properties: `icon`, `class`, `activityText` and `period`.
+   *
+   * @param {string} name - a string that matches the string given to the `register_stat` server-side API.
+   * @param {activityItemConfig} func - a callback that returns an object containing properties for the custom site activity item.
+   */
+  addAboutPageActivity(name, func) {
+    addAboutPageActivity(name, func);
+    addLegacyAboutPageStat(name);
+  }
+
+  /**
+   * Registers a component class that will be rendered within the AdminPageHeader component
+   * only on plugins using the AdminPluginConfigPage and the new plugin "show" route.
+   *
+   * This component will be passed an `@actions` argument, with Primary, Default, Danger,
+   * and Wrapped keys, which can be used for various different types of buttons (Wrapped
+   * should be used only in very rare scenarios).
+   *
+   * This component would be used for actions that should be present on the entire UI
+   * for that plugin -- one example is "Create export" for chat.
+   *
+   * @param {string} pluginId - The `dasherizedName` of the plugin using this component.
+   * @param {Class} componentClass - The JS class of the component to render.
+   */
+  registerPluginHeaderActionComponent(pluginId, componentClass) {
+    registerPluginHeaderActionComponent(pluginId, componentClass);
+  }
+
+  // eslint-disable-next-line no-unused-vars
+  #deprecatedWidgetOverride(widgetName, override) {
+    // insert here the code to handle widget deprecations, e.g. for the header widgets we used:
+    // if (DEPRECATED_HEADER_WIDGETS.includes(widgetName)) {
+    //   this.container.lookup("service:header").anyWidgetHeaderOverrides = true;
+    //   deprecated(
+    //     `The ${widgetName} widget has been deprecated and ${override} is no longer a supported override.`,
+    //     {
+    //       since: "v3.3.0.beta1-dev",
+    //       id: "discourse.header-widget-overrides",
+    //       url: "https://meta.discourse.org/t/316549",
+    //     }
+    //   );
+    // }
   }
 }
 

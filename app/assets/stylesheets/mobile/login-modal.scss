@@ -27,6 +27,7 @@
   .login-right-side {
     padding: 1rem 0 0;
     background: unset;
+    max-width: unset;
   }
 
   .login-or-separator {
@@ -94,6 +95,24 @@
     }
   }
   .caps-lock-warning {
+    display: none;
+  }
+}
+
+.d-modal.create-account {
+  .d-modal__footer-buttons {
+    flex-direction: row;
+    gap: 8px;
+    button {
+      width: auto;
+    }
+  }
+
+  .login-welcome-header {
+    padding-bottom: 0.25rem;
+  }
+
+  .signup-progress-bar {
     display: none;
   }
 }

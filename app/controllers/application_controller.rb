@@ -56,8 +56,8 @@ class ApplicationController < ActionController::Base
   after_action :clean_xml, if: :is_feed_response?
   after_action :add_early_hint_header, if: -> { spa_boot_request? }
 
-  HONEYPOT_KEY ||= "HONEYPOT_KEY"
-  CHALLENGE_KEY ||= "CHALLENGE_KEY"
+  HONEYPOT_KEY = "HONEYPOT_KEY"
+  CHALLENGE_KEY = "CHALLENGE_KEY"
 
   layout :set_layout
 
@@ -659,7 +659,7 @@ class ApplicationController < ActionController::Base
             .map do |plugin|
               {
                 name: plugin.name.downcase,
-                admin_route: plugin.admin_route,
+                admin_route: plugin.full_admin_route,
                 enabled: plugin.enabled?,
               }
             end,
@@ -1161,5 +1161,9 @@ class ApplicationController < ActionController::Base
 
   def clean_xml
     response.body.gsub!(XmlCleaner::INVALID_CHARACTERS, "")
+  end
+
+  def service_params
+    params.to_unsafe_h.merge(guardian:)
   end
 end

@@ -41,6 +41,8 @@ class TopicView
     :user_custom_fields,
     :post_custom_fields,
     :post_number,
+    :include_suggested,
+    :include_related,
   )
 
   delegate :category, to: :topic, allow_nil: true, private: true
@@ -50,8 +52,10 @@ class TopicView
     1000
   end
 
+  CHUNK_SIZE = 20
+
   def self.chunk_size
-    20
+    CHUNK_SIZE
   end
 
   def self.default_post_custom_fields
@@ -531,16 +535,19 @@ class TopicView
   def category_group_moderator_user_ids
     @category_group_moderator_user_ids ||=
       begin
-        if SiteSetting.enable_category_group_moderation? &&
-             @topic.category&.reviewable_by_group.present?
+        if SiteSetting.enable_category_group_moderation? && @topic.category.present?
           posts_user_ids = Set.new(@posts.map(&:user_id))
           Set.new(
-            @topic
-              .category
-              .reviewable_by_group
-              .group_users
-              .where(user_id: posts_user_ids)
-              .pluck("distinct user_id"),
+            GroupUser
+              .joins(
+                "INNER JOIN category_moderation_groups ON category_moderation_groups.group_id = group_users.group_id",
+              )
+              .where(
+                "category_moderation_groups.category_id": @topic.category.id,
+                user_id: posts_user_ids,
+              )
+              .distinct
+              .pluck(:user_id),
           )
         else
           Set.new
@@ -644,6 +651,7 @@ class TopicView
               { include_random: true, pm_params: pm_params },
               self,
             )
+
           TopicQuery.new(@user).list_suggested_for(topic, **kwargs)
         end
     else
@@ -744,7 +752,9 @@ class TopicView
         usernames.flatten!
         usernames.uniq!
 
-        users = User.where(username: usernames).includes(:user_status).index_by(&:username)
+        users = User.where(username_lower: usernames)
+        users = users.includes(:user_option, :user_status) if SiteSetting.enable_user_status
+        users = users.index_by(&:username_lower)
 
         mentions.reduce({}) do |hash, (post_id, post_mentioned_usernames)|
           hash[post_id] = post_mentioned_usernames.map { |username| users[username] }.compact
@@ -865,6 +875,29 @@ class TopicView
     Topic.with_deleted.includes(:category).find_by(id: topic_or_topic_id)
   end
 
+  def find_post_replies_ids(post_id)
+    DB.query_single(<<~SQL, post_id: post_id)
+        WITH RECURSIVE breadcrumb(id, reply_to_post_number, topic_id, level) AS (
+          SELECT id, reply_to_post_number, topic_id, 0
+            FROM posts
+          WHERE id = :post_id
+
+          UNION
+
+          SELECT p.id, p.reply_to_post_number, p.topic_id, b.level + 1
+            FROM posts AS p
+              , breadcrumb AS b
+          WHERE b.reply_to_post_number = p.post_number
+            AND b.topic_id = p.topic_id
+            AND b.level < #{SiteSetting.max_reply_history}
+        )
+        SELECT id
+          FROM breadcrumb
+        WHERE id <> :post_id
+      ORDER BY id
+    SQL
+  end
+
   def unfiltered_posts
     result = filter_post_types(@topic.posts)
     result = result.with_deleted if @guardian.can_see_deleted_posts?(@topic.category)
@@ -964,33 +997,23 @@ class TopicView
         )
     end
 
+    # Reply history
+    if @reply_history_for.present?
+      post_ids = find_post_replies_ids(@reply_history_for)
+
+      @filtered_posts = @filtered_posts.where("posts.id IN (:post_ids)", post_ids:)
+      @contains_gaps = true
+    end
+
     # Filtering upwards
     if @filter_upwards_post_id.present?
-      post = Post.find(@filter_upwards_post_id)
-      post_ids = DB.query_single(<<~SQL, post_id: post.id, topic_id: post.topic_id)
-      WITH RECURSIVE breadcrumb(id, reply_to_post_number) AS (
-            SELECT p.id, p.reply_to_post_number FROM posts AS p
-              WHERE p.id = :post_id
-            UNION
-              SELECT p.id, p.reply_to_post_number FROM posts AS p, breadcrumb
-                WHERE breadcrumb.reply_to_post_number = p.post_number
-                  AND p.topic_id = :topic_id
-          )
-      SELECT id from breadcrumb
-      WHERE id <> :post_id
-      ORDER by id
-      SQL
-
-      post_ids = (post_ids[(0 - SiteSetting.max_reply_history)..-1] || post_ids)
-      post_ids.push(post.id)
+      post_ids = find_post_replies_ids(@filter_upwards_post_id) | [@filter_upwards_post_id.to_i]
 
       @filtered_posts =
         @filtered_posts.where(
-          "
-        posts.post_number = 1
-        OR posts.id IN (:post_ids)
-        OR posts.id > :max_post_id",
-          { post_ids: post_ids, max_post_id: post_ids.max },
+          "posts.post_number = 1 OR posts.id IN (:post_ids) OR posts.id > :max_post_id",
+          post_ids:,
+          max_post_id: post_ids.max,
         )
 
       @contains_gaps = true

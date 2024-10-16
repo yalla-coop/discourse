@@ -247,11 +247,13 @@ da:
         activities: "Aktiviteter"
         flags: "Flag"
         symbols: "Symboler"
+        no_results: "Ingen resultater"
       thread:
         title: "Titel"
         replies:
           one: "%{count} svar"
           other: "%{count} svar"
+        label: Tråd
         settings: "Indstillinger"
         last_reply: "seneste svar"
         notifications:
@@ -259,6 +261,8 @@ da:
             title: "Normal"
           tracking:
             title: "Følger"
+          watching:
+            title: "Overvåger"
         participants_other_count:
           one: "+%{count}"
           other: "+%{count}"

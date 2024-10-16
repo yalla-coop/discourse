@@ -14,19 +14,18 @@ module Chat
     class HandleCategoryUpdated
       include Service::Base
 
-      contract
-      step :assign_defaults
-      policy :chat_enabled
-      model :category
-      model :category_channel_ids
-      step :remove_users_without_channel_permission
-      step :publish
-
-      class Contract
+      contract do
         attribute :category_id, :integer
 
         validates :category_id, presence: true
       end
+      step :assign_defaults
+      policy :chat_enabled
+      model :category
+      model :category_channel_ids
+      model :users
+      step :remove_users_without_channel_permission
+      step :publish
 
       private
 
@@ -46,18 +45,21 @@ module Chat
         Chat::Channel.where(chatable: category).pluck(:id)
       end
 
-      def remove_users_without_channel_permission(category_channel_ids:)
+      def fetch_users(category_channel_ids:)
+        User
+          .real
+          .activated
+          .not_suspended
+          .not_staged
+          .joins(:user_chat_channel_memberships)
+          .where("user_chat_channel_memberships.chat_channel_id IN (?)", category_channel_ids)
+          .where("NOT admin AND NOT moderator")
+      end
+
+      def remove_users_without_channel_permission(users:, category_channel_ids:)
         memberships_to_remove =
           Chat::Action::CalculateMembershipsForRemoval.call(
-            scoped_users_query:
-              User
-                .real
-                .activated
-                .not_suspended
-                .not_staged
-                .joins(:user_chat_channel_memberships)
-                .where("user_chat_channel_memberships.chat_channel_id IN (?)", category_channel_ids)
-                .where("NOT admin AND NOT moderator"),
+            scoped_users_query: users,
             channel_ids: category_channel_ids,
           )
 

@@ -1,11 +1,14 @@
 import { tracked } from "@glimmer/tracking";
 import { warn } from "@ember/debug";
 import EmberObject from "@ember/object";
-import { setOwner } from "@ember/owner";
+import { getOwner, setOwner } from "@ember/owner";
 import { service } from "@ember/service";
 import Uppy from "@uppy/core";
+import XHRUpload from "@uppy/xhr-upload";
 import { isVideo } from "discourse/lib/uploads";
+import UppyS3Multipart from "discourse/lib/uppy/s3-multipart";
 import UppyUploadMixin from "discourse/mixins/uppy-upload";
+import getUrl from "discourse-common/helpers/get-url";
 import I18n from "discourse-i18n";
 
 // It is not ideal that this is a class extending a mixin, but in the case
@@ -32,11 +35,14 @@ export default class ComposerVideoThumbnailUppy extends EmberObject.extend(
   uploadTargetBound = false;
   useUploadPlaceholders = true;
   capabilities = null;
+  id = "composer-video";
+  uploadDone = () => {};
 
   constructor(owner) {
     super(...arguments);
     this.capabilities = owner.lookup("service:capabilities");
     setOwner(this, owner);
+    this.init();
   }
 
   generateVideoThumbnail(videoFile, uploadUrl, callback) {
@@ -70,14 +76,25 @@ export default class ComposerVideoThumbnailUppy extends EmberObject.extend(
     video[eventName] = () => {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
 
       // A timeout is needed on mobile.
       setTimeout(() => {
+        // If dimensions can't be read, abort.
+        if (video.videoWidth === 0) {
+          return callback();
+        }
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
         ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+
         // Detect Empty Thumbnail
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(
+          0,
+          0,
+          video.videoWidth,
+          video.videoHeight
+        );
         const data = imageData.data;
 
         let isEmpty = true;
@@ -102,13 +119,27 @@ export default class ComposerVideoThumbnailUppy extends EmberObject.extend(
             });
 
             if (this.siteSettings.enable_upload_debug_mode) {
-              this._instrumentUploadTimings();
+              this.uppyUpload.uppyWrapper.debug.instrumentUploadTimings(
+                this._uppyInstance
+              );
             }
 
             if (this.siteSettings.enable_direct_s3_uploads) {
-              this._useS3MultipartUploads();
+              new UppyS3Multipart(getOwner(this), {
+                uploadRootPath: this.uploadRootPath,
+                uppyWrapper: this.uppyUpload.uppyWrapper,
+                errorHandler: this._handleUploadError,
+              }).apply(this._uppyInstance);
             } else {
-              this._useXHRUploads();
+              this._uppyInstance.use(XHRUpload, {
+                endpoint:
+                  getUrl("/uploads") +
+                  ".json?client_id=" +
+                  this.messageBus?.clientId,
+                headers: () => ({
+                  "X-CSRF-Token": this.session.csrfToken,
+                }),
+              });
             }
 
             this._uppyInstance.on("upload", () => {
@@ -150,6 +181,14 @@ export default class ComposerVideoThumbnailUppy extends EmberObject.extend(
           callback();
         }
       }, 100);
+    };
+
+    video.onerror = () => {
+      // eslint-disable-next-line no-console
+      console.warn(
+        "Video could not be loaded or decoded for thumbnail generation"
+      );
+      callback();
     };
   }
 }

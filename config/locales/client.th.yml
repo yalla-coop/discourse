@@ -108,7 +108,6 @@ th:
       topic_html: 'กระทู้: <span class="topic-title">%{topicTitle}</span>'
       post: "โพสต์ #%{postNumber} โดย @%{username}"
       close: "ปิด"
-      twitter: "แชร์บนทวิตเตอร์"
       facebook: "แชร์บนเฟสบุ๊ค"
       email: "ส่งทางอีเมล"
       url: "คัดลอกและแชร์ URL"
@@ -240,7 +239,6 @@ th:
       like_count: "ถูกใจ"
       topic_count: "กระทู้"
       post_count: "โพสต์"
-      contact_info: "ในกรณีที่เกิดเหตุฉุกเฉินหรือประเด็นสำคัญที่ส่งผลต่อเว็บไซต์นี้ กรุณาติดต่อเราที่ %{contact_info}"
       activities:
         topics:
           other: "%{formatted_number} กระทู้"
@@ -924,7 +922,6 @@ th:
         destroy: "ลบอีเมล"
         add_email: "เพิ่มอีเมลสำรอง"
         no_secondary: "ไม่มีอีเมลสำรอง"
-        instructions: "ไม่แสดงเป็นสาธารณะ"
         ok: "เราจะส่งอีเมลไปหาคุณเพื่อยืนยัน"
         required: "กรุณากรอกที่อยู่อีเมล"
         invalid: "กรุณาใส่อีเมลที่ถูกต้อง"
@@ -942,8 +939,8 @@ th:
         welcome_to: "ยินดีต้อนรับสู่ %{site_name}!"
       name:
         title: "ชื่อ"
-        instructions: "ชื่อเต็มของคุณ (ไม่บังคับ)."
-        instructions_required: "ชื่อเต็มของคุณ."
+        instructions: "ชื่อเต็มของคุณ (ไม่บังคับ)"
+        instructions_required: "ชื่อเต็มของคุณ"
         required: "กรุณากรอกชื่อ"
         too_short: "ชื่อของคุณสั้นไป"
         ok: "ชื่อของคุณเหมาะสม"
@@ -1085,7 +1082,7 @@ th:
         same_as_email: "รหัสผ่านเหมือนกับอีเมลของคุณ"
         ok: "รหัสผ่านของคุณเหมาะสม"
         instructions:
-          other: "อย่างน้อย %{count} ตัวอักษร."
+          other: "อย่างน้อย %{count} ตัวอักษร"
         required: "กรุณากรอกรหัสผ่าน"
       summary:
         title: "สรุปภาพรวม"
@@ -1225,6 +1222,10 @@ th:
       disclaimer: "เมื่อลงทะเบียน คุณได้ยอมรับ <a href='%{privacy_link}' target='blank'>นโยบายความเป็นส่วนตัว</a> และ <a href='%{tos_link}' target='blank'> เงื่อนไขการบริการ</a>"
       title: "สมัคร"
       failed: "มีบางอย่างผิดพลาด อีเมลนี้อาจถูกลงทะเบียนไว้แล้ว กดลิงก์หากลืมรหัสผ่าน"
+      progress_bar:
+        signup: "สมัคร"
+        approve: "อนุมัติ"
+        login: "เข้าสู่ระบบ"
     forgot_password:
       title: "รีเซ็ตรหัสผ่าน"
       action: "ฉันลืมรหัสผ่าน"
@@ -2515,6 +2516,7 @@ th:
         show: "แสดง"
         about: "เกี่ยวกับ"
   admin_js:
+    settings: "การตั้งค่า"
     admin:
       title: "ผู้ดูแลระบบดิสคอส"
       moderator: "ผู้ดูแล"
@@ -2533,6 +2535,7 @@ th:
         updates_available: "มีการอัปเดต"
         installed_version: "ติดตั้งแล้ว"
         latest_version: "ล่าสุด"
+        dismiss_notice: "ซ่อน"
         new_features:
           learn_more: "เรียนรู้เพิ่มเติม..."
         last_checked: "ตรวจล่าสุด"
@@ -2688,9 +2691,11 @@ th:
           rejected: "ถูกปฏิเสธ"
       security:
         title: "ความปลอดภัย"
-        sidebar_link:
-          security: "ความปลอดภัย"
-          spam: "ขยะ"
+      section_landing_pages:
+        account:
+          title: "บัญชี"
+          backups:
+            title: "สำรอง"
       config_areas:
         about:
           optional: "(ทางเลือก)"
@@ -2702,6 +2707,7 @@ th:
           edit: "แก้ไข"
           delete: "ลบ"
           delete_confirm: 'คุณแน่ใจหรือว่าต้องการลบ "%{name}"'
+          flags_tab: "ธง"
           form:
             save: "บันทึก"
             name: "ชื่อ"
@@ -2711,7 +2717,6 @@ th:
             post: "โพสต์"
       plugins:
         title: "ปลั้กอิน"
-        installed: "ปลั้กอินที่ติดตั้งแล้ว"
         name: "ชื่อ"
         none_installed: "คุณยังไม่มีปลั้กอินใดๆติดตั้ง"
         version: "เวอร์ชัน"
@@ -3270,8 +3275,6 @@ th:
             with_post: <span class="username">%{username}</span> สำหรับโพสต์ใน %{link}
             with_post_time: <span class="username">%{username}</span> สำหรับโพสต์ใน %{link} เมื่อ <span class="time">%{time}</span>
             with_time: <span class="username">%{username}</span> เมื่อ <span class="time">%{time}</span>
-        badge_intro:
-          what_are_badges_title: "เหรียญคืออะไร"
         mass_award:
           replace_owners: ลบเหรียญจากผู้ใช้ก่อนหน้านี้
       emoji:

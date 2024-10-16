@@ -62,12 +62,7 @@ export default class ChatRouteChannelInfoSettings extends Component {
     "chat.settings.channel_wide_mentions_label"
   );
   autoJoinLabel = I18n.t("chat.settings.auto_join_users_label");
-  desktopNotificationsLevelLabel = I18n.t(
-    "chat.settings.desktop_notification_level"
-  );
-  mobileNotificationsLevelLabel = I18n.t(
-    "chat.settings.mobile_notification_level"
-  );
+  notificationsLevelLabel = I18n.t("chat.settings.notification_level");
 
   get canEditChannel() {
     if (
@@ -103,8 +98,12 @@ export default class ChatRouteChannelInfoSettings extends Component {
     return this.args.channel.isCategoryChannel && this.args.channel.isOpen;
   }
 
-  get toggleThreadingAvailable() {
+  get toggleThreadingCategoryChannel() {
     return this.args.channel.isCategoryChannel && this.args.channel.isOpen;
+  }
+
+  get toggleThreadingDirectMessage() {
+    return this.args.channel.isDirectMessageChannel && this.args.channel.isOpen;
   }
 
   get channelWideMentionsDescription() {
@@ -121,11 +120,7 @@ export default class ChatRouteChannelInfoSettings extends Component {
     return this.args.channel.isCategoryChannel;
   }
 
-  get shouldRenderDesktopNotificationsLevelSection() {
-    return !this.isChannelMuted;
-  }
-
-  get shouldRenderMobileNotificationsLevelSection() {
+  get shouldRenderNotificationsLevelSection() {
     return !this.isChannelMuted;
   }
 
@@ -412,39 +407,43 @@ export default class ChatRouteChannelInfoSettings extends Component {
                 </:action>
               </section.row>
 
-              {{#if this.shouldRenderDesktopNotificationsLevelSection}}
-                <section.row @label={{this.desktopNotificationsLevelLabel}}>
+              {{#if this.shouldRenderNotificationsLevelSection}}
+                <section.row @label={{this.notificationsLevelLabel}}>
                   <:action>
                     <ComboBox
                       @content={{this.notificationLevels}}
-                      @value={{@channel.currentUserMembership.desktopNotificationLevel}}
+                      @value={{@channel.currentUserMembership.notificationLevel}}
                       @valueProperty="value"
                       @onChange={{fn
                         this.saveNotificationSettings
-                        "desktopNotificationLevel"
-                        "desktop_notification_level"
+                        "notificationLevel"
+                        "notification_level"
                       }}
-                      class="c-channel-settings__selector c-channel-settings__desktop-notifications-selector"
+                      class="c-channel-settings__selector c-channel-settings__notifications-selector"
                     />
                   </:action>
                 </section.row>
               {{/if}}
 
-              {{#if this.shouldRenderMobileNotificationsLevelSection}}
-                <section.row @label={{this.mobileNotificationsLevelLabel}}>
+              {{#if this.toggleThreadingDirectMessage}}
+                <section.row @label={{this.toggleThreadingLabel}}>
                   <:action>
-                    <ComboBox
-                      @content={{this.notificationLevels}}
-                      @value={{@channel.currentUserMembership.mobileNotificationLevel}}
-                      @valueProperty="value"
-                      @onChange={{fn
-                        this.saveNotificationSettings
-                        "mobileNotificationLevel"
-                        "mobile_notification_level"
+                    <DToggleSwitch
+                      @state={{@channel.threadingEnabled}}
+                      class="c-channel-settings__threading-switch"
+                      {{on
+                        "click"
+                        (fn
+                          this.onToggleThreadingEnabled
+                          @channel.threadingEnabled
+                        )
                       }}
-                      class="c-channel-settings__selector c-channel-settings__mobile-notifications-selector"
                     />
                   </:action>
+
+                  <:description>
+                    {{this.toggleThreadingDescription}}
+                  </:description>
                 </section.row>
               {{/if}}
             </form.section>
@@ -509,7 +508,7 @@ export default class ChatRouteChannelInfoSettings extends Component {
                 </section.row>
               {{/if}}
 
-              {{#if this.toggleThreadingAvailable}}
+              {{#if this.toggleThreadingCategoryChannel}}
                 <section.row @label={{this.toggleThreadingLabel}}>
                   <:action>
                     <DToggleSwitch
@@ -538,7 +537,7 @@ export default class ChatRouteChannelInfoSettings extends Component {
                       <DButton
                         @action={{this.onArchiveChannel}}
                         @label="chat.channel_settings.archive_channel"
-                        @icon="archive"
+                        @icon="box-archive"
                         class="archive-btn chat-form__btn btn-transparent"
                       />
                     </:action>
@@ -570,7 +569,7 @@ export default class ChatRouteChannelInfoSettings extends Component {
                     <DButton
                       @action={{this.onDeleteChannel}}
                       @label="chat.channel_settings.delete_channel"
-                      @icon="trash-alt"
+                      @icon="trash-can"
                       class="delete-btn chat-form__btn btn-transparent"
                     />
                   </:action>
@@ -583,7 +582,7 @@ export default class ChatRouteChannelInfoSettings extends Component {
           <form.section class="--leave-channel" as |section|>
             {{#if @channel.chatable.group}}
               <div class="c-channel-settings__leave-info">
-                {{icon "exclamation-triangle"}}
+                {{icon "triangle-exclamation"}}
                 {{i18n "chat.channel_settings.leave_groupchat_info"}}
               </div>
             {{/if}}
@@ -595,8 +594,8 @@ export default class ChatRouteChannelInfoSettings extends Component {
                   @options={{hash
                     joinClass="btn-primary"
                     leaveClass="btn-danger"
-                    joinIcon="sign-in-alt"
-                    leaveIcon="sign-out-alt"
+                    joinIcon="right-to-bracket"
+                    leaveIcon="right-from-bracket"
                   }}
                 />
               </:action>

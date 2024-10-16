@@ -2,8 +2,6 @@
 
 module Chat
   class IncomingWebhooksController < ::ApplicationController
-    include WithServiceHelper
-
     requires_plugin Chat::PLUGIN_NAME
 
     WEBHOOK_MESSAGES_PER_MINUTE_LIMIT = 10
@@ -57,12 +55,13 @@ module Chat
       webhook = find_and_rate_limit_webhook(key)
       webhook.chat_channel.add(Discourse.system_user)
 
-      with_service(
-        Chat::CreateMessage,
-        chat_channel_id: webhook.chat_channel_id,
-        guardian: Discourse.system_user.guardian,
-        message: text,
-        incoming_chat_webhook: webhook,
+      Chat::CreateMessage.call(
+        service_params.merge(
+          chat_channel_id: webhook.chat_channel_id,
+          guardian: Discourse.system_user.guardian,
+          message: text,
+          incoming_chat_webhook: webhook,
+        ),
       ) do
         on_success { render json: success_json }
         on_failure { render(json: failed_json, status: 422) }

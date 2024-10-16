@@ -100,16 +100,20 @@ export default class AdminFlagItem extends Component {
       message: i18n("admin.config_areas.flags.delete_confirm", {
         name: this.args.flag.name,
       }),
-      didConfirm: () => {
-        this.args.deleteFlagCallback(this.args.flag).finally(() => {
+      didConfirm: async () => {
+        try {
+          await this.args.deleteFlagCallback(this.args.flag);
           this.isSaved = true;
-        });
+          this.dMenu.close();
+        } catch (error) {
+          popupAjaxError(error);
+        }
       },
       didCancel: () => {
         this.isSaved = true;
+        this.dMenu.close();
       },
     });
-    this.dMenu.close();
   }
 
   <template>
@@ -127,15 +131,17 @@ export default class AdminFlagItem extends Component {
           }}</p>
       </td>
       <td>
-        <div class="admin-flag-item__options">
-          <DToggleSwitch
-            @state={{this.enabled}}
-            class="admin-flag-item__toggle {{@flag.name_key}}"
-            {{on "click" (fn this.toggleFlagEnabled @flag)}}
-          />
+        <DToggleSwitch
+          @state={{this.enabled}}
+          class="admin-flag-item__toggle {{@flag.name_key}}"
+          {{on "click" (fn this.toggleFlagEnabled @flag)}}
+        />
+      </td>
+      <td>
+        <div class="admin-flag-item__options admin-table-row-controls">
 
           <DButton
-            class="btn btn-secondary admin-flag-item__edit"
+            class="btn-small admin-flag-item__edit"
             @action={{this.edit}}
             @label="admin.config_areas.flags.edit"
             @disabled={{not this.canEdit}}
@@ -146,7 +152,7 @@ export default class AdminFlagItem extends Component {
             <DMenu
               @identifier="flag-menu"
               @title={{i18n "admin.config_areas.flags.more_options.title"}}
-              @icon="ellipsis-v"
+              @icon="ellipsis-vertical"
               @onRegisterApi={{this.onRegisterApi}}
             >
               <:content>
@@ -175,7 +181,7 @@ export default class AdminFlagItem extends Component {
                   <dropdown.item>
                     <DButton
                       @label="admin.config_areas.flags.delete"
-                      @icon="trash-alt"
+                      @icon="trash-can"
                       class="btn-transparent admin-flag-item__delete"
                       @action={{this.delete}}
                       @disabled={{not this.canEdit}}

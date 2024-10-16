@@ -10,8 +10,10 @@ import {
 } from "@ember/test-helpers";
 import { test } from "qunit";
 import sinon from "sinon";
+import { PLATFORM_KEY_MODIFIER } from "discourse/lib/keyboard-shortcuts";
 import LinkLookup from "discourse/lib/link-lookup";
 import { withPluginApi } from "discourse/lib/plugin-api";
+import { translateModKey } from "discourse/lib/utilities";
 import Composer, {
   CREATE_TOPIC,
   NEW_TOPIC_KEY,
@@ -299,10 +301,9 @@ acceptance("Composer", function (needs) {
     await fillIn(".d-editor-input", "custom message that is a good length");
     await click("#reply-control button.create");
 
-    assert.strictEqual(
-      query("#dialog-holder .dialog-body").innerText,
-      "This is a custom response"
-    );
+    assert
+      .dom("#dialog-holder .dialog-body")
+      .hasText("This is a custom response");
     assert.strictEqual(currentURL(), "/", "it doesn't change routes");
 
     await click(".dialog-footer .btn-primary");
@@ -330,26 +331,23 @@ acceptance("Composer", function (needs) {
 
     await fillIn(".d-editor-input", "this is the content of my reply");
     await click("#reply-control button.create");
-    assert.strictEqual(
-      query(".topic-post:last-of-type .cooked p").innerText,
-      "this is the content of my reply"
-    );
+    assert
+      .dom(".topic-post:last-of-type .cooked p")
+      .hasText("this is the content of my reply");
   });
 
   test("Replying to the first post in a topic is a topic reply", async function (assert) {
     await visit("/t/internationalization-localization/280");
 
     await click("#post_1 .reply.create");
-    assert.strictEqual(
-      query(".reply-details a.topic-link").innerText,
-      "Internationalization / localization"
-    );
+    assert
+      .dom(".reply-details a.topic-link")
+      .hasText("Internationalization / localization");
 
     await click("#post_1 .reply.create");
-    assert.strictEqual(
-      query(".reply-details a.topic-link").innerText,
-      "Internationalization / localization"
-    );
+    assert
+      .dom(".reply-details a.topic-link")
+      .hasText("Internationalization / localization");
   });
 
   test("Can edit a post after starting a reply", async function (assert) {
@@ -418,10 +416,11 @@ acceptance("Composer", function (needs) {
     assert.ok(visible(".reply-where-modal"), "it pops up a modal");
 
     await click(".btn-reply-here");
-    assert.strictEqual(
-      query(".topic-post:last-of-type .cooked p").innerText,
-      "If you use gettext format you could leverage Launchpad 13 translations and the community behind it."
-    );
+    assert
+      .dom(".topic-post:last-of-type .cooked p")
+      .hasText(
+        "If you use gettext format you could leverage Launchpad 13 translations and the community behind it."
+      );
   });
 
   test("Discard draft modal works when switching topics", async function (assert) {
@@ -471,7 +470,7 @@ acceptance("Composer", function (needs) {
     });
 
     await visit("/t/internationalization-localization/280");
-    assert.ok(!exists(".pending-posts .reviewable-item"));
+    assert.dom(".pending-posts .reviewable-item").doesNotExist();
 
     await click("#topic-footer-buttons .btn.create");
     assert.ok(exists(".d-editor-input"), "the composer input is visible");
@@ -491,7 +490,7 @@ acceptance("Composer", function (needs) {
 
     await click(".d-modal__footer button");
     assert.ok(invisible(".d-modal"), "the modal can be dismissed");
-    assert.ok(exists(".pending-posts .reviewable-item"));
+    assert.dom(".pending-posts .reviewable-item").exists();
   });
 
   test("Edit the first post", async function (assert) {
@@ -618,7 +617,7 @@ acceptance("Composer", function (needs) {
     await click(".topic-post:nth-of-type(1) button.reply");
 
     await menu.expand();
-    await menu.selectRowByName(I18n.t("composer.toggle_whisper"));
+    await menu.selectRowByName("toggle-whisper");
 
     assert.strictEqual(
       count(".composer-actions svg.d-icon-far-eye-slash"),
@@ -627,7 +626,7 @@ acceptance("Composer", function (needs) {
     );
 
     await menu.expand();
-    await menu.selectRowByName(I18n.t("composer.toggle_whisper"));
+    await menu.selectRowByName("toggle-whisper");
 
     assert.ok(
       !exists(".composer-actions svg.d-icon-far-eye-slash"),
@@ -635,14 +634,14 @@ acceptance("Composer", function (needs) {
     );
 
     await menu.expand();
-    await menu.selectRowByName(I18n.t("composer.toggle_whisper"));
+    await menu.selectRowByName("toggle-whisper");
 
     await click(".toggle-fullscreen");
 
     await menu.expand();
 
     assert.ok(
-      menu.rowByName(I18n.t("composer.toggle_whisper")).exists(),
+      menu.rowByName("toggle-whisper").exists(),
       "whisper toggling is still present when going fullscreen"
     );
   });
@@ -732,7 +731,7 @@ acceptance("Composer", function (needs) {
     await selectKit(".toolbar-popup-menu-options").expand();
 
     await selectKit(".toolbar-popup-menu-options").selectRowByName(
-      I18n.t("composer.toggle_whisper")
+      "toggle-whisper"
     );
 
     assert.strictEqual(
@@ -752,7 +751,7 @@ acceptance("Composer", function (needs) {
 
     await selectKit(".toolbar-popup-menu-options").expand();
     await selectKit(".toolbar-popup-menu-options").selectRowByName(
-      I18n.t("composer.toggle_unlisted")
+      "toggle-invisible"
     );
 
     assert.ok(
@@ -813,11 +812,12 @@ acceptance("Composer", function (needs) {
       "it pops up a confirmation dialog"
     );
     assert.ok(invisible(".d-modal__footer button.save-draft"));
-    assert.strictEqual(
-      query(".d-modal__footer button.keep-editing").innerText.trim(),
-      I18n.t("post.cancel_composer.keep_editing"),
-      "has keep editing button"
-    );
+    assert
+      .dom(".d-modal__footer button.keep-editing")
+      .hasText(
+        I18n.t("post.cancel_composer.keep_editing"),
+        "has keep editing button"
+      );
     await click(".d-modal__footer button.discard-draft");
     assert.ok(
       query(".d-editor-input").value.startsWith("This is the second post."),
@@ -838,16 +838,18 @@ acceptance("Composer", function (needs) {
       exists(".discard-draft-modal.modal"),
       "it pops up a confirmation dialog"
     );
-    assert.strictEqual(
-      query(".d-modal__footer button.save-draft").innerText.trim(),
-      I18n.t("post.cancel_composer.save_draft"),
-      "has save draft button"
-    );
-    assert.strictEqual(
-      query(".d-modal__footer button.keep-editing").innerText.trim(),
-      I18n.t("post.cancel_composer.keep_editing"),
-      "has keep editing button"
-    );
+    assert
+      .dom(".d-modal__footer button.save-draft")
+      .hasText(
+        I18n.t("post.cancel_composer.save_draft"),
+        "has save draft button"
+      );
+    assert
+      .dom(".d-modal__footer button.keep-editing")
+      .hasText(
+        I18n.t("post.cancel_composer.keep_editing"),
+        "has keep editing button"
+      );
     await click(".d-modal__footer button.save-draft");
     assert.strictEqual(
       query(".d-editor-input").value,
@@ -864,10 +866,7 @@ acceptance("Composer", function (needs) {
     await click(".topic-post:nth-of-type(1) button.show-more-actions");
     await click(".topic-post:nth-of-type(1) button.edit");
 
-    assert.strictEqual(
-      query(".dialog-body").innerText,
-      I18n.t("drafts.abandon.confirm")
-    );
+    assert.dom(".dialog-body").hasText(I18n.t("drafts.abandon.confirm"));
 
     await click(".dialog-footer .btn-resume-editing");
   });
@@ -938,30 +937,27 @@ acceptance("Composer", function (needs) {
 
     sinon.stub(Draft, "get").resolves({
       draft:
-        '{"reply":"Hey there","action":"createTopic","title":"Draft topic","categoryId":2,"tags":["fun", "times"],"archetypeId":"regular","metaData":null,"composerTime":25269,"typingTime":8100}',
+        '{"reply":"Hey there","action":"createTopic","title":"Draft topic","categoryId":2,"tags":["fun", "xmark"],"archetypeId":"regular","metaData":null,"composerTime":25269,"typingTime":8100}',
       draft_sequence: 0,
       draft_key: NEW_TOPIC_KEY,
     });
 
     await visit("/latest");
-    assert.strictEqual(
-      query("#create-topic").innerText.trim(),
-      I18n.t("topic.open_draft")
-    );
+    assert.dom("#create-topic").hasText(I18n.t("topic.open_draft"));
 
     await click("#create-topic");
     assert.strictEqual(selectKit(".category-chooser").header().value(), "2");
     assert.strictEqual(
       selectKit(".mini-tag-chooser").header().value(),
-      "fun,times"
+      "fun,xmark"
     );
   });
 
   test("Deleting the text content of the first post in a private message", async function (assert) {
     await visit("/t/34");
 
-    await click("#post_1 .d-icon-ellipsis-h");
-    await click("#post_1 .d-icon-pencil-alt");
+    await click("#post_1 .d-icon-ellipsis");
+    await click("#post_1 .d-icon-pencil");
     await fillIn(".d-editor-input", "");
 
     assert.strictEqual(
@@ -974,11 +970,9 @@ acceptance("Composer", function (needs) {
   test("reply button has envelope icon when replying to private message", async function (assert) {
     await visit("/t/34");
     await click("article#post_3 button.reply");
-    assert.strictEqual(
-      query(".save-or-cancel button.create").innerText.trim(),
-      I18n.t("composer.create_pm"),
-      "reply button says Message"
-    );
+    assert
+      .dom(".save-or-cancel button.create")
+      .hasText(I18n.t("composer.create_pm"), "reply button says Message");
     assert.strictEqual(
       count(".save-or-cancel button.create svg.d-icon-envelope"),
       1,
@@ -991,13 +985,11 @@ acceptance("Composer", function (needs) {
     await click("article#post_3 button.show-more-actions");
     await click("article#post_3 button.edit");
 
+    assert
+      .dom(".save-or-cancel button.create")
+      .hasText(I18n.t("composer.save_edit"), "save button says Save Edit");
     assert.strictEqual(
-      query(".save-or-cancel button.create").innerText.trim(),
-      I18n.t("composer.save_edit"),
-      "save button says Save Edit"
-    );
-    assert.strictEqual(
-      count(".save-or-cancel button.create svg.d-icon-pencil-alt"),
+      count(".save-or-cancel button.create svg.d-icon-pencil"),
       1,
       "save button has pencil icon"
     );
@@ -1020,10 +1012,10 @@ acceptance("Composer", function (needs) {
     );
 
     await fillIn(".d-editor-input", "[](https://discourse.org)");
-    assert.ok(!exists(".composer-popup"));
+    assert.dom(".composer-popup").doesNotExist();
 
     await fillIn(".d-editor-input", "[quote][](https://github.com)[/quote]");
-    assert.ok(!exists(".composer-popup"));
+    assert.dom(".composer-popup").doesNotExist();
 
     await fillIn(".d-editor-input", "[](https://github.com)");
     assert.strictEqual(count(".composer-popup"), 1);
@@ -1051,7 +1043,7 @@ acceptance("Composer", function (needs) {
     await fillIn("#reply-title", "Something");
     await fillIn(".d-editor-input", "Something");
     await click(".save-or-cancel .cancel");
-    assert.notOk(exists(".discard-draft-modal .save-draft"));
+    assert.dom(".discard-draft-modal .save-draft").doesNotExist();
   });
 
   test("Saves drafts that only contain quotes", async function (assert) {
@@ -1061,7 +1053,7 @@ acceptance("Composer", function (needs) {
     await fillIn(".d-editor-input", "[quote]some quote[/quote]");
 
     await click(".save-or-cancel .cancel");
-    assert.ok(exists(".discard-draft-modal .save-draft"));
+    assert.dom(".discard-draft-modal .save-draft").exists();
   });
 });
 
@@ -1097,22 +1089,15 @@ acceptance("Composer - Customizations", function (needs) {
   test("Supports text customization", async function (assert) {
     await visit("/");
     await click("#create-topic");
-    assert.strictEqual(
-      query(".action-title").innerText,
-      I18n.t("topic.create_long")
-    );
-    assert.strictEqual(
-      query(".save-or-cancel button").innerText,
-      I18n.t("composer.create_topic")
-    );
+    assert.dom(".action-title").hasText(I18n.t("topic.create_long"));
+    assert
+      .dom(".save-or-cancel button")
+      .hasText(I18n.t("composer.create_topic"));
     const tags = selectKit(".mini-tag-chooser");
     await tags.expand();
     await tags.selectRowByValue("monkey");
-    assert.strictEqual(query(".action-title").innerText, "custom text");
-    assert.strictEqual(
-      query(".save-or-cancel button").innerText,
-      I18n.t("composer.emoji")
-    );
+    assert.dom(".action-title").hasText("custom text");
+    assert.dom(".save-or-cancel button").hasText(I18n.t("composer.emoji"));
   });
 });
 
@@ -1402,6 +1387,93 @@ acceptance("composer buttons API", function (needs) {
   needs.user();
   needs.settings({
     allow_uncategorized_topics: true,
+  });
+
+  test("buttons can support a shortcut", async function (assert) {
+    withPluginApi("0", (api) => {
+      api.addComposerToolbarPopupMenuOption({
+        action: (toolbarEvent) => {
+          toolbarEvent.applySurround("**", "**");
+        },
+        shortcut: "alt+b",
+        icon: "far-bold",
+        name: "bold",
+        title: "some_title",
+        label: "some_label",
+
+        condition: () => {
+          return true;
+        },
+      });
+    });
+
+    await visit("/t/internationalization-localization/280");
+    await click(".post-controls button.reply");
+    await fillIn(".d-editor-input", "hello the world");
+
+    const editor = document.querySelector(".d-editor-input");
+    editor.setSelectionRange(6, 9); // select the text input in the composer
+
+    await triggerKeyEvent(
+      ".d-editor-input",
+      "keydown",
+      "B",
+      Object.assign({ altKey: true }, metaModifier)
+    );
+
+    assert.strictEqual(editor.value, "hello **the** world", "it adds the bold");
+
+    const dropdown = selectKit(".toolbar-popup-menu-options");
+    await dropdown.expand();
+
+    const row = dropdown.rowByName("bold").el();
+    assert
+      .dom(row)
+      .hasAttribute(
+        "title",
+        I18n.t("some_title") +
+          ` (${translateModKey(PLATFORM_KEY_MODIFIER + "+alt+b")})`,
+        "it shows the title with shortcut"
+      );
+    assert
+      .dom(row)
+      .hasText(
+        I18n.t("some_label") +
+          ` ${translateModKey(PLATFORM_KEY_MODIFIER + "+alt+b")}`,
+        "it shows the label with shortcut"
+      );
+  });
+
+  test("buttons can support a shortcut that triggers a custom action", async function (assert) {
+    withPluginApi("1.37.1", (api) => {
+      api.onToolbarCreate((toolbar) => {
+        toolbar.addButton({
+          id: "smile",
+          group: "extras",
+          icon: "far-face-smile",
+          shortcut: "ALT+S",
+          shortcutAction: (toolbarEvent) => {
+            toolbarEvent.addText(":smile: from keyboard");
+          },
+          sendAction: (event) => {
+            event.addText(":smile: from click");
+          },
+        });
+      });
+    });
+
+    await visit("/t/internationalization-localization/280");
+    await click(".post-controls button.reply");
+
+    const editor = document.querySelector(".d-editor-input");
+    await triggerKeyEvent(
+      ".d-editor-input",
+      "keydown",
+      "S",
+      Object.assign({ altKey: true }, metaModifier)
+    );
+
+    assert.dom(editor).hasValue(":smile: from keyboard");
   });
 
   test("buttons can be added conditionally", async function (assert) {

@@ -17,6 +17,7 @@ module Jobs
         # never: 0, mention: 1, always: 2
         never_notification_level = 0
 
+        always_notification_level = ::Chat::UserChatChannelMembership::NOTIFICATION_LEVELS[:always]
         members =
           ::Chat::UserChatChannelMembership
             .includes(user: :groups)
@@ -24,6 +25,12 @@ module Jobs
             .where(user_option: { chat_enabled: true })
             .where(chat_channel_id: @chat_channel.id)
             .where(following: true)
+            .where(
+              "notification_level = :always OR users.id IN (SELECT user_id FROM user_chat_thread_memberships WHERE thread_id = :thread_id AND notification_level = :watching)",
+              always: always_notification_level,
+              thread_id: @chat_message.thread_id,
+              watching: ::Chat::NotificationLevels.all[:watching],
+            )
             .merge(User.not_suspended)
             .where("mobile_notification_level != ?", never_notification_level)
 
@@ -93,9 +100,21 @@ module Jobs
           tag: ::Chat::Notifier.push_notification_tag(:message, @chat_channel.id),
           excerpt: @chat_message.push_notification_excerpt,
           channel_id: @chat_channel.id,
+          is_direct_message_channel: @is_direct_message_channel,
         }
 
-        if membership.desktop_notifications_always? && !membership.muted?
+        if @chat_message.in_thread? && !membership.muted?
+          thread_membership =
+            ::Chat::UserChatThreadMembership.find_by(
+              user_id: user.id,
+              thread_id: @chat_message.thread_id,
+              notification_level: "watching",
+            )
+
+          thread_membership && create_watched_thread_notification(thread_membership)
+        end
+
+        if membership.notifications_always? && !membership.muted?
           send_notification =
             DiscoursePluginRegistry.push_notification_filters.all? do |filter|
               filter.call(user, payload)
@@ -107,9 +126,7 @@ module Jobs
               user_ids: [user.id],
             )
           end
-        end
 
-        if membership.mobile_notifications_always? && !membership.muted?
           ::PostAlerter.push_notification(user, payload)
         end
 
@@ -149,6 +166,27 @@ module Jobs
           notification_data,
           membership.user_id,
           ::Notification.types[:chat_message],
+        )
+      end
+
+      def create_watched_thread_notification(thread_membership)
+        thread = @chat_message.thread
+        description = thread.title.presence || thread.original_message.message
+
+        data = {
+          username: @creator.username,
+          chat_message_id: @chat_message.id,
+          chat_channel_id: @chat_channel.id,
+          chat_thread_id: @chat_message.thread_id,
+          last_read_message_id: thread_membership&.last_read_message_id,
+          description: description,
+          user_ids: [@chat_message.user_id],
+        }
+
+        Notification.consolidate_or_create!(
+          notification_type: ::Notification.types[:chat_watched_thread],
+          user_id: thread_membership.user_id,
+          data: data.to_json,
         )
       end
     end

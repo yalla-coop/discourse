@@ -125,7 +125,6 @@ lv:
     share:
       topic_html: 'Temats: <span class="topic-title">%{topicTitle}</span>'
       close: "aizvērt"
-      twitter: "Kopīgojiet vietnē Twitter"
       facebook: "Dalīties Facebook"
       email: "Sūtīt pa e -pastu"
       url: "Kopējiet un kopīgojiet URL"
@@ -261,7 +260,6 @@ lv:
       like_count: "Atzinības"
       topic_count: "Tēmas"
       post_count: "Ieraksti"
-      contact_info: "Ar šo vietni saistītu kritisku problēmu gadījumā lūdzu sazinieties ar mums %{contact_info}."
       activities:
         topics:
           zero: "%{formatted_number} tēmas"
@@ -1185,7 +1183,7 @@ lv:
         add_email: "Pievienot alternatīvo e -pastu"
         auth_override_instructions: "E -pastu var atjaunināt no autentifikācijas pakalpojumu sniedzēja."
         no_secondary: "Nav sekundāru e -pasta ziņojumu"
-        instructions: "Nekad nav parādīts sabiedrībai."
+        instructions: "Nekad nav parādīts sabiedrībai"
         admin_note: "Piezīme. Administratora lietotājs, kas maina cita lietotāja e-pasta adresi, kas nav administrators, norāda, ka lietotājs ir zaudējis piekļuvi savam sākotnējam e-pasta kontam, tāpēc uz jauno adresi tiks nosūtīts paroles atiestatīšanas e-pasts. Lietotāja e -pasts nemainīsies, kamēr nebūs pabeidzis paroles atiestatīšanas procesu."
         ok: "Mēs jums nosūtīsim apstiprinājuma e-pastu"
         required: "Lūdzu ievadiet derīgu e-pasta adresi"
@@ -1205,8 +1203,8 @@ lv:
         welcome_to: "Laipni lūdzam %{site_name}!"
       name:
         title: "Vārds"
-        instructions: "Jūsu pilnais vārds (neobligāti)."
-        instructions_required: "Jūsu pilnais vārds."
+        instructions: "Jūsu pilnais vārds (neobligāti)"
+        instructions_required: "Jūsu pilnais vārds"
         required: "Lūdzu, ievadiet vārdu"
         too_short: "Jūsu vārds ir pārāk īss"
         ok: "Jūsu vārds izskatās labi"
@@ -1528,6 +1526,10 @@ lv:
       title: "Reģistrēties"
       failed: "Notika neparedzēta kļūda; varbūt šis e-pasts ir jau reģistrēts, pamēģiniet izmantot \"aizmirsu paroli\""
       associate: "Jau ir konts? <a href='%{associate_link}'>Piesakieties</a> lai saistītu savu %{provider} kontu."
+      progress_bar:
+        signup: "Reģistrēties"
+        approve: "Apstiprināt"
+        login: "Ienākt"
     forgot_password:
       title: "Paroles atjaunošana"
       action: "Es aizmirsu savu paroli "
@@ -2838,6 +2840,7 @@ lv:
         show: "Parādīt"
         about: "Par"
   admin_js:
+    settings: "Iestatījumi"
     admin:
       title: "Discourse administrators"
       moderator: "Moderators"
@@ -2858,6 +2861,7 @@ lv:
         stale_data: "Pēdējā laikā nav veikta atjauninājumu pārbaude. Pārliecinieties, ka sidekiq darbojas."
         installed_version: "Uzinstalēts"
         latest_version: "Pēdējais"
+        dismiss_notice: "Nerādīt"
         new_features:
           learn_more: "Uzzināt vairāk..."
         last_checked: "Pēdējā pārbaude"
@@ -3033,8 +3037,11 @@ lv:
           screened_emails: "Pārbaudītie e-pasti"
           screened_ips: "Pārbaudītās IP"
           screened_urls: "Pārbaudītie URL"
-          security: "Drošība"
-          spam: "Spams"
+      section_landing_pages:
+        account:
+          title: "Konts"
+          backups:
+            title: "Dublējums (Backups)"
       config_areas:
         about:
           optional: "(pēc izvēles)"
@@ -3044,6 +3051,7 @@ lv:
           enabled: "Ieslēgts?"
           edit: "Rediģēt"
           delete: "Dzēst"
+          flags_tab: "Sūdzības"
           form:
             save: "Saglabāt"
             name: "Vārds"
@@ -3053,7 +3061,6 @@ lv:
             post: "raksti"
       plugins:
         title: "Spraudņi"
-        installed: "Uzinstalētie spraudņi"
         name: "Nosaukums"
         none_installed: "Jums nav instalētu spraudņu."
         version: "Versij"
@@ -3080,7 +3087,7 @@ lv:
         menu:
           backups: "Rezerves kopijas"
           logs: "Žurnāls"
-        none: "Nav pieejamas rezerves kopijas."
+        none: "Nav pieejamas rezerves kopijas"
         read_only:
           enable:
             title: "Ieslēgt tikai lasīšanas režīmu"
@@ -3110,12 +3117,11 @@ lv:
           download:
             label: "Lejuplādēt"
             title: "Nosūtīt e-pastu ar lejuplādes saiti"
-            alert: "Saite, kas ļauj lejuplādēt šo rezerves kopiju, ir nosūtīta uz jūsu e-pastu."
+            alert: "Saite, kas ļauj lejuplādēt šo rezerves kopiju, ir nosūtīta uz jūsu e-pastu"
           destroy:
             title: "Izdzēst rezerves kopiju"
             confirm: "Vai jūs esat drošs, ka vēlaties iznīcināt šo rezerves kopiju?"
           restore:
-            is_disabled: "Atjaunošana ir izslēgta vietnes iestatījumos."
             label: "Atjaunot"
             title: "Atjaunot no rezerves kopijas"
             confirm: "Vai jūs esat drošs, ka vēlaties atjaunot no rezerves kopijas?"

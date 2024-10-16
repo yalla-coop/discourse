@@ -138,7 +138,6 @@ bs_BA:
     share:
       topic_html: 'Tema: <span class="topic-title">%{topicTitle}</span>'
       close: "zatvori"
-      twitter: "Podijeli na Twitter"
       facebook: "Podijeli na Facebooku"
       email: "Pošalji putem e-maila"
     action_codes:
@@ -262,6 +261,7 @@ bs_BA:
     suggested_topics:
       pm_title: "Preporučene Poruke"
     about:
+      edit: "Edit this page"
       simple_title: "O nama"
       title: "O Nama %{title}"
       stats: "Statistika sajta"
@@ -271,7 +271,6 @@ bs_BA:
       like_count: "Sviđanja"
       topic_count: "Tema"
       post_count: "Objave"
-      contact_info: "U slučaju da forum ne radi, molimo kontaktirajte nas na %{contact_info}."
       activities:
         topics:
           one: "%{formatted_number} tema"
@@ -1157,7 +1156,7 @@ bs_BA:
         destroy: "Ukloni e-poštu"
         add_email: "Dodaj zamjensku e-poštu"
         no_secondary: "Nema sekundarnih emailova"
-        instructions: "Nikada nije prikazan javnosti."
+        instructions: "Nikada nije prikazan javnosti"
         ok: "Izgleda dobro. Poslat ćemo email sa potvrdom."
         required: "Unesite e-mail adresu"
         invalid: "Molimo vas da unesete validnu email adresu."
@@ -1185,8 +1184,8 @@ bs_BA:
         approval_required: "A moderator must manually approve your new account before you can access this forum. You'll get an email when your account is approved!"
       name:
         title: "Ime"
-        instructions: "Vaše puno ime (opciono)."
-        instructions_required: "Vaše puno ime."
+        instructions: "Vaše puno ime (opciono)"
+        instructions_required: "Vaše puno ime"
         required: "Unesite ime"
         too_short: "Vaše ime je prekratko."
         ok: "Vaše ime izgleda ok."
@@ -1499,6 +1498,10 @@ bs_BA:
       disclaimer: "Registracijom pristajete na <a href='%{privacy_link}' target='blank'>politiku privatnosti</a> i <a href='%{tos_link}' target='blank'>uvjete pružanja usluge</a> ."
       title: "Učlani se"
       failed: "Nešto je krenulo pogrešno, možda je ovaj email već iskorišten za registraciju, pokušajte sa Zaboravio šifru linkom"
+      progress_bar:
+        signup: "Učlani se"
+        approve: "Odobri"
+        login: "Prijava"
     forgot_password:
       title: "Resetovanje lozinke"
       action: "Zaboravio/la šifru?"
@@ -3113,6 +3116,7 @@ bs_BA:
         show: "Show"
         about: "O nama"
   admin_js:
+    settings: "Postavke"
     admin:
       title: "Discourse Admin"
       moderator: "Moderator"
@@ -3140,6 +3144,7 @@ bs_BA:
         installed_version: "Installed"
         latest_version: "Zadnje"
         problems_found: "Neki saveti na osnovu vaših trenutnih postavki sajta"
+        dismiss_notice: "Odbaci"
         new_features:
           learn_more: "Saznaj više..."
         last_checked: "Zadnje pogledani"
@@ -3408,8 +3413,11 @@ bs_BA:
           screened_ips: "Screened IPs"
           screened_urls: "Screened URLs"
           search_logs: "Logovi pretrage"
-          security: "Security"
-          spam: "Spam"
+      section_landing_pages:
+        account:
+          title: "Račun"
+          backups:
+            title: "Backups"
       config_areas:
         about:
           contact_url_placeholder: "https://johnny-smith.com/contact"
@@ -3421,6 +3429,7 @@ bs_BA:
           edit: "Edit"
           delete: "Delete"
           delete_confirm: 'Jeste li sigurni da želite izbrisati "%{name}"?'
+          flags_tab: "Flags"
           form:
             save: "Save"
             name: "Ime"
@@ -3430,7 +3439,6 @@ bs_BA:
             post: "objave"
       plugins:
         title: "Pluginovi"
-        installed: "Instalirani pluginovi"
         name: "Ime"
         none_installed: "Nemate instaliran niti jedan plugin"
         version: "Verzija"
@@ -3459,7 +3467,7 @@ bs_BA:
         menu:
           backups: "Backups"
           logs: "Logs"
-        none: "No backup available."
+        none: "No backup available"
         read_only:
           enable:
             title: "Omogućite režim samo za čitanje"
@@ -3490,12 +3498,11 @@ bs_BA:
           download:
             label: "Skinuti"
             title: "Pošaljite e-poštu sa linkom za preuzimanje"
-            alert: "Veza za preuzimanje ove sigurnosne kopije vam je poslana e-mailom."
+            alert: "Veza za preuzimanje ove sigurnosne kopije vam je poslana e-mailom"
           destroy:
             title: "Remove the backup"
             confirm: "Are you sure you want to destroy this backup?"
           restore:
-            is_disabled: "Restore is disabled in the site settings."
             label: "Restore"
             title: "Restore the backup"
             confirm: "Jeste li sigurni da želite vratiti ovu sigurnosnu kopiju?"
@@ -3504,7 +3511,6 @@ bs_BA:
             title: "Rollback the database to previous working state"
             confirm: "Jeste li sigurni da želite vratiti bazu podataka na prethodno stanje?"
         location:
-          local: "Lokalno Skladište"
           s3: "S3"
         backup_storage_error: "Pristupanje rezervnom spremištu nije uspjelo: %{error_message}"
       export_csv:
@@ -4396,10 +4402,6 @@ bs_BA:
             with_post: <span class="username">%{username}</span> for post in %{link}
             with_post_time: <span class="username">%{username}</span> for post in %{link} at <span class="time">%{time}</span>
             with_time: <span class="username">%{username}</span> at <span class="time">%{time}</span>
-        badge_intro:
-          title: "Izaberite postojeću značku ili kreirajte novu za početak"
-          what_are_badges_title: "Šta su bedževi?"
-          badge_query_examples_title: "Primjeri upita za oznaku"
       emoji:
         title: "Emoji"
         add: "Dodaj novi emoji"

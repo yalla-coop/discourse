@@ -2,8 +2,6 @@
 
 module ChatSDK
   class Message
-    include WithServiceHelper
-
     # Creates a new message in a chat channel.
     #
     # @param raw [String] The content of the message.
@@ -91,7 +89,7 @@ module ChatSDK
     end
 
     def stop_stream(message_id:, guardian:)
-      with_service(Chat::StopMessageStreaming, message_id: message_id, guardian: guardian) do
+      Chat::StopMessageStreaming.call(message_id:, guardian:) do
         on_success { result.message }
         on_model_not_found(:message) { raise "Couldn't find message with id: `#{message_id}`" }
         on_model_not_found(:membership) do
@@ -118,11 +116,11 @@ module ChatSDK
       enforce_membership: false,
       force_thread: false,
       strip_whitespaces: true,
+      **params,
       &block
     )
       message =
-        with_service(
-          Chat::CreateMessage,
+        Chat::CreateMessage.call(
           message: raw,
           guardian: guardian,
           chat_channel_id: channel_id,
@@ -134,6 +132,7 @@ module ChatSDK
           force_thread: force_thread,
           strip_whitespaces: strip_whitespaces,
           created_by_sdk: true,
+          **params,
         ) do
           on_model_not_found(:channel) { raise "Couldn't find channel with id: `#{channel_id}`" }
           on_model_not_found(:membership) do
@@ -165,8 +164,6 @@ module ChatSDK
   end
 
   class StreamHelper
-    include WithServiceHelper
-
     attr_reader :message
     attr_reader :guardian
 
@@ -176,19 +173,17 @@ module ChatSDK
     end
 
     def stream(raw: nil)
-      return false if !self.message.streaming
-      return false if !raw
+      return false if !message.streaming || !raw
 
-      with_service(
-        Chat::UpdateMessage,
-        message_id: self.message.id,
-        message: self.message.message + raw,
-        guardian: self.guardian,
+      Chat::UpdateMessage.call(
+        message_id: message.id,
+        message: message.message + raw,
+        guardian: guardian,
         streaming: true,
         strip_whitespaces: false,
       ) { on_failure { raise "Unexpected error" } }
 
-      self.message
+      message
     end
   end
 end

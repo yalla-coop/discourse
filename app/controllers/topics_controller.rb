@@ -51,6 +51,10 @@ class TopicsController < ApplicationController
   end
 
   def show
+    if params[:id].is_a?(Array)
+      raise Discourse::InvalidParameters.new("Show only accepts a single ID")
+    end
+
     flash["referer"] ||= request.referer[0..255] if request.referer
 
     # TODO: We'd like to migrate the wordpress feed to another url. This keeps up backwards
@@ -121,7 +125,7 @@ class TopicsController < ApplicationController
 
       deleted =
         guardian.can_see_topic?(ex.obj, false) ||
-          (!guardian.can_see_topic?(ex.obj) && ex.obj&.access_topic_via_group && ex.obj&.deleted_at)
+          (!guardian.can_see_topic?(ex.obj) && ex.obj&.access_topic_via_group && ex.obj.deleted_at)
 
       if SiteSetting.detailed_404
         if deleted
@@ -871,8 +875,6 @@ class TopicsController < ApplicationController
     params.permit(:chronological_order)
     params.permit(:archetype)
 
-    raise Discourse::InvalidAccess if params[:archetype] == "private_message" && !guardian.is_staff?
-
     topic = Topic.with_deleted.find_by(id: topic_id)
     guardian.ensure_can_move_posts!(topic)
 
@@ -988,7 +990,7 @@ class TopicsController < ApplicationController
     rescue Discourse::InvalidAccess => ex
       deleted =
         guardian.can_see_topic?(ex.obj, false) ||
-          (!guardian.can_see_topic?(ex.obj) && ex.obj&.access_topic_via_group && ex.obj&.deleted_at)
+          (!guardian.can_see_topic?(ex.obj) && ex.obj&.access_topic_via_group && ex.obj.deleted_at)
 
       raise Discourse::NotFound.new(
               nil,
@@ -1336,15 +1338,18 @@ class TopicsController < ApplicationController
       return
     end
 
+    if params[:replies_to_post_number] || params[:filter_upwards_post_id] ||
+         params[:filter_top_level_replies] || @topic_view.next_page.present?
+      @topic_view.include_suggested = false
+      @topic_view.include_related = false
+    end
+
     topic_view_serializer =
       TopicViewSerializer.new(
         @topic_view,
         scope: guardian,
         root: false,
         include_raw: !!params[:include_raw],
-        exclude_suggested_and_related:
-          !!params[:replies_to_post_number] || !!params[:filter_upwards_post_id] ||
-            !!params[:filter_top_level_replies],
       )
 
     respond_to do |format|
