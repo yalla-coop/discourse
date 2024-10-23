@@ -54,6 +54,7 @@ const DEFAULT_CONFIG = {
   useMultipartUploadsIfAvailable: false,
   uppyReady: null,
   onProgressUploadsChanged: null,
+  type: null,
 };
 
 // Merges incoming config with defaults, without actually evaluating
@@ -125,11 +126,12 @@ export default class UppyUpload {
     );
     this.appEvents.off(
       `upload-mixin:${this.config.id}:cancel-upload`,
-      this._cancelSingleUpload
+      this.cancelSingleUpload
     );
     this.uppyWrapper.uppyInstance?.close();
   }
 
+  @bind
   setup(fileInputEl) {
     this._fileInputEl = fileInputEl;
 
@@ -145,7 +147,7 @@ export default class UppyUpload {
       // actual file type
       meta: deepMerge(
         { upload_type: this.config.type },
-        this.config.additionalParams
+        this.#resolvedAdditionalParams
       ),
 
       onBeforeFileAdded: (currentFile) => {
@@ -198,12 +200,10 @@ export default class UppyUpload {
       },
     });
 
-    if (this.config.uploadDropTargetOptions) {
+    const resolvedDropTargetOptions = this.#resolvedDropTargetOptions;
+    if (resolvedDropTargetOptions) {
       // DropTarget is a UI plugin, only preprocessors must call _useUploadPlugin
-      this.uppyWrapper.uppyInstance.use(
-        DropTarget,
-        this.config.uploadDropTargetOptions
-      );
+      this.uppyWrapper.uppyInstance.use(DropTarget, resolvedDropTargetOptions);
     }
 
     this.uppyWrapper.uppyInstance.on("progress", (progress) => {
@@ -359,7 +359,7 @@ export default class UppyUpload {
     );
     this.appEvents.on(
       `upload-mixin:${this.config.id}:cancel-upload`,
-      this._cancelSingleUpload
+      this.cancelSingleUpload
     );
     this.config.uppyReady?.();
 
@@ -370,6 +370,11 @@ export default class UppyUpload {
     this.uppyWrapper.useUploadPlugin(UppyChecksum, {
       capabilities: this.capabilities,
     });
+  }
+
+  @bind
+  openPicker() {
+    this._fileInputEl.click();
   }
 
   #triggerInProgressUploadsEvent() {
@@ -469,9 +474,16 @@ export default class UppyUpload {
   }
 
   @bind
-  _cancelSingleUpload(data) {
+  cancelSingleUpload(data) {
     this.uppyWrapper.uppyInstance.removeFile(data.fileId);
     this.#removeInProgressUpload(data.fileId);
+  }
+
+  @bind
+  cancelAllUploads() {
+    this.uppyWrapper.uppyInstance?.cancelAll();
+    this.inProgressUploads.length = 0;
+    this.#triggerInProgressUploadsEvent();
   }
 
   @bind
@@ -506,9 +518,25 @@ export default class UppyUpload {
       type: "POST",
       data: deepMerge(
         { unique_identifier: file.meta.uniqueUploadIdentifier },
-        this.config.additionalParams
+        this.#resolvedAdditionalParams
       ),
     });
+  }
+
+  get #resolvedAdditionalParams() {
+    if (typeof this.config.additionalParams === "function") {
+      return this.config.additionalParams();
+    } else {
+      return this.config.additionalParams;
+    }
+  }
+
+  get #resolvedDropTargetOptions() {
+    if (typeof this.config.uploadDropTargetOptions === "function") {
+      return this.config.uploadDropTargetOptions();
+    } else {
+      return this.config.uploadDropTargetOptions;
+    }
   }
 
   #reset() {
@@ -524,10 +552,6 @@ export default class UppyUpload {
   }
 
   #removeInProgressUpload(fileId) {
-    if (this.isDestroyed || this.isDestroying) {
-      return;
-    }
-
     const index = this.inProgressUploads.findIndex((upl) => upl.id === fileId);
     if (index === -1) {
       return;
