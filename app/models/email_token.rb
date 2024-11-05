@@ -70,7 +70,7 @@ class EmailToken < ActiveRecord::Base
       if scope == EmailToken.scopes[:signup]
         DiscourseEvent.trigger(:user_confirmed_email, user)
       elsif scope == EmailToken.scopes[:password_reset]
-        DiscourseEvent.trigger(:user_confirmed_email, user)
+        # DiscourseEvent.trigger(:user_confirmed_email, user)
       end
       Invite.redeem_for_existing_user(user) if scope == EmailToken.scopes[:signup]
 
