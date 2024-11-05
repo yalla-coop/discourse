@@ -67,7 +67,11 @@ class EmailToken < ActiveRecord::Base
       user.save!
       user.create_reviewable if !skip_reviewable
       user.set_automatic_groups
-      DiscourseEvent.trigger(:user_confirmed_email, user)
+      if scope == EmailToken.scopes[:signup]
+        DiscourseEvent.trigger(:user_confirmed_email, user)
+      elsif scope == EmailToken.scopes[:password_reset]
+        DiscourseEvent.trigger(:user_confirmed_email, user)
+      end
       Invite.redeem_for_existing_user(user) if scope == EmailToken.scopes[:signup]
 
       user.reload
