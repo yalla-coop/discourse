@@ -5,11 +5,10 @@ import { service } from "@ember/service";
 import { htmlSafe } from "@ember/template";
 import AboutPageUsers from "discourse/components/about-page-users";
 import PluginOutlet from "discourse/components/plugin-outlet";
+import dIcon from "discourse/helpers/d-icon";
+import escape from "discourse/lib/escape";
 import { number } from "discourse/lib/formatter";
-import dIcon from "discourse-common/helpers/d-icon";
-import i18n from "discourse-common/helpers/i18n";
-import escape from "discourse-common/lib/escape";
-import I18n from "discourse-i18n";
+import I18n, { i18n } from "discourse-i18n";
 
 const pluginActivitiesFuncs = [];
 
@@ -38,7 +37,7 @@ export default class AboutPage extends Component {
       {
         class: "members",
         icon: "users",
-        text: I18n.t("about.member_count", {
+        text: i18n("about.member_count", {
           count: this.args.model.stats.users_count,
           formatted_number: I18n.toNumber(this.args.model.stats.users_count, {
             precision: 0,
@@ -48,7 +47,7 @@ export default class AboutPage extends Component {
       {
         class: "admins",
         icon: "shield-halved",
-        text: I18n.t("about.admin_count", {
+        text: i18n("about.admin_count", {
           count: this.adminsCount,
           formatted_number: I18n.toNumber(this.adminsCount, { precision: 0 }),
         }),
@@ -56,7 +55,7 @@ export default class AboutPage extends Component {
       {
         class: "moderators",
         icon: "shield-halved",
-        text: I18n.t("about.moderator_count", {
+        text: i18n("about.moderator_count", {
           count: this.moderatorsCount,
           formatted_number: I18n.toNumber(this.moderatorsCount, {
             precision: 0,
@@ -76,47 +75,47 @@ export default class AboutPage extends Component {
       {
         icon: "scroll",
         class: "topics",
-        activityText: I18n.t("about.activities.topics", {
+        activityText: i18n("about.activities.topics", {
           count: this.args.model.stats.topics_7_days,
           formatted_number: number(this.args.model.stats.topics_7_days),
         }),
-        period: I18n.t("about.activities.periods.last_7_days"),
+        period: i18n("about.activities.periods.last_7_days"),
       },
       {
         icon: "pencil",
         class: "posts",
-        activityText: I18n.t("about.activities.posts", {
+        activityText: i18n("about.activities.posts", {
           count: this.args.model.stats.posts_last_day,
           formatted_number: number(this.args.model.stats.posts_last_day),
         }),
-        period: I18n.t("about.activities.periods.today"),
+        period: i18n("about.activities.periods.today"),
       },
       {
         icon: "user-group",
         class: "active-users",
-        activityText: I18n.t("about.activities.active_users", {
+        activityText: i18n("about.activities.active_users", {
           count: this.args.model.stats.active_users_7_days,
           formatted_number: number(this.args.model.stats.active_users_7_days),
         }),
-        period: I18n.t("about.activities.periods.last_7_days"),
+        period: i18n("about.activities.periods.last_7_days"),
       },
       {
         icon: "user-plus",
         class: "sign-ups",
-        activityText: I18n.t("about.activities.sign_ups", {
+        activityText: i18n("about.activities.sign_ups", {
           count: this.args.model.stats.users_7_days,
           formatted_number: number(this.args.model.stats.users_7_days),
         }),
-        period: I18n.t("about.activities.periods.last_7_days"),
+        period: i18n("about.activities.periods.last_7_days"),
       },
       {
         icon: "heart",
         class: "likes",
-        activityText: I18n.t("about.activities.likes", {
+        activityText: i18n("about.activities.likes", {
           count: this.args.model.stats.likes_count,
           formatted_number: number(this.args.model.stats.likes_count),
         }),
-        period: I18n.t("about.activities.periods.all_time"),
+        period: i18n("about.activities.periods.all_time"),
       },
     ];
 
@@ -130,7 +129,7 @@ export default class AboutPage extends Component {
           total_formatted_number: number(this.args.model.stats.visitors_7_days),
           eu_formatted_number: number(this.args.model.stats.eu_visitors_7_days),
         }),
-        period: I18n.t("about.activities.periods.last_7_days"),
+        period: i18n("about.activities.periods.last_7_days"),
       });
     }
 
@@ -150,16 +149,31 @@ export default class AboutPage extends Component {
     const email = escape(this.args.model.contact_email || "");
 
     if (url) {
-      return I18n.t("about.contact_info", {
-        contact_info: `<a href='${url}' target='_blank'>${url}</a>`,
+      const href = this.contactURLHref;
+      return i18n("about.contact_info", {
+        contact_info: `<a href='${href}' target='_blank'>${url}</a>`,
       });
     } else if (email) {
-      return I18n.t("about.contact_info", {
+      return i18n("about.contact_info", {
         contact_info: `<a href="mailto:${email}">${email}</a>`,
       });
     } else {
       return null;
     }
+  }
+
+  get contactURLHref() {
+    const url = escape(this.args.model.contact_url || "");
+
+    if (!url) {
+      return;
+    }
+
+    if (url.startsWith("/") || url.match(/^\w+:/)) {
+      return url;
+    }
+
+    return `//${url}`;
   }
 
   get siteAgeString() {
@@ -169,12 +183,12 @@ export default class AboutPage extends Component {
     diff /= 1000 * 3600 * 24 * 30;
 
     if (diff < 1) {
-      return I18n.t("about.site_age.less_than_one_month");
+      return i18n("about.site_age.less_than_one_month");
     } else if (diff < 12) {
-      return I18n.t("about.site_age.month", { count: Math.round(diff) });
+      return i18n("about.site_age.month", { count: Math.round(diff) });
     } else {
       diff /= 12;
-      return I18n.t("about.site_age.year", { count: Math.round(diff) });
+      return i18n("about.site_age.year", { count: Math.round(diff) });
     }
   }
 
@@ -216,7 +230,7 @@ export default class AboutPage extends Component {
     {{#if this.currentUser.admin}}
       <p>
         <LinkTo class="edit-about-page" @route="adminConfig.about">
-          {{dIcon "pencil-alt"}}
+          {{dIcon "pencil"}}
           <span>{{i18n "about.edit"}}</span>
         </LinkTo>
       </p>
@@ -279,7 +293,7 @@ export default class AboutPage extends Component {
       <div class="about__right-side">
         <h3>{{i18n "about.contact"}}</h3>
         {{#if this.contactInfo}}
-          <p>{{htmlSafe this.contactInfo}}</p>
+          <p class="about__contact-info">{{htmlSafe this.contactInfo}}</p>
         {{/if}}
         <p>{{i18n "about.report_inappropriate_content"}}</p>
         <h3>{{i18n "about.site_activity"}}</h3>

@@ -9,8 +9,10 @@ class Service::StepsInspector
   class Step
     attr_reader :step, :result, :nesting_level
 
-    delegate :name, to: :step
-    delegate :failure?, :success?, :error, to: :step_result, allow_nil: true
+    delegate :name, :result_key, to: :step
+    delegate :failure?, :success?, :error, :raised_exception?, to: :step_result, allow_nil: true
+
+    alias error? failure?
 
     def self.for(step, result, nesting_level: 0)
       class_name =
@@ -27,6 +29,7 @@ class Service::StepsInspector
     def type
       self.class.name.split("::").last.downcase
     end
+    alias inspect_type type
 
     def emoji
       "#{result_emoji}#{unexpected_result_emoji}"
@@ -37,16 +40,22 @@ class Service::StepsInspector
     end
 
     def inspect
-      "#{"  " * nesting_level}[#{type}] '#{name}' #{emoji}".rstrip
+      "#{"  " * nesting_level}[#{inspect_type}] #{name}#{runtime} #{emoji}".rstrip
     end
 
     private
 
+    def runtime
+      return unless step_result&.__runtime__
+      " (#{(step_result.__runtime__ * 1000).round(4)} ms)"
+    end
+
     def step_result
-      result["result.#{type}.#{name}"]
+      result[result_key]
     end
 
     def result_emoji
+      return "💥" if raised_exception?
       return "❌" if failure?
       return "✅" if success?
       ""
@@ -57,7 +66,7 @@ class Service::StepsInspector
     end
 
     def unexpected_result_text
-      return "  <= expected to return true but got false instead" if failure?
+      return "  <= expected to return true but got false instead" if error?
       "  <= expected to return false but got true instead"
     end
   end
@@ -75,6 +84,10 @@ class Service::StepsInspector
     def error
       "#{step_result.errors.inspect}\n\nProvided parameters: #{step_result.parameters.pretty_inspect}"
     end
+
+    def inspect_type
+      "params"
+    end
   end
 
   # @!visibility private
@@ -91,11 +104,22 @@ class Service::StepsInspector
     end
 
     def inspect
-      "#{"  " * nesting_level}[#{type}]"
+      "#{"  " * nesting_level}[#{inspect_type}]#{runtime}#{unexpected_result_emoji}"
+    end
+  end
+
+  # @!visibility private
+  class Options < Step
+  end
+
+  # @!visibility private
+  class Try < Transaction
+    def error?
+      step_result.exception
     end
 
-    def step_result
-      nil
+    def error
+      step_result.exception.full_message
     end
   end
 
@@ -106,19 +130,40 @@ class Service::StepsInspector
     @result = result
   end
 
-  # Inspect the provided result object.
-  # Example output:
-  #   [1/4] [model] 'channel' ✅
-  #   [2/4] [contract] 'default' ✅
-  #   [3/4] [policy] 'check_channel_permission' ❌
-  #   [4/4] [step] 'change_status'
-  # @return [String] the steps of the result object with their state
   def inspect
-    steps.map.with_index { |step, index| "[#{index + 1}/#{steps.size}] #{step.inspect}" }.join("\n")
+    output = <<~OUTPUT
+    Inspecting #{result.__service_class__} result object:
+
+    #{execution_flow}
+    OUTPUT
+    output += "\nWhy it failed:\n\n#{error}" if error.present?
+    output
+  end
+
+  # Example output:
+  #   [1/4] [model] channel (0.02 ms) ✅
+  #   [2/4] [params] default (0.1 ms) ✅
+  #   [3/4] [policy] check_channel_permission ❌
+  #   [4/4] [step] change_status
+  # @return [String] the steps of the result object with their state
+  def execution_flow
+    steps
+      .filter_map
+      .with_index do |step, index|
+        next if @encountered_error
+        @encountered_error = index + 1 if step.failure?
+        "[#{format("%#{steps.size.to_s.size}s", index + 1)}/#{steps.size}] #{step.inspect}"
+      end
+      .join("\n")
+      .then do |output|
+        skipped_steps = steps.size - @encountered_error.to_i
+        next output unless @encountered_error && skipped_steps.positive?
+        "#{output}\n\n(#{skipped_steps} more steps not shown as the execution flow was stopped before reaching them)"
+      end
   end
 
   # @return [String, nil] the first available error, if any.
   def error
-    steps.detect(&:failure?)&.error
+    steps.detect(&:error?)&.error
   end
 end

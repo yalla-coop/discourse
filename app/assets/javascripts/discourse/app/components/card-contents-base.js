@@ -2,12 +2,12 @@ import Component from "@ember/component";
 import { alias, match } from "@ember/object/computed";
 import { next, schedule, throttle } from "@ember/runloop";
 import { service } from "@ember/service";
+import { bind } from "discourse/lib/decorators";
 import { wantsNewWindow } from "discourse/lib/intercept-click";
+import discourseLater from "discourse/lib/later";
 import { headerOffset } from "discourse/lib/offset-calculator";
 import DiscourseURL from "discourse/lib/url";
 import { escapeExpression } from "discourse/lib/utilities";
-import discourseLater from "discourse-common/lib/later";
-import { bind } from "discourse-common/utils/decorators";
 
 const DEFAULT_SELECTOR = "#main-outlet";
 const AVATAR_OVERFLOW_SIZE = 44;
@@ -193,7 +193,7 @@ export default class CardContentsBase extends Component {
     return this._show(target.innerText.replace(/^@/, ""), target, event);
   }
 
-  _positionCard(target, event) {
+  _positionCard(target) {
     schedule("afterRender", async () => {
       if (this.site.desktopView) {
         this._menuInstance = await this.menu.show(target, {
@@ -228,11 +228,11 @@ export default class CardContentsBase extends Component {
       // note: we DO NOT use afterRender here cause _positionCard may
       // run afterwards, if we allowed this to happen the usercard
       // may be offscreen and we may scroll all the way to it on focus
-      if (event?.pointerId === -1) {
-        discourseLater(() => {
-          this.element.querySelector("a")?.focus();
-        }, 350);
-      }
+
+      discourseLater(() => {
+        this.element.setAttribute("tabindex", "-1");
+        this.element.focus();
+      }, 350);
     });
   }
 

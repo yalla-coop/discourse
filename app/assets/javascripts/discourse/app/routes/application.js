@@ -7,6 +7,9 @@ import NotActivatedModal from "discourse/components/modal/not-activated";
 import { RouteException } from "discourse/controllers/exception";
 import { setting } from "discourse/lib/computed";
 import cookie from "discourse/lib/cookie";
+import deprecated from "discourse/lib/deprecated";
+import { getOwnerWithFallback } from "discourse/lib/get-owner";
+import getURL from "discourse/lib/get-url";
 import logout from "discourse/lib/logout";
 import mobile from "discourse/lib/mobile";
 import identifySource, { consolePrefix } from "discourse/lib/source-identifier";
@@ -16,10 +19,7 @@ import Category from "discourse/models/category";
 import Composer from "discourse/models/composer";
 import { findAll } from "discourse/models/login-method";
 import DiscourseRoute from "discourse/routes/discourse";
-import deprecated from "discourse-common/lib/deprecated";
-import { getOwnerWithFallback } from "discourse-common/lib/get-owner";
-import getURL from "discourse-common/lib/get-url";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
 
 function isStrictlyReadonly(site) {
   return site.isReadOnly && !site.isStaffWritesOnly;
@@ -101,7 +101,7 @@ export default class ApplicationRoute extends DiscourseRoute {
   @action
   logout() {
     if (isStrictlyReadonly(this.site)) {
-      this.dialog.alert(I18n.t("read_only_mode.logout_disabled"));
+      this.dialog.alert(i18n("read_only_mode.logout_disabled"));
       return;
     }
     this._handleLogout();
@@ -127,7 +127,7 @@ export default class ApplicationRoute extends DiscourseRoute {
       ? `${window.location.protocol}//${window.location.host}${post.url}`
       : null;
     const title = post
-      ? I18n.t("composer.reference_topic_title", {
+      ? i18n("composer.reference_topic_title", {
           title: post.topic.title,
         })
       : null;
@@ -191,7 +191,7 @@ export default class ApplicationRoute extends DiscourseRoute {
   @action
   showLogin() {
     if (isStrictlyReadonly(this.site)) {
-      this.dialog.alert(I18n.t("read_only_mode.login_disabled"));
+      this.dialog.alert(i18n("read_only_mode.login_disabled"));
       return;
     }
     this.handleShowLogin();
@@ -200,7 +200,7 @@ export default class ApplicationRoute extends DiscourseRoute {
   @action
   showCreateAccount(createAccountProps = {}) {
     if (this.site.isReadOnly) {
-      this.dialog.alert(I18n.t("read_only_mode.login_disabled"));
+      this.dialog.alert(i18n("read_only_mode.login_disabled"));
     } else {
       this.handleShowCreateAccount(createAccountProps);
     }
@@ -297,9 +297,12 @@ export default class ApplicationRoute extends DiscourseRoute {
     } else {
       if (this.isOnlyOneExternalLoginMethod) {
         this.login.externalLogin(this.externalLoginMethods[0]);
-      } else if (this.siteSettings.experimental_full_page_login) {
+      } else if (this.siteSettings.full_page_login) {
         this.router.transitionTo("login").then((login) => {
           login.controller.set("canSignUp", this.controller.canSignUp);
+          if (this.siteSettings.login_required) {
+            login.controller.set("showLogin", true);
+          }
         });
       } else {
         this.modal.show(LoginModal, {
@@ -323,7 +326,7 @@ export default class ApplicationRoute extends DiscourseRoute {
         this.login.externalLogin(this.externalLoginMethods[0], {
           signup: true,
         });
-      } else if (this.siteSettings.experimental_full_page_login) {
+      } else if (this.siteSettings.full_page_login) {
         this.router.transitionTo("signup").then((signup) => {
           Object.keys(createAccountProps || {}).forEach((key) => {
             signup.controller.set(key, createAccountProps[key]);

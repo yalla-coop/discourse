@@ -3,13 +3,10 @@
 {{hide-application-sidebar}}
 <section>
   <div class="container invites-show clearfix">
-    {{#unless this.externalAuthsOnly}}
+    {{#unless (or this.externalAuthsOnly this.existingUserId)}}
       <SignupProgressBar @step={{if this.successMessage "activate" "signup"}} />
     {{/unless}}
-    <WelcomeHeader
-      @header={{this.welcomeTitle}}
-      @subheader={{unless this.successMessage this.subheaderMessage}}
-    />
+    <WelcomeHeader @header={{this.welcomeTitle}} />
 
     <div class={{if this.successMessage "invite-success" "invite-form"}}>
       <div class="col-form">
@@ -20,7 +17,9 @@
         {{else}}
           <div class="invited-by">
             <p>{{i18n "invites.invited_by"}}</p>
-            <p><UserInfo @user={{this.invitedBy}} /></p>
+            <p>
+              <UserInfo @user={{this.invitedBy}} />
+            </p>
           </div>
 
           {{#if this.associateHtml}}
@@ -69,6 +68,7 @@
               {{#if this.isInviteLink}}
                 <div class="input email-input input-group">
                   <Input
+                    {{on "focusin" this.scrollInputIntoView}}
                     @type="email"
                     @value={{this.email}}
                     id="new-account-email"
@@ -85,16 +85,19 @@
                     id="account-email-validation"
                   />
                   {{#unless this.emailValidation.reason}}
-                    <div class="instructions">{{i18n
-                        "user.email.instructions"
-                      }}</div>
+                    <div class="instructions">
+                      {{i18n "user.email.instructions"}}
+                    </div>
                   {{/unless}}
                 </div>
               {{/if}}
 
               <div class="input username-input input-group">
-                <Input
-                  @value={{this.accountUsername}}
+                <input
+                  {{on "focusin" this.scrollInputIntoView}}
+                  {{on "input" this.setAccountUsername}}
+                  type="text"
+                  value={{this.accountUsername}}
                   class={{value-entered this.accountUsername}}
                   id="new-account-username"
                   name="username"
@@ -108,16 +111,23 @@
                   @validation={{this.usernameValidation}}
                   id="username-validation"
                 />
-                {{#unless this.usernameValidation.reason}}
-                  <div class="instructions">{{i18n
-                      "user.username.instructions"
-                    }}</div>
-                {{/unless}}
               </div>
+
+              {{#if (and this.showFullname this.fullnameRequired)}}
+                <FullnameInput
+                  @nameValidation={{this.nameValidation}}
+                  @nameTitle={{this.nameTitle}}
+                  @accountName={{this.accountName}}
+                  @nameDisabled={{this.nameDisabled}}
+                  @onFocusIn={{this.scrollInputIntoView}}
+                  class="input name-input input-group name-required"
+                />
+              {{/if}}
 
               {{#unless this.externalAuthsOnly}}
                 <div class="input password-input input-group">
                   <PasswordField
+                    {{on "focusin" this.scrollInputIntoView}}
                     @value={{this.accountPassword}}
                     @capsLockOn={{this.capsLockOn}}
                     type={{if this.maskPassword "password" "text"}}
@@ -128,17 +138,17 @@
                   <label class="alt-placeholder" for="new-account-password">
                     {{i18n "invites.password_label"}}
                   </label>
+                  <TogglePasswordMask
+                    @maskPassword={{this.maskPassword}}
+                    @togglePasswordMask={{this.togglePasswordMask}}
+                    @parentController="invites-show"
+                  />
                   <div class="create-account__password-info">
                     <div class="create-account__password-tip-validation">
                       <InputTip
                         @validation={{this.passwordValidation}}
                         id="password-validation"
                       />
-                      {{#unless this.passwordValidation.reason}}
-                        <span
-                          class="more-info"
-                        >{{this.passwordInstructions}}</span>
-                      {{/unless}}
                       <div
                         class="caps-lock-warning
                           {{unless this.capsLockOn 'hidden'}}"
@@ -147,35 +157,19 @@
                         {{i18n "login.caps_lock_warning"}}
                       </div>
                     </div>
-                    <TogglePasswordMask
-                      @maskPassword={{this.maskPassword}}
-                      @togglePasswordMask={{this.togglePasswordMask}}
-                      @parentController="invites-show"
-                    />
                   </div>
                 </div>
               {{/unless}}
 
-              {{#if this.fullnameRequired}}
-                <div
-                  class={{concat-class
-                    "input"
-                    "name-input"
-                    "input-group"
-                    (if this.siteSettings.full_name_required "name-required")
-                  }}
-                >
-                  <Input
-                    @value={{this.accountName}}
-                    class={{value-entered this.accountName}}
-                    id="new-account-name"
-                    name="name"
-                  />
-                  <label class="alt-placeholder" for="new-account-name">
-                    {{i18n "invites.name_label"}}
-                  </label>
-                  <div class="instructions">{{this.nameInstructions}}</div>
-                </div>
+              {{#if (and this.showFullname (not this.fullnameRequired))}}
+                <FullnameInput
+                  @nameValidation={{this.nameValidation}}
+                  @nameTitle={{this.nameTitle}}
+                  @accountName={{this.accountName}}
+                  @nameDisabled={{this.nameDisabled}}
+                  @onFocusIn={{this.scrollInputIntoView}}
+                  class="input name-input input-group"
+                />
               {{/if}}
 
               {{#if this.userFields}}
@@ -183,6 +177,7 @@
                   {{#each this.userFields as |f|}}
                     <div class="input-group">
                       <UserField
+                        {{on "focusin" this.scrollInputIntoView}}
                         @field={{f.field}}
                         @value={{f.value}}
                         class={{value-entered f.value}}

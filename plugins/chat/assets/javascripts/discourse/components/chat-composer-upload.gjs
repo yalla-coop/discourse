@@ -1,9 +1,9 @@
 import Component from "@glimmer/component";
 import DButton from "discourse/components/d-button";
 import concatClass from "discourse/helpers/concat-class";
+import dIcon from "discourse/helpers/d-icon";
 import { isImage } from "discourse/lib/uploads";
-import dIcon from "discourse-common/helpers/d-icon";
-import i18n from "discourse-common/helpers/i18n";
+import { i18n } from "discourse-i18n";
 
 export default class ChatComposerUpload extends Component {
   get isImage() {

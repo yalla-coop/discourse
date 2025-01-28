@@ -392,6 +392,8 @@ sl:
       abandon:
         yes_value: "Zavrzi"
         no_value: "Nadaljujt urejanje"
+      dropdown:
+        view_all: "prikaži vse"
     topic_count_all:
       one: "Poglej %{count} novo temo"
       two: "Poglej %{count} novi temi"
@@ -441,6 +443,7 @@ sl:
     continue: "Nadaljuj"
     switch_to_anon: "Vklopi anonimni način"
     switch_from_anon: "Izklopi anonimni način"
+    none_placeholder: "Brez"
     banner:
       close: "Opusti ta oglasni trak"
       edit: "Uredi"
@@ -540,6 +543,8 @@ sl:
         refresh: "Osveži"
         status: "Stanje"
         category: "Kategorija"
+        score_type:
+          title: "Razlog"
         orders:
           score: "Ocena"
           created_at: "Ustvarjeno"
@@ -808,13 +813,13 @@ sl:
       public_admission: "Dovoli uporabnikom, da se sami pridružijo skupini (skupina mora biti javna)"
       public_exit: "Dovoli uporabnikom da sami zapustijo skupino"
       empty:
-        posts: "Ni prispevkov članov skupine."
-        members: "Ta skupina nima članov."
-        requests: "Ni nobenih zahtevkov po članstvu v tej skupini."
-        mentions: "Ta skupina ni bila nikjer omenjena."
-        messages: "Ni sporočil za to skupino."
-        topics: "Člani te skupine nimajo nobene teme."
-        logs: "Dnevnik za to skupino je prazen."
+        posts: "Ni prispevkov članov skupine"
+        members: "Ta skupina nima članov"
+        requests: "Ni nobenih zahtevkov po članstvu v tej skupini"
+        mentions: "Ta skupina ni bila nikjer omenjena"
+        messages: "Ni sporočil za to skupino"
+        topics: "Člani te skupine nimajo nobene teme"
+        logs: "Dnevnik za to skupino je prazen"
       add: "Dodaj"
       join: "Pridruži se"
       leave: "Zapusti"
@@ -1013,10 +1018,10 @@ sl:
         few: "Izbriši %{count}"
         other: "Izbriši %{count}"
       username: "uporabniško ime"
-      trust_level: "TL"
+      trust_level: "nivo zaupanja"
       read_time: "čas prebiranja"
       topics_entered: "vstop v teme"
-      post_count: "# prispevkov"
+      post_count: "prispevkov"
       confirm_delete_other_accounts: "Ste prepričani, da želite izbrisati te račune?"
       powered_by: "s pomočjo <a href='https://maxmind.com'>MaxMindB</a>"
       copied: "skopirano"
@@ -1109,16 +1114,13 @@ sl:
       skip_new_user_tips:
         description: "Preskoči namige in značke za nove uporabnike"
       theme_default_on_all_devices: "Nastavi kot privzeti videz na vseh mojih napravah"
-      color_scheme: "Barvna shema"
       color_schemes:
         disable_dark_scheme: "Enako kot običajna"
-        dark_instructions: "Barvno shemo temnega načina si lahko ogledate tako, da napravo preklopite v temni način."
         undo: "Ponastavi"
         regular: "Običajna"
         dark: "Temni način"
         default_dark_scheme: "(privzeto za mesto)"
       dark_mode: "Temni način"
-      dark_mode_enable: "Omogoči barvno shemo samodejnega temnega načina"
       text_size_default_on_all_devices: "Nastavi kot privzeto velikost besedila na vseh mojih napravah"
       allow_private_messages: "Dovoli drugim uporabnikom da mi pošiljajo zasebna sporočila."
       external_links_in_new_tab: "Odpri vse zunanje povezave v novem zavihku"
@@ -1185,7 +1187,7 @@ sl:
       ignored_users: "Prezrti"
       ignored_users_instructions: "Skrij vse objave, obvestila in ZS od teh uporabnikov."
       tracked_topics_link: "Prikaži"
-      automatically_unpin_topics: "Samodejno odpni temo, ko preberem zadnji prispevek."
+      automatically_unpin_topics: "Samodejno odpni temo, ko preberem zadnji prispevek"
       apps: "Aplikacije"
       revoke_access: "Prekliči dostop"
       undo_revoke_access: "Razveljavi preklic dostopa"
@@ -1373,7 +1375,7 @@ sl:
           generic: "Vaš %{provider} račun bo uporabljen za preverjanje pristnosti."
       activate_account:
         please_continue: "Vaš nov uporabniški račun je potrjen - preusmerjeni boste na začetno stran."
-        continue_button: "Nadaljujte na %{site_name}"
+        continue_button: "Končaj!"
         welcome_to: "Dobrodošli na %{site_name}!"
         approval_required: "Moderator mora ročno potrditi vaš nov uporabniški račun da boste lahko dostopali do foruma. Ko bo račun potrjen boste prejeli e-sporočilo."
       name:
@@ -1430,7 +1432,6 @@ sl:
       location: "Lokacija"
       website: "Spletna stran"
       email_settings: "E-naslov"
-      hide_profile_and_presence: "Skrij moj javni profil in prisotnost"
       enable_physical_keyboard: "Omogoči podporo fizične tipkovnice na iPadu"
       text_size:
         title: "Velikost besedila"
@@ -1490,7 +1491,8 @@ sl:
         after_4_minutes: "po 4 minutah"
         after_5_minutes: "po 5 minutah"
         after_10_minutes: "po 10 minutah"
-      notification_level_when_replying: "Ko objavim v določeni temi, nastavi temo na"
+      notification_level_when_replying:
+        do_nothing: "Ne naredi nič"
       invited:
         title: "Povabila"
         pending_tab: "V teku"
@@ -1538,16 +1540,13 @@ sl:
           success: "Povezava s povabilom ustvarjena!"
           error: "Pri ustvarjanju povezave povabila je prišlo do napake"
         invite:
-          instructions: "Delite to povezavo in takoj omogočite dostop do te strani:"
           expires_in_time: "Poteče čez %{time}"
           link_copied: "Povezava kopirana!"
           show_advanced: "Pokaži dodatne možnosti"
           add_to_groups: "Dodaj v skupine"
           expires_after: "Poteče po"
           send_invite_email: "Shrani in pošlji e-pošto"
-          save_invite: "Shrani"
           cancel: "Prekliči"
-          invite_saved: "Vabilo shranjeno."
         bulk_invite:
           none: "Ni povabil za prikaz na tej strani."
           text: "Skupinsko povabilo"
@@ -1768,7 +1767,6 @@ sl:
     search_hint: "uporabniško ime, e-naslov ali IP naslov"
     create_account:
       header_title: "Dobrodošli!"
-      subheader_title: "Ustvarimo vaš račun"
       disclaimer: "Z registracijo sprejemate <a href='%{privacy_link}' target='blank'>Pravilnik o zasebnosti</a> in <a href='%{tos_link}' target='blank'>Pogoje uporabe</a>."
       title: "Registracija"
       failed: "Nekaj je šlo narobe, morda je ta e-naslov že registriran, poskusite povezavo za pozabljeno geslo."
@@ -1808,7 +1806,6 @@ sl:
       logging_in_as: Prijava kot %{email}
       confirm_button: Zaključi prijavo
     login:
-      subheader_title: "Prijavite se v svoj račun"
       title: "Vpis"
       username: "Uporabnik"
       password: "Geslo"
@@ -1915,6 +1912,9 @@ sl:
       categories_and_top_topics: "Kategorije in najboljše teme"
       categories_boxes: "Škatle s podkategorijami"
       categories_boxes_with_topics: "Škatle z izpostavljenimi temami"
+    full_name_requirement:
+      required_at_signup: "Zahtevano"
+      optional_at_signup: "Neobvezno"
     shortcut_modifier_key:
       shift: "Shift"
       ctrl: "Ctrl"
@@ -2170,8 +2170,6 @@ sl:
         quoted: "citiran"
         edited: "urejen"
         liked: "nov všeček"
-        private_message: "novo zasebno sporočilo"
-        invited_to_private_message: "povabljen v zasebno sporočilo"
         invitee_accepted: "povabilo sprejeto"
         posted: "nov prispevek"
         watching_category_or_tag: "nov prispevek"
@@ -2360,6 +2358,8 @@ sl:
         top: "Ni več najboljših tem."
         bookmarks: "Ni več tem z zaznamki."
     topic_bulk_actions:
+      dismiss:
+        name: "Opusti"
       close_topics:
         name: "Zapri"
         optional: (neobvezno)
@@ -2588,7 +2588,6 @@ sl:
         help: "Odpri tiskalniku prilagojeno verzijo te teme"
       flag_topic:
         title: "Prijavi"
-        help: "prijavi to temo moderatorjem ali pošlji opozorilo avtorju"
         success_message: "Uspešno ste prijavili to temo."
       make_public:
         title: "Pretvori v javno temo"
@@ -2835,13 +2834,15 @@ sl:
         like: "všečkaj ta prispevek"
         has_liked: "všečkali ste prispevek"
         read_indicator: "člani, ki so prebrali ta prispevek"
+        undo_like_action: "Razveljavi všeček"
         undo_like: "razveljavi všeček"
         edit: "uredi prispevek"
         edit_action: "Uredi"
         edit_anonymous: "Oprostite vendar morate biti prijavljeni, da lahko uredite ta prispevek."
-        flag: "prijavi ta prispevek moderatorjem ali pošlji opozorilo avtorju"
+        flag_action: "Prijavi"
         delete: "izbriši prispevek"
         undelete: "razveljavi izbris prispevka"
+        share_action: "Deli"
         share: "deli povezavo do tega prispevka"
         copy_title: "kopiraj povezavo do te teme v odložišče"
         link_copied: "Povezava kopirana!"
@@ -2860,6 +2861,7 @@ sl:
             other: "Da, in vseh %{count} odgovorov"
           just_the_post: "Ne, samo ta prispevek"
         admin: "ukrepi administratorja"
+        admin_action: "Admin"
         permanently_delete: "Trajno izbriši"
         wiki: "Naredi wiki"
         unwiki: "Odstrani wiki"
@@ -3212,7 +3214,6 @@ sl:
       with_topics: "%{filter} teme"
       with_category: "%{filter} %{category} teme"
       filter:
-        title: "Filter"
         button:
           label: "Filter"
       latest:
@@ -3641,10 +3642,10 @@ sl:
               content: "Skupine"
             users:
               content: "Uporabniki"
-            my_posts:
-              content: "Moji prispevki"
             review:
               content: "Pregled"
+            invite:
+              content: "Povabi"
       filter: "Filter..."
     until: "Do:"
     form_templates:
@@ -3714,7 +3715,30 @@ sl:
         title: "Seznam poročil"
         sidebar_title: "Poročila"
         sidebar_link:
-          all: "Vse"
+          all: "Vsa poročila"
+      config:
+        developer:
+          title: "Razvijalci"
+        files:
+          title: "Datoteke"
+        legal:
+          title: "Pravno"
+        navigation:
+          title: "Navigacija"
+        notifications:
+          title: "Obvestila"
+        onebox:
+          title: "Onebox"
+        other:
+          title: "Drugo"
+        search:
+          title: "Išči"
+        security:
+          title: "Varnost"
+        spam:
+          title: "Neželeno"
+        user_api:
+          title: "Uporabniški API"
       dashboard:
         title: "Nadzorna plošča"
         last_updated: "Nadzorna plošča posodobljena:"
@@ -3804,6 +3828,7 @@ sl:
             category:
               label: Kategorija
       flags:
+        title: "Moderiranje"
         description: "Opis"
         enabled: "Vključeno?"
       groups:
@@ -3854,21 +3879,24 @@ sl:
         group_owners: Skrbniki
         add_owners: Dodaj skrbnike
         no_custom_groups: "Ustvari novo skupino po meri"
+      api_keys:
+        edit: "Uredi"
+        save: "Shrani"
+        cancel: "Prekliči"
+        continue: "Nadaljuj"
+        revoke: "Odstrani"
+        revoked: "Preklican"
       api:
         generate_master: "Ustvari glavni API ključ"
         user: "Uporabnik"
         title: "API"
-        created: Ustvarjeno
-        last_used: Nazadnje uporabljeno
-        never_used: (nikoli)
+        never_used: Nikoli
         generate: "Ustvari"
         revoke: "Prekliči"
-        all_users: "Vsi uporabniki"
         show_details: Podrobnosti
         description: Opis
         save: Shrani
         revoked: Preklican
-        delete: Trajno izbriši
         not_shown_again: Ta ključ ne bo več prikazan. Preden nadaljujete, si ustvarite kopijo.
         continue: Nadaljuj
         scopes:
@@ -3881,8 +3909,10 @@ sl:
         create: "Ustvari"
         edit: "Uredi"
         save: "Shrani"
+        delete: "Izbriši"
+        cancel: "Prekliči"
         secret: "Skriven"
-        wildcard_event: "Pošlji mi vse."
+        wildcard_event: "Pošlji mi vse"
         active: "Aktivni"
         post_event:
           group_name: "Objavi dogodke"
@@ -3929,11 +3959,11 @@ sl:
           badges: "Značke"
           notifications: "Obvestila"
           permalinks: "Trajne povezave"
-          trust_levels: "Nivo zaupanja"
           users: "Uporabniki"
-          user_fields: "Podatki uporabnika"
-          watched_words: "Nadzorovane besede"
+          groups: "Skupine"
           legal: "Pravno"
+          moderation_flags:
+            title: "Moderiranje"
       appearance:
         title: "Videz"
         sidebar_link:
@@ -3943,19 +3973,8 @@ sl:
       email_settings:
         sidebar_link:
           appearance: "Videz"
-      email_logs:
-        sidebar_link:
-          sent: "Poslano"
-          received: "Prejeto"
-          rejected: "Zavrnjeno"
       security:
         title: "Varnost"
-        sidebar_link:
-          error_logs: "Dnevnik napak"
-          screened_emails: "Nadzorovani e-naslovi"
-          screened_ips: "Nadzorovani IPji"
-          screened_urls: "Nadzorovani URLji"
-          search_logs: "Dnevnik iskanj"
       section_landing_pages:
         account:
           title: "Račun"
@@ -3963,9 +3982,11 @@ sl:
             title: "Varnostne kopije"
       config_areas:
         about:
+          company_name: "Ime"
           optional: "(neobvezno)"
           saved: "shranjeno!"
         flags:
+          header: "Moderiranje"
           description: "Opis"
           enabled: "Vključeno?"
           edit: "Uredi"
@@ -3979,9 +4000,18 @@ sl:
             topic: "tem"
             post: "prispevkov"
             chat_message: "sporočila klepeta"
+        permalinks:
+          edit: "Uredi"
+          delete: "Izbriši"
+        embeddable_host:
+          edit: "Uredi"
+          delete: "Izbriši"
         look_and_feel:
           themes:
             title: "Videzi"
+        user_fields:
+          type: "Tip"
+          delete: "Izbriši"
       plugins:
         title: "Vtičniki"
         name: "Ime"
@@ -4000,7 +4030,6 @@ sl:
         sidebar_link:
           developer: "Razvijalci"
           embedding: "Vdelovanje"
-          rate_limits: "Omejitve"
           user_api: "Uporabniški API"
           onebox: "Onebox"
           files: "Datoteke"
@@ -4033,6 +4062,8 @@ sl:
             confirm: "Želite ustvariti varnostno kopijo?"
           download:
             label: "Naloži"
+          destroy:
+            title: "Izbriši"
         location:
           s3: "S3"
       export_csv:
@@ -4040,9 +4071,6 @@ sl:
         button_text: "Izvozi"
       export_json:
         button_text: "Izvozi"
-      invite:
-        button_text: "Pošlji povabila"
-        button_title: "Pošlji povabila"
       customize:
         title: "Prilagodi"
         preview: "predogled"
@@ -4134,16 +4162,17 @@ sl:
           selected:
             name: "izbran"
         email_style:
+          html: "HTML"
           css: "CSS"
           reset: "Ponastavi na privzeto"
       email:
         title: "E-pošta"
+        settings: "Nastavitve"
         templates: "Predloge"
         test_error: "Prišlo je do napake med pošiljanjem testnega e-sporočila. Ponovno preverite vaše nastavitve e-pošte in preverite, da vaš ponudnik ne blokira povezav za e-pošto. Potem poskusite ponovno."
         sent: "Poslano"
         received: "Prejeto"
         rejected: "Zavrnjeno"
-        sent_at: "Poslano"
         time: "Čas"
         user: "Uporabnik"
         sent_test: "poslano!"
@@ -4173,7 +4202,7 @@ sl:
           silence_user: "Uporabnik utišan"
           delete_topic: "Tema izbrisana"
       logs:
-        title: "Dnevniki"
+        nav_title: "Dnevniki"
         action: "Dejanje"
         created_at: "Ustvarjeno"
         ip_address: "IP"
@@ -4189,8 +4218,6 @@ sl:
         staff_actions:
           all: "vse"
           filter: "Filter:"
-          title: "Dejanja osebja"
-          clear_filters: "Pokaži vse"
           staff_user: "Uporabnik"
           target_user: "Ciljni uporabnik"
           subject: "Vsebina"
@@ -4252,9 +4279,7 @@ sl:
             entity_export: "izvoz entitete"
             delete_group: "izbriši skupino"
         screened_emails:
-          title: "Nadzorovani e-naslovi"
           description: "Nadzorovani e-naslovi se bodo preverili ob vsaki novi registraciji uporabniškega računa - vsak poskus bo blokiran ali bo izvedena druga akcija."
-          email: "E-naslov"
           actions:
             allow: "Dovoli"
         screened_urls:
@@ -4267,24 +4292,18 @@ sl:
           actions:
             block: "Blokiraj"
             do_nothing: "Dovoli"
-            allow_admin: "Dovoli administratorju"
           form:
             label: "Novo:"
             add: "Dodaj"
             filter: "Išči"
         search_logs:
-          title: "Dnevnik iskanj"
           term: "Iskalni pogoj"
           searches: "Iskanj"
           types:
             all_search_types: "Vse vrste iskanj"
             header: "Glava"
-            full_page: "Cela stran"
             click_through_only: "Vse (kjer je kliknil na rezultat)"
-        logster:
-          title: "Dnevnik napak"
       watched_words:
-        title: "Nadzorovane besede"
         search: "išči"
         clear_filter: "Počisti"
         show_words:
@@ -4293,7 +4312,6 @@ sl:
           few: "pokaži %{count} besede"
           other: "pokaži %{count} besed"
         download: Naloži
-        clear_all: Počisti vse
         actions:
           block: "Blokiraj"
           censor: "Cenzuriraj"
@@ -4349,8 +4367,11 @@ sl:
         last_emailed: "Zadnja e-pošta"
         active: "Aktiviran"
         status: "Stanje"
-        show_emails: "Pokaži e-naslove"
-        hide_emails: "Skrij e-naslove"
+        bulk_actions:
+          delete:
+            confirmation_modal:
+              close: "Zapri"
+              confirm: "Izbriši"
         nav:
           new: "Novi"
           active: "Aktivni"
@@ -4361,7 +4382,6 @@ sl:
         approved: "Potrjen?"
         titles:
           active: "Aktivni uporabniki"
-          new: "Novi uporabniki"
           pending: "Uporabniki za odobritev"
           newuser: "Uporabniki na nivoju zaupanja 0 (novi)"
           basic: "Uporabniki na nivoju zaupanja 1 (osnovni)"
@@ -4370,9 +4390,6 @@ sl:
           leader: "Uporabniki na nivoju zaupanja 4 (vodja)"
           staff: "Osebje"
           moderators: "Moderatorji"
-          silenced: "Utišani uporabniki"
-          suspended: "Suspendirani uporabniki"
-          staged: "Prirejeni uporabniki"
         check_email:
           text: "Prikaži"
         check_sso:
@@ -4446,7 +4463,6 @@ sl:
         approve_bulk_success: "Uspeh! Vsi izbrani uporabniki/ce, so bili potrjeni in obveščeni."
         time_read: "Čas branja"
         anonymize: "Anonimiziraj uporabnika"
-        anonymize_confirm: "Ali ste PREPRIČANI da hočete anonomizirati tega uporabnika? To bo spremenilo njegovo uporabniško ime in e-naslov ter ponastavilo vse profilne podatke."
         anonymize_yes: "Da, anonimiziraj tega uporabnika"
         delete: "Izbriši uporabnika"
         delete_posts:
@@ -4541,8 +4557,6 @@ sl:
           delete_sso_record: "Izbriši zapis SSO"
           confirm_delete: "Ali ste prepričani, da želite izbrisati ta zapis DiscourseConnect?"
       user_fields:
-        title: "Podatki uporabnika"
-        create: "Dodaj podatek uporabnika"
         name: "Ime polja"
         type: "Vrsta polja"
         description: "Opis polja"
@@ -4562,25 +4576,17 @@ sl:
             title: "Neobvezno"
         editable:
           title: "Uredljivo po prijavi"
-          enabled: "uredljivo"
-          disabled: "ni uredljivo"
         show_on_profile:
           title: "Prikaži na javnem profilu"
-          enabled: "prikazano na profilu"
-          disabled: "ni prikazano na profilu"
         show_on_user_card:
           title: "Prikaži na uporabnikovi izkaznici"
-          enabled: "prikazano na uporabnikovi izkaznici"
-          disabled: "ni prikazano na uporabnikovi izkaznici"
         field_types:
-          text: "Besedilno polje"
+          text: "Besedilo"
           confirm: "Potrditev"
           dropdown: "Spustni meni"
       site_text:
-        description: "Lahko spremenite katerikoli besedilo na forumu. Začnite tako da poiščete spodaj:"
         search: "Išči besedilo, ki bi ga rad/a uredil/a"
-        title: "Besedilo"
-        edit: "uredi"
+        edit: "Uredi"
         revert: "Prekliči spremembe"
         revert_confirm: "Ste prepričani, da želite preklicati spremembe?"
         go_back: "Nazaj na iskalnik"
@@ -4594,14 +4600,18 @@ sl:
         history: "Ogled zgodovine sprememb"
         reset: "ponastavi"
         none: "brez"
+        save: "shrani"
+        cancel: "prekliči"
       site_settings:
-        title: "Nastavitve"
+        nav_title: "Nastavitve"
         no_results: "Iskanje nima zadetkov."
         clear_filter: "Počisti"
         add_group: "dodaj skupino"
         uploaded_image_list:
           upload:
             label: "Naloži"
+        table_column_heading:
+          status: "Stanje"
         categories:
           all_results: "Vsi"
           required: "Zahtevano"
@@ -4668,6 +4678,7 @@ sl:
         none_selected: "Izberi značko za začetek"
         allow_title: Dovoli da se značka uporablja kot naziv
         multiple_grant: Se lahko podeli večkrat
+        visibility_heading: Vidljivost
         listable: Prikaži značko na strani javnih značk
         enabled: vključeno
         disabled: onemogočeno
@@ -4703,7 +4714,7 @@ sl:
             with_time: <span class="username">%{username}</span> ob <span class="time">%{time}</span>
       emoji:
         title: "Emoji"
-        add: "Dodaj nov emoji"
+        delete: "Izbriši"
         uploading: "Nalagam..."
         name: "Ime"
         group: "Skupina"
@@ -4711,10 +4722,15 @@ sl:
         delete_confirm: "Ali ste prepričani, da hočete izbrisati emoji :%{name}:?"
         settings: "Nastavitve"
       embedding:
+        delete: "Izbriši"
         title: "Vdelovanje"
-        edit: "uredi"
-        category: "Objavi v kategorijo"
+        edit: "Uredi"
         embed_by_username: "Uporabniško ime za kreiranje teme"
+        save: "Shrani"
+        host_form:
+          save: "Shrani"
+        nav:
+          settings: "Nastavitve"
       permalink:
         title: "Trajne povezave"
         url: "URL"
@@ -4724,12 +4740,16 @@ sl:
         post_title: "Prispevek"
         category_id: "ID kategorije"
         category_title: "Kategorija"
+        user_title: "Uporabnik"
         username: "Uporabniško ime"
         delete_confirm: Ali ste prepričani, da želite odstraniti trajno povezavo?
+        nav:
+          settings: "Nastavitve"
+          permalinks: "Trajne povezave"
         form:
           label: "Novo:"
-          add: "Dodaj"
-          filter: "Išči (URL ali zunanji URL)"
+          url: "URL"
+          save: "Shrani"
       reseed:
         modal:
           categories: "Kategorije"
@@ -4755,6 +4775,30 @@ sl:
           admin: "Admin"
           moderator: "Moderator"
           regular: "Običajni uporabnik"
+      homepage_choices:
+        custom:
+          label: "Po meri"
+        style_type:
+          categories: "kategorija"
+          topics: "tema"
+      top_menu_items:
+        new: "Nova"
+        unread: "Neprebrane"
+        top: "Najboljše"
+        latest: "Najnovejše"
+        categories: "Kategorije"
+        read: "Prebrano"
+        bookmarks: "Zaznamki"
       previews:
         share_button: "Deli"
         reply_button: "Odgovori"
+      homepage_preview:
+        nav_buttons:
+          all_categories: "vse kategorije"
+        category_names:
+          site_feedback: "Povratne informacije spletnega mesta"
+        table_headers:
+          topic: "Tema"
+          replies: "Odgovori"
+          views: "Ogledov"
+          activity: "Aktivnost"

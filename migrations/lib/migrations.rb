@@ -10,13 +10,16 @@ require "zeitwerk"
 require_relative "converters"
 
 module Migrations
+  class NoSettingsFound < StandardError
+  end
+
   def self.root_path
     @root_path ||= File.expand_path("..", __dir__)
   end
 
   def self.load_rails_environment(quiet: false)
     message = "Loading Rails environment ..."
-    print message unless quiet
+    print message if !quiet
 
     rails_root = File.expand_path("../..", __dir__)
     # rubocop:disable Discourse/NoChdir
@@ -30,9 +33,11 @@ module Migrations
     end
     # rubocop:enable Discourse/NoChdir
 
-    print "\r"
-    print " " * message.length
-    print "\r"
+    if !quiet
+      print "\r"
+      print " " * message.length
+      print "\r"
+    end
   end
 
   def self.configure_zeitwerk
@@ -40,13 +45,18 @@ module Migrations
     loader.log! if ENV["DEBUG"]
 
     loader.inflector.inflect(
-      { "cli" => "CLI", "intermediate_db" => "IntermediateDB", "uploads_db" => "UploadsDB" },
+      {
+        "cli" => "CLI",
+        "id" => "ID",
+        "intermediate_db" => "IntermediateDB",
+        "uploads_db" => "UploadsDB",
+      },
     )
 
     loader.push_dir(File.join(::Migrations.root_path, "lib"), namespace: ::Migrations)
     loader.push_dir(File.join(::Migrations.root_path, "lib", "common"), namespace: ::Migrations)
 
-    # All sub-directories of a converter should have the same namespace.
+    # All subdirectories of a converter should have the same namespace.
     # Unfortunately `loader.collapse` doesn't work recursively.
     Converters.all.each do |name, converter_path|
       module_name = name.camelize.to_sym

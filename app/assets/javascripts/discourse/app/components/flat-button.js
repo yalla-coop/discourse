@@ -4,17 +4,19 @@ import {
   classNames,
   tagName,
 } from "@ember-decorators/component";
-import discourseComputed from "discourse-common/utils/decorators";
-import I18n from "discourse-i18n";
+import discourseComputed from "discourse/lib/decorators";
+import { i18n } from "discourse-i18n";
 
 @tagName("button")
 @classNames("btn-flat")
-@attributeBindings("disabled", "translatedTitle:title")
+@attributeBindings("disabled", "resolvedTitle:title")
 export default class FlatButton extends Component {
-  @discourseComputed("title")
-  translatedTitle(title) {
+  @discourseComputed("title", "translatedTitle")
+  resolvedTitle(title, translatedTitle) {
     if (title) {
-      return I18n.t(title);
+      return i18n(title);
+    } else if (translatedTitle) {
+      return translatedTitle;
     }
   }
 

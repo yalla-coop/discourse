@@ -2163,10 +2163,12 @@ RSpec.describe User do
       SiteSetting.default_other_notification_level_when_replying = 3 # immediately
       SiteSetting.default_other_external_links_in_new_tab = true
       SiteSetting.default_other_enable_quoting = false
+      SiteSetting.default_other_enable_smart_lists = false
       SiteSetting.default_other_dynamic_favicon = true
       SiteSetting.default_other_skip_new_user_tips = true
 
-      SiteSetting.default_hide_profile_and_presence = true
+      SiteSetting.default_hide_profile = true
+      SiteSetting.default_hide_presence = true
       SiteSetting.default_topics_automatic_unpin = false
 
       SiteSetting.default_categories_watching = category0.id.to_s
@@ -2185,9 +2187,11 @@ RSpec.describe User do
       expect(options.email_messages_level).to eq(UserOption.email_level_types[:never])
       expect(options.external_links_in_new_tab).to eq(true)
       expect(options.enable_quoting).to eq(false)
+      expect(options.enable_smart_lists).to eq(false)
       expect(options.dynamic_favicon).to eq(true)
       expect(options.skip_new_user_tips).to eq(true)
-      expect(options.hide_profile_and_presence).to eq(true)
+      expect(options.hide_profile).to eq(true)
+      expect(options.hide_presence).to eq(true)
       expect(options.automatically_unpin_topics).to eq(false)
       expect(options.new_topic_duration_minutes).to eq(-1)
       expect(options.auto_track_topics_after_msecs).to eq(0)
@@ -3613,6 +3617,25 @@ RSpec.describe User do
       expect { user.bump_required_fields_version }.to change { user.required_fields_version }.to(
         version.id,
       )
+    end
+  end
+
+  describe "#similar_users" do
+    fab!(:user2) { Fabricate(:user, ip_address: "1.2.3.4") }
+    fab!(:user3) { Fabricate(:user, ip_address: "1.2.3.4") }
+    fab!(:admin) { Fabricate(:admin, ip_address: "1.2.3.4") }
+    fab!(:moderator) { Fabricate(:moderator, ip_address: "1.2.3.4") }
+
+    before { user.update(ip_address: "1.2.3.4") }
+
+    it "gets users that are not admin, moderator, or current user with the same IP" do
+      expect(user.similar_users).to contain_exactly(user2, user3)
+    end
+
+    it "does not get other users with a null IP if this user has a null IP" do
+      user.update!(ip_address: nil)
+      user2.update!(ip_address: nil)
+      expect(user.similar_users).to eq([])
     end
   end
 end

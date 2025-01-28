@@ -11,8 +11,8 @@ import hideApplicationHeaderButtons from "discourse/helpers/hide-application-hea
 import hideApplicationSidebar from "discourse/helpers/hide-application-sidebar";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
-import i18n from "discourse-common/helpers/i18n";
-import getURL from "discourse-common/lib/get-url";
+import getURL from "discourse/lib/get-url";
+import { i18n } from "discourse-i18n";
 
 export default RouteTemplate(
   class extends Component {
@@ -70,9 +70,9 @@ export default RouteTemplate(
         } else if (response.needs_approval) {
           this.needsApproval = true;
         } else {
-          setTimeout(this.loadHomepage, 2000);
+          setTimeout(this.loadHomepage, 3000);
         }
-      } catch (error) {
+      } catch {
         this.errorMessage = i18n("user.activate_account.already_done");
       }
     }
@@ -84,7 +84,7 @@ export default RouteTemplate(
 
     <template>
       {{bodyClass "activate-account-page"}}
-      {{hideApplicationHeaderButtons "search" "login" "signup"}}
+      {{hideApplicationHeaderButtons "search" "login" "signup" "menu"}}
       {{hideApplicationSidebar}}
       {{#if this.errorMessage}}
         <div class="alert alert-error">
@@ -103,17 +103,19 @@ export default RouteTemplate(
           {{#if this.accountActivated}}
             <div class="account-activated">
               <div class="tada-image">
-                <img src="/images/wizard/tada.svg" alt="tada emoji" />
+                <img
+                  src={{getURL "/images/wizard/tada.svg"}}
+                  alt="tada emoji"
+                />
               </div>
               {{#if this.needsApproval}}
                 <p>{{i18n "user.activate_account.approval_required"}}</p>
               {{else}}
                 <p>{{i18n "user.activate_account.please_continue"}}</p>
                 <DButton
-                  class="continue-button"
+                  class="btn-primary continue-button"
                   @translatedLabel={{i18n
                     "user.activate_account.continue_button"
-                    site_name=this.siteSettings.title
                   }}
                   @action={{this.loadHomepage}}
                 />

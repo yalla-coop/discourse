@@ -4,47 +4,68 @@ RSpec.describe Service::StepsInspector do
   class DummyService
     include Service::Base
 
+    options do
+      attribute :my_option, :boolean, default: true
+      attribute :my_other_option, :integer, default: 1
+    end
+
     model :model
     policy :policy
-    contract do
+
+    params do
       attribute :parameter
 
       validates :parameter, presence: true
     end
+
     transaction do
       step :in_transaction_step_1
       step :in_transaction_step_2
     end
+
+    try { step :might_raise }
     step :final_step
   end
 
   subject(:inspector) { described_class.new(result) }
 
   let(:parameter) { "present" }
-  let(:result) { DummyService.call(parameter: parameter) }
+  let(:result) { DummyService.call(params: { parameter: parameter }) }
 
   before do
     class DummyService
-      %i[fetch_model policy in_transaction_step_1 in_transaction_step_2 final_step].each do |name|
-        define_method(name) { true }
-      end
+      %i[
+        fetch_model
+        policy
+        in_transaction_step_1
+        in_transaction_step_2
+        might_raise
+        final_step
+      ].each { |name| define_method(name) { true } }
     end
   end
 
-  describe "#inspect" do
-    subject(:output) { inspector.inspect.strip }
+  describe "#execution_flow" do
+    subject(:output) { inspector.execution_flow.strip.gsub(%r{ \(\d+\.\d+ ms\)}, "") }
 
     context "when service runs without error" do
       it "outputs all the steps of the service" do
         expect(output).to eq <<~OUTPUT.chomp
-        [1/7] [model] 'model' ✅
-        [2/7] [policy] 'policy' ✅
-        [3/7] [contract] 'default' ✅
-        [4/7] [transaction]
-        [5/7]   [step] 'in_transaction_step_1' ✅
-        [6/7]   [step] 'in_transaction_step_2' ✅
-        [7/7] [step] 'final_step' ✅
+        [ 1/10] [options] default ✅
+        [ 2/10] [model] model ✅
+        [ 3/10] [policy] policy ✅
+        [ 4/10] [params] default ✅
+        [ 5/10] [transaction]
+        [ 6/10]   [step] in_transaction_step_1 ✅
+        [ 7/10]   [step] in_transaction_step_2 ✅
+        [ 8/10] [try]
+        [ 9/10]   [step] might_raise ✅
+        [10/10] [step] final_step ✅
         OUTPUT
+      end
+
+      it "outputs time taken by each step" do
+        expect(inspector.execution_flow).to match(/\d+\.\d+ ms/)
       end
     end
 
@@ -59,13 +80,10 @@ RSpec.describe Service::StepsInspector do
 
       it "shows the failing step" do
         expect(output).to eq <<~OUTPUT.chomp
-        [1/7] [model] 'model' ❌
-        [2/7] [policy] 'policy'
-        [3/7] [contract] 'default'
-        [4/7] [transaction]
-        [5/7]   [step] 'in_transaction_step_1'
-        [6/7]   [step] 'in_transaction_step_2'
-        [7/7] [step] 'final_step'
+        [ 1/10] [options] default ✅
+        [ 2/10] [model] model ❌
+
+        (8 more steps not shown as the execution flow was stopped before reaching them)
         OUTPUT
       end
     end
@@ -81,29 +99,26 @@ RSpec.describe Service::StepsInspector do
 
       it "shows the failing step" do
         expect(output).to eq <<~OUTPUT.chomp
-        [1/7] [model] 'model' ✅
-        [2/7] [policy] 'policy' ❌
-        [3/7] [contract] 'default'
-        [4/7] [transaction]
-        [5/7]   [step] 'in_transaction_step_1'
-        [6/7]   [step] 'in_transaction_step_2'
-        [7/7] [step] 'final_step'
+        [ 1/10] [options] default ✅
+        [ 2/10] [model] model ✅
+        [ 3/10] [policy] policy ❌
+
+        (7 more steps not shown as the execution flow was stopped before reaching them)
         OUTPUT
       end
     end
 
-    context "when the contract step is failing" do
+    context "when the params step is failing" do
       let(:parameter) { nil }
 
       it "shows the failing step" do
         expect(output).to eq <<~OUTPUT.chomp
-        [1/7] [model] 'model' ✅
-        [2/7] [policy] 'policy' ✅
-        [3/7] [contract] 'default' ❌
-        [4/7] [transaction]
-        [5/7]   [step] 'in_transaction_step_1'
-        [6/7]   [step] 'in_transaction_step_2'
-        [7/7] [step] 'final_step'
+        [ 1/10] [options] default ✅
+        [ 2/10] [model] model ✅
+        [ 3/10] [policy] policy ✅
+        [ 4/10] [params] default ❌
+
+        (6 more steps not shown as the execution flow was stopped before reaching them)
         OUTPUT
       end
     end
@@ -119,13 +134,41 @@ RSpec.describe Service::StepsInspector do
 
       it "shows the failing step" do
         expect(output).to eq <<~OUTPUT.chomp
-        [1/7] [model] 'model' ✅
-        [2/7] [policy] 'policy' ✅
-        [3/7] [contract] 'default' ✅
-        [4/7] [transaction]
-        [5/7]   [step] 'in_transaction_step_1' ✅
-        [6/7]   [step] 'in_transaction_step_2' ❌
-        [7/7] [step] 'final_step'
+        [ 1/10] [options] default ✅
+        [ 2/10] [model] model ✅
+        [ 3/10] [policy] policy ✅
+        [ 4/10] [params] default ✅
+        [ 5/10] [transaction]
+        [ 6/10]   [step] in_transaction_step_1 ✅
+        [ 7/10]   [step] in_transaction_step_2 ❌
+
+        (3 more steps not shown as the execution flow was stopped before reaching them)
+        OUTPUT
+      end
+    end
+
+    context "when a step raises an exception inside the 'try' block" do
+      before do
+        class DummyService
+          def might_raise
+            raise "BOOM"
+          end
+        end
+      end
+
+      it "shows the failing step" do
+        expect(output).to eq <<~OUTPUT.chomp
+        [ 1/10] [options] default ✅
+        [ 2/10] [model] model ✅
+        [ 3/10] [policy] policy ✅
+        [ 4/10] [params] default ✅
+        [ 5/10] [transaction]
+        [ 6/10]   [step] in_transaction_step_1 ✅
+        [ 7/10]   [step] in_transaction_step_2 ✅
+        [ 8/10] [try]
+        [ 9/10]   [step] might_raise 💥
+
+        (1 more steps not shown as the execution flow was stopped before reaching them)
         OUTPUT
       end
     end
@@ -136,13 +179,16 @@ RSpec.describe Service::StepsInspector do
 
         it "adapts its output accordingly" do
           expect(output).to eq <<~OUTPUT.chomp
-          [1/7] [model] 'model' ✅
-          [2/7] [policy] 'policy' ✅ ⚠️  <= expected to return false but got true instead
-          [3/7] [contract] 'default' ✅
-          [4/7] [transaction]
-          [5/7]   [step] 'in_transaction_step_1' ✅
-          [6/7]   [step] 'in_transaction_step_2' ✅
-          [7/7] [step] 'final_step' ✅
+          [ 1/10] [options] default ✅
+          [ 2/10] [model] model ✅
+          [ 3/10] [policy] policy ✅ ⚠️  <= expected to return false but got true instead
+          [ 4/10] [params] default ✅
+          [ 5/10] [transaction]
+          [ 6/10]   [step] in_transaction_step_1 ✅
+          [ 7/10]   [step] in_transaction_step_2 ✅
+          [ 8/10] [try]
+          [ 9/10]   [step] might_raise ✅
+          [10/10] [step] final_step ✅
           OUTPUT
         end
       end
@@ -159,13 +205,11 @@ RSpec.describe Service::StepsInspector do
 
         it "adapts its output accordingly" do
           expect(output).to eq <<~OUTPUT.chomp
-          [1/7] [model] 'model' ✅
-          [2/7] [policy] 'policy' ❌ ⚠️  <= expected to return true but got false instead
-          [3/7] [contract] 'default'
-          [4/7] [transaction]
-          [5/7]   [step] 'in_transaction_step_1'
-          [6/7]   [step] 'in_transaction_step_2'
-          [7/7] [step] 'final_step'
+          [ 1/10] [options] default ✅
+          [ 2/10] [model] model ✅
+          [ 3/10] [policy] policy ❌ ⚠️  <= expected to return true but got false instead
+
+          (7 more steps not shown as the execution flow was stopped before reaching them)
           OUTPUT
         end
       end
@@ -211,7 +255,7 @@ RSpec.describe Service::StepsInspector do
       end
     end
 
-    context "when the contract step is failing" do
+    context "when the params step is failing" do
       let(:parameter) { nil }
 
       it "returns an error related to the contract" do
@@ -253,6 +297,43 @@ RSpec.describe Service::StepsInspector do
       it "returns an error related to the step" do
         expect(error).to eq("my error")
       end
+    end
+
+    context "when an exception occurred inside the 'try' block" do
+      before do
+        class DummyService
+          def might_raise
+            raise "BOOM"
+          end
+        end
+      end
+
+      it "returns an error related to the exception" do
+        expect(error).to match(/BOOM \([^(]*RuntimeError[^)]*\)/)
+      end
+    end
+  end
+
+  describe "#inspect" do
+    let(:parameter) { nil }
+
+    it "outputs the service class name, the steps results and the specific error" do
+      expect(inspector.inspect.gsub(%r{ \(\d+\.\d+ ms\)}, "")).to eq(<<~OUTPUT)
+        Inspecting DummyService result object:
+
+        [ 1/10] [options] default ✅
+        [ 2/10] [model] model ✅
+        [ 3/10] [policy] policy ✅
+        [ 4/10] [params] default ❌
+
+        (6 more steps not shown as the execution flow was stopped before reaching them)
+
+        Why it failed:
+
+        #<ActiveModel::Errors [#<ActiveModel::Error attribute=parameter, type=blank, options={}>]>
+
+        Provided parameters: {"parameter"=>nil}
+      OUTPUT
     end
   end
 end

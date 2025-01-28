@@ -365,7 +365,7 @@ class ApplicationController < ActionController::Base
       Logster.add_to_env(request.env, "username", current_user.username)
       response.headers["X-Discourse-Username"] = current_user.username
     end
-    response.headers["X-Discourse-Route"] = "#{controller_name}/#{action_name}"
+    response.headers["X-Discourse-Route"] = "#{controller_path}/#{action_name}"
   end
 
   def set_mp_snapshot_fields
@@ -868,7 +868,7 @@ class ApplicationController < ActionController::Base
         return render plain: I18n.t("user_api_key.invalid_public_key")
       end
 
-      if UserApiKey.invalid_auth_redirect?(params[:auth_redirect])
+      if UserApiKeyClient.invalid_auth_redirect?(params[:auth_redirect])
         return render plain: I18n.t("user_api_key.invalid_auth_redirect")
       end
 
@@ -893,7 +893,7 @@ class ApplicationController < ActionController::Base
 
     redirect_path = path("/u/#{current_user.encoded_username}/preferences/second-factor")
     if !request.fullpath.start_with?(redirect_path)
-      redirect_to path(redirect_path)
+      redirect_to redirect_path
       nil
     end
   end
@@ -1164,6 +1164,6 @@ class ApplicationController < ActionController::Base
   end
 
   def service_params
-    params.to_unsafe_h.merge(guardian:)
+    { params: params.to_unsafe_h, guardian: }
   end
 end

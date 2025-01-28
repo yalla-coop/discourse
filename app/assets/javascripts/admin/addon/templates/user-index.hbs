@@ -10,7 +10,7 @@
     {{#if this.model.can_view_action_logs}}
       <DButton
         @action={{fn this.viewActionLogs this.model.username}}
-        @icon="far-list-alt"
+        @icon="far-rectangle-list"
         @label="admin.user.action_logs"
         class="btn-default"
       />
@@ -193,7 +193,9 @@
     <div class="value">{{this.model.ip_address}}</div>
     <div class="controls">
       {{#if this.currentUser.staff}}
-        <IpLookup @ip={{this.model.ip_address}} @userId={{this.model.id}} />
+        {{#if this.model.ip_address}}
+          <IpLookup @ip={{this.model.ip_address}} @userId={{this.model.id}} />
+        {{/if}}
       {{/if}}
     </div>
   </div>
@@ -203,10 +205,12 @@
     <div class="value">{{this.model.registration_ip_address}}</div>
     <div class="controls">
       {{#if this.currentUser.staff}}
-        <IpLookup
-          @ip={{this.model.registration_ip_address}}
-          @userId={{this.model.id}}
-        />
+        {{#if this.model.registration_ip_address}}
+          <IpLookup
+            @ip={{this.model.registration_ip_address}}
+            @userId={{this.model.id}}
+          />
+        {{/if}}
       {{/if}}
     </div>
   </div>
@@ -230,7 +234,7 @@
     </div>
   {{/if}}
 
-  <div class="display-row">
+  <div class="display-row second-factor">
     <div class="field">{{i18n "user.second_factor.title"}}</div>
     <div class="value">
       {{#if this.model.second_factor_enabled}}
@@ -245,7 +249,7 @@
           @action={{this.disableSecondFactor}}
           @icon="unlock-keyhole"
           @label="user.second_factor.disable"
-          class="btn-default"
+          class="btn-default disable-second-factor"
         />
       {{/if}}
     </div>
@@ -850,7 +854,7 @@
           {{else}}
             <DButton
               @action={{fn this.checkSsoPayload this.model}}
-              @icon="far-list-alt"
+              @icon="far-rectangle-list"
               @label="admin.users.check_sso.text"
               @title="admin.users.check_sso.title"
               class="btn-default"
@@ -860,6 +864,10 @@
       {{/if}}
     {{/let}}
   </section>
+{{/if}}
+
+{{#if this.currentUser.admin}}
+  <AdminUserExportsTable @model={{this.model}} />
 {{/if}}
 
 <span>

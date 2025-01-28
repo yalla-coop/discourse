@@ -4,6 +4,9 @@ class CategoryList
   CATEGORIES_PER_PAGE = 20
   SUBCATEGORIES_PER_CATEGORY = 5
 
+  # Maximum number of categories before the optimized category page style is enforced
+  MAX_UNOPTIMIZED_CATEGORIES = 1000
+
   include ActiveModel::Serialization
 
   cattr_accessor :preloaded_topic_custom_fields
@@ -132,16 +135,21 @@ class CategoryList
   end
 
   def find_categories
+    # Enforce paginaion for users who can see a large number of categories to
+    # smooth out the performance of the category list page.
+    paginate =
+      Category.secured(@guardian).count > MAX_UNOPTIMIZED_CATEGORIES ||
+        @guardian.can_lazy_load_categories?
+
     query = Category.includes(CategoryList.included_associations).secured(@guardian)
     query = self.class.order_categories(query)
 
-    if @options[:parent_category_id].present? || @guardian.can_lazy_load_categories?
+    if @options[:parent_category_id].present? || paginate
       query = query.where(parent_category_id: @options[:parent_category_id])
     end
 
     page = [1, @options[:page].to_i].max
-    if SiteSetting.desktop_category_page_style == "categories_only_optimized" ||
-         @guardian.can_lazy_load_categories?
+    if paginate
       query = query.limit(CATEGORIES_PER_PAGE).offset((page - 1) * CATEGORIES_PER_PAGE)
     elsif page > 1
       # Pagination is supported only when lazy load is enabled. If it is not,
@@ -154,7 +162,7 @@ class CategoryList
 
     @categories = query.to_a
 
-    if @guardian.can_lazy_load_categories? && @options[:parent_category_id].blank?
+    if paginate && @options[:parent_category_id].blank?
       categories_with_rownum =
         Category
           .secured(@guardian)
@@ -174,7 +182,7 @@ class CategoryList
 
     include_subcategories = @options[:include_subcategories] == true
 
-    if @guardian.can_lazy_load_categories?
+    if paginate
       subcategory_ids = {}
       Category
         .secured(@guardian)

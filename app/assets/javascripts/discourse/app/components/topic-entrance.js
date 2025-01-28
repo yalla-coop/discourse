@@ -3,37 +3,37 @@ import { action } from "@ember/object";
 import { scheduleOnce } from "@ember/runloop";
 import { service } from "@ember/service";
 import { classNameBindings } from "@ember-decorators/component";
+import { on } from "@ember-decorators/object";
 import $ from "jquery";
+import discourseComputed, { bind } from "discourse/lib/decorators";
 import DiscourseURL from "discourse/lib/url";
-import CleansUp from "discourse/mixins/cleans-up";
-import discourseComputed, { bind } from "discourse-common/utils/decorators";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
 
 function entranceDate(dt, showTime) {
   const today = new Date();
 
   if (dt.toDateString() === today.toDateString()) {
-    return moment(dt).format(I18n.t("dates.time"));
+    return moment(dt).format(i18n("dates.time"));
   }
 
   if (dt.getYear() === today.getYear()) {
     // No year
     return moment(dt).format(
       showTime
-        ? I18n.t("dates.long_date_without_year_with_linebreak")
-        : I18n.t("dates.long_no_year_no_time")
+        ? i18n("dates.long_date_without_year_with_linebreak")
+        : i18n("dates.long_no_year_no_time")
     );
   }
 
   return moment(dt).format(
     showTime
-      ? I18n.t("dates.long_date_with_year_with_linebreak")
-      : I18n.t("dates.long_date_with_year_without_time")
+      ? i18n("dates.long_date_with_year_with_linebreak")
+      : i18n("dates.long_date_with_year_without_time")
   );
 }
 
 @classNameBindings("visible::hidden")
-export default class TopicEntrance extends Component.extend(CleansUp) {
+export default class TopicEntrance extends Component {
   @service router;
   @service session;
   @service historyStore;
@@ -72,9 +72,15 @@ export default class TopicEntrance extends Component.extend(CleansUp) {
     return entranceDate(bumpedDate, showTime);
   }
 
-  didInsertElement() {
-    super.didInsertElement(...arguments);
+  @on("didInsertElement")
+  _inserted() {
     this.appEvents.on("topic-entrance:show", this, "_show");
+    this.appEvents.on("dom:clean", this, this.cleanUp);
+  }
+
+  @on("didDestroyElement")
+  _destroyed() {
+    this.appEvents.off("dom:clean", this, this.cleanUp);
   }
 
   _setCSS() {

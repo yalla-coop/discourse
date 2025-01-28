@@ -2,7 +2,6 @@ import { render, triggerEvent } from "@ember/test-helpers";
 import { hbs } from "ember-cli-htmlbars";
 import { module, test } from "qunit";
 import { setupRenderingTest } from "discourse/tests/helpers/component-test";
-import { exists, query } from "discourse/tests/helpers/qunit-helpers";
 
 module("Integration | Component | user-info", function (hooks) {
   setupRenderingTest(hooks);
@@ -33,12 +32,12 @@ module("Integration | Component | user-info", function (hooks) {
     );
 
     this.set("includeLink", true);
-    assert.ok(exists(`.name-line a[href="/u/${this.currentUser.username}"]`));
+    assert.dom(`.name-line a[href="/u/${this.currentUser.username}"]`).exists();
 
     this.set("includeLink", false);
-    assert.notOk(
-      exists(`.name-line a[href="/u/${this.currentUser.username}"]`)
-    );
+    assert
+      .dom(`.name-line a[href="/u/${this.currentUser.username}"]`)
+      .doesNotExist();
   });
 
   test("includeAvatar", async function (assert) {
@@ -127,7 +126,7 @@ module("Integration | Component | user-info", function (hooks) {
     await render(
       hbs`<UserInfo @user={{this.currentUser}} @showStatus={{true}} /><DTooltips />`
     );
-    await triggerEvent(query(".user-status-message"), "mousemove");
+    await triggerEvent(".user-status-message", "pointermove");
 
     assert
       .dom("[data-content][data-identifier='user-status-message-tooltip']")

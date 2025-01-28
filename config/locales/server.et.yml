@@ -254,6 +254,8 @@ et:
         bio_raw: "Minust"
       user:
         password: "Parool"
+      user_password:
+        password: "Parool"
     errors:
       models:
         topic:
@@ -775,15 +777,6 @@ et:
       invalid_integer: "Väärtuseks peab olema täisarv."
       min_username_length_range: "Minimaalne ei tohi olla maksimaalsest suurem."
       max_username_length_range: "Sa ei tohi maksimaalset seada minimaalsest väiksemaks."
-    keywords:
-      clean_up_inactive_users_after_days:
-      - ""
-      - "mitteaktiivne"
-      - ""
-      purge_unactivated_users_grace_period_days:
-      - ""
-      - "mitteaktiivne"
-      - ""
   search:
     within_post: "postituse nr%{post_number} tegi %{username}"
     types:
@@ -1057,13 +1050,7 @@ et:
           homepage_style:
             choices:
               latest:
-                label: "Viimased teemad"
-              categories_only:
-                label: "Ainult foorumid"
-              categories_with_featured_topics:
-                label: "Foorumid esiletõstetud teemadega"
-              categories_and_latest_topics:
-                label: "Foorumid ja viimased teemad"
+                label: "Värskeimad"
       corporate:
         fields:
           contact_url:

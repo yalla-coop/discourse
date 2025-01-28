@@ -1,51 +1,36 @@
 import Component from "@ember/component";
 import EmberObject, { action, computed } from "@ember/object";
-import { alias } from "@ember/object/computed";
 import { getOwner } from "@ember/owner";
-import { next, schedule, throttle } from "@ember/runloop";
+import { schedule, throttle } from "@ember/runloop";
+import { service } from "@ember/service";
 import { classNameBindings } from "@ember-decorators/component";
 import { observes, on } from "@ember-decorators/object";
 import { BasePlugin } from "@uppy/core";
 import $ from "jquery";
 import { resolveAllShortUrls } from "pretty-text/upload-short-url";
 import { ajax } from "discourse/lib/ajax";
+import { tinyAvatar } from "discourse/lib/avatar-utils";
+import { setupComposerPosition } from "discourse/lib/composer/composer-position";
+import discourseComputed, { bind, debounce } from "discourse/lib/decorators";
 import {
   fetchUnseenHashtagsInContext,
   linkSeenHashtagsInContext,
 } from "discourse/lib/hashtag-decorator";
+import { iconHTML } from "discourse/lib/icon-library";
+import discourseLater from "discourse/lib/later";
 import {
   fetchUnseenMentions,
   linkSeenMentions,
 } from "discourse/lib/link-mentions";
 import { loadOneboxes } from "discourse/lib/load-oneboxes";
-import putCursorAtEnd from "discourse/lib/put-cursor-at-end";
 import {
   authorizesOneOrMoreImageExtensions,
   IMAGE_MARKDOWN_REGEX,
 } from "discourse/lib/uploads";
 import UppyComposerUpload from "discourse/lib/uppy/composer-upload";
-import userSearch from "discourse/lib/user-search";
-import {
-  destroyUserStatuses,
-  initUserStatusHtml,
-  renderUserStatusHtml,
-} from "discourse/lib/user-status-on-autocomplete";
-import {
-  caretPosition,
-  formatUsername,
-  inCodeBlock,
-} from "discourse/lib/utilities";
+import { formatUsername } from "discourse/lib/utilities";
 import Composer from "discourse/models/composer";
-import { isTesting } from "discourse-common/config/environment";
-import { tinyAvatar } from "discourse-common/lib/avatar-utils";
-import { iconHTML } from "discourse-common/lib/icon-library";
-import discourseLater from "discourse-common/lib/later";
-import { findRawTemplate } from "discourse-common/lib/raw-templates";
-import discourseComputed, {
-  bind,
-  debounce,
-} from "discourse-common/utils/decorators";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
 
 let uploadHandlers = [];
 export function addComposerUploadHandler(extensions, method) {
@@ -98,14 +83,15 @@ export function addApiImageWrapperButtonClickEvent(fn) {
 const DEBOUNCE_FETCH_MS = 450;
 const DEBOUNCE_JIT_MS = 2000;
 
-@classNameBindings("showToolbar:toolbar-visible", ":wmd-controls")
+@classNameBindings("composer.showToolbar:toolbar-visible", ":wmd-controls")
 export default class ComposerEditor extends Component {
+  @service composer;
+
   composerEventPrefix = "composer";
   shouldBuildScrollMap = true;
   scrollMap = null;
-  processPreview = true;
 
-  @alias("composer") composerModel;
+  fileUploadElementId = "file-uploader";
 
   init() {
     super.init(...arguments);
@@ -114,14 +100,19 @@ export default class ComposerEditor extends Component {
 
     this.uppyComposerUpload = new UppyComposerUpload(getOwner(this), {
       composerEventPrefix: this.composerEventPrefix,
-      composerModel: this.composerModel,
+      composerModel: this.composer.model,
       uploadMarkdownResolvers,
       uploadPreProcessors,
       uploadHandlers,
+      fileUploadElementId: this.fileUploadElementId,
     });
   }
 
-  @discourseComputed("composer.requiredCategoryMissing")
+  get topic() {
+    return this.composer.get("model.topic");
+  }
+
+  @discourseComputed("composer.model.requiredCategoryMissing")
   replyPlaceholder(requiredCategoryMissing) {
     if (requiredCategoryMissing) {
       return "composer.reply_placeholder_choose_category";
@@ -141,10 +132,10 @@ export default class ComposerEditor extends Component {
     return this.currentUser && this.currentUser.link_posting_access !== "none";
   }
 
-  @observes("focusTarget")
+  @observes("composer.focusTarget")
   setFocus() {
-    if (this.focusTarget === "editor") {
-      putCursorAtEnd(this.element.querySelector("textarea"));
+    if (this.composer.focusTarget === "editor") {
+      this.textManipulation.putCursorAtEnd();
     }
   }
 
@@ -191,73 +182,50 @@ export default class ComposerEditor extends Component {
     };
   }
 
-  @bind
-  _afterMentionComplete(value) {
-    this.composer.set("reply", value);
-
-    // ensures textarea scroll position is correct
-    schedule("afterRender", () => {
-      const input = this.element.querySelector(".d-editor-input");
-      input?.blur();
-      input?.focus();
-    });
-  }
-
   @on("didInsertElement")
   _composerEditorInit() {
-    const input = this.element.querySelector(".d-editor-input");
     const preview = this.element.querySelector(".d-editor-preview-wrapper");
-
-    if (this.siteSettings.enable_mentions) {
-      $(input).autocomplete({
-        template: findRawTemplate("user-selector-autocomplete"),
-        dataSource: (term) => {
-          destroyUserStatuses();
-          return userSearch({
-            term,
-            topicId: this.topic?.id,
-            categoryId: this.topic?.category_id || this.composer?.categoryId,
-            includeGroups: true,
-          }).then((result) => {
-            initUserStatusHtml(getOwner(this), result.users);
-            return result;
-          });
-        },
-        onRender: (options) => renderUserStatusHtml(options),
-        key: "@",
-        transformComplete: (v) => v.username || v.name,
-        afterComplete: this._afterMentionComplete,
-        triggerRule: async (textarea) =>
-          !(await inCodeBlock(textarea.value, caretPosition(textarea))),
-        onClose: destroyUserStatuses,
-      });
-    }
-
-    input?.addEventListener(
-      "scroll",
-      this._throttledSyncEditorAndPreviewScroll
-    );
-
     this._registerImageAltTextButtonClick(preview);
 
-    // Focus on the body unless we have a title
-    if (!this.get("composer.canEditTitle")) {
-      putCursorAtEnd(input);
-    }
-
-    if (this.allowUpload) {
+    if (this.composer.allowUpload) {
       this.uppyComposerUpload.setup(this.element);
     }
 
     this.appEvents.trigger(`${this.composerEventPrefix}:will-open`);
   }
 
+  @bind
+  setupEditor(textManipulation) {
+    this.textManipulation = textManipulation;
+    this.uppyComposerUpload.textManipulation = textManipulation;
+
+    const input = this.element.querySelector(".d-editor-input");
+
+    input.addEventListener("scroll", this._throttledSyncEditorAndPreviewScroll);
+
+    // Focus on the body unless we have a title
+    if (!this.get("composer.model.canEditTitle")) {
+      this.textManipulation.putCursorAtEnd();
+    }
+
+    const destroyComposerPosition = setupComposerPosition(input);
+
+    return () => {
+      destroyComposerPosition();
+
+      input.removeEventListener(
+        "scroll",
+        this._throttledSyncEditorAndPreviewScroll
+      );
+    };
+  }
+
   @discourseComputed(
-    "composer.reply",
-    "composer.replyLength",
-    "composer.missingReplyCharacters",
-    "composer.minimumPostLength",
-    "lastValidatedAt"
+    "composer.model.reply",
+    "composer.model.replyLength",
+    "composer.model.missingReplyCharacters",
+    "composer.model.minimumPostLength",
+    "composer.lastValidatedAt"
   )
   validation(
     reply,
@@ -273,18 +241,18 @@ export default class ComposerEditor extends Component {
 
     let reason;
     if (replyLength < 1) {
-      reason = I18n.t("composer.error.post_missing");
+      reason = i18n("composer.error.post_missing");
     } else if (missingReplyCharacters > 0) {
-      reason = I18n.t("composer.error.post_length", {
+      reason = i18n("composer.error.post_length", {
         count: minimumPostLength,
       });
       const tl = this.get("currentUser.trust_level");
       if ((tl === 0 || tl === 1) && !this._isNewTopic) {
         reason +=
           "<br/>" +
-          I18n.t("composer.error.try_like", {
+          i18n("composer.error.try_like", {
             heart: iconHTML("heart", {
-              label: I18n.t("likes_lowercase", { count: 1 }),
+              label: i18n("likes_lowercase", { count: 1 }),
             }),
           });
       }
@@ -302,9 +270,9 @@ export default class ComposerEditor extends Component {
   @computed("composer.{creatingTopic,editingFirstPost,creatingSharedDraft}")
   get _isNewTopic() {
     return (
-      this.composer.creatingTopic ||
-      this.composer.editingFirstPost ||
-      this.composer.creatingSharedDraft
+      this.composer.model.creatingTopic ||
+      this.composer.model.editingFirstPost ||
+      this.composer.model.creatingSharedDraft
     );
   }
 
@@ -490,8 +458,8 @@ export default class ComposerEditor extends Component {
   _renderUnseenMentions(preview, unseen) {
     fetchUnseenMentions({
       names: unseen,
-      topicId: this.get("composer.topic.id"),
-      allowedNames: this.get("composer.targetRecipients")?.split(","),
+      topicId: this.get("composer.model.topic.id"),
+      allowedNames: this.get("composer.model.targetRecipients")?.split(","),
     }).then((response) => {
       linkSeenMentions(preview, this.siteSettings);
       this._warnMentionedGroups(preview);
@@ -558,7 +526,7 @@ export default class ComposerEditor extends Component {
           }
 
           this.warnedGroupMentions.push(name);
-          this.groupsMentioned({
+          this.composer.groupsMentioned({
             name,
             userCount: mention.dataset.mentionableUserCount,
             maxMentions: mention.dataset.maxMentions,
@@ -571,7 +539,7 @@ export default class ComposerEditor extends Component {
   // previously we would warn after @bob even if you were about to mention @bob2
   @debounce(DEBOUNCE_JIT_MS)
   _warnCannotSeeMention(preview) {
-    if (this.composer.draftKey === Composer.NEW_PRIVATE_MESSAGE_KEY) {
+    if (this.composer.model?.draftKey === Composer.NEW_PRIVATE_MESSAGE_KEY) {
       return;
     }
 
@@ -582,7 +550,7 @@ export default class ComposerEditor extends Component {
       }
 
       this.warnedCannotSeeMentions.push(name);
-      this.cannotSeeMention({
+      this.composer.cannotSeeMention({
         name,
         reason: mention.dataset.reason,
       });
@@ -597,7 +565,7 @@ export default class ComposerEditor extends Component {
         }
 
         this.warnedCannotSeeMentions.push(name);
-        this.cannotSeeMention({
+        this.composer.cannotSeeMention({
           name,
           reason: mention.dataset.reason,
           notifiedCount: mention.dataset.notifiedUserCount,
@@ -611,7 +579,7 @@ export default class ComposerEditor extends Component {
       return;
     }
 
-    this.hereMention(hereCount);
+    this.composer.hereMention(hereCount);
   }
 
   @bind
@@ -626,8 +594,9 @@ export default class ComposerEditor extends Component {
     );
 
     const scale = event.target.dataset.scale;
-    const matchingPlaceholder =
-      this.get("composer.reply").match(IMAGE_MARKDOWN_REGEX);
+    const matchingPlaceholder = this.get("composer.model.reply").match(
+      IMAGE_MARKDOWN_REGEX
+    );
 
     if (matchingPlaceholder) {
       const match = matchingPlaceholder[index];
@@ -672,8 +641,9 @@ export default class ComposerEditor extends Component {
 
   commitAltText(buttonWrapper) {
     const index = parseInt(buttonWrapper.getAttribute("data-image-index"), 10);
-    const matchingPlaceholder =
-      this.get("composer.reply").match(IMAGE_MARKDOWN_REGEX);
+    const matchingPlaceholder = this.get("composer.model.reply").match(
+      IMAGE_MARKDOWN_REGEX
+    );
     const match = matchingPlaceholder[index];
     const input = buttonWrapper.querySelector("input.alt-text-input");
     const replacement = match.replace(
@@ -765,8 +735,9 @@ export default class ComposerEditor extends Component {
       event.target.closest(".button-wrapper").dataset.imageIndex,
       10
     );
-    const matchingPlaceholder =
-      this.get("composer.reply").match(IMAGE_MARKDOWN_REGEX);
+    const matchingPlaceholder = this.get("composer.model.reply").match(
+      IMAGE_MARKDOWN_REGEX
+    );
     this.appEvents.trigger(
       `${this.composerEventPrefix}:replace-text`,
       matchingPlaceholder[index],
@@ -785,7 +756,7 @@ export default class ComposerEditor extends Component {
       event.target.closest(".button-wrapper").dataset.imageIndex,
       10
     );
-    const reply = this.get("composer.reply");
+    const reply = this.get("composer.model.reply");
     const matches = reply.match(IMAGE_MARKDOWN_REGEX);
     const closingIndex =
       index + parseInt(event.target.dataset.imageCount, 10) - 1;
@@ -805,6 +776,10 @@ export default class ComposerEditor extends Component {
   }
 
   _registerImageAltTextButtonClick(preview) {
+    if (!preview) {
+      return;
+    }
+
     preview.addEventListener("click", this._handleAltTextCancelButtonClick);
     preview.addEventListener("click", this._handleAltTextEditButtonClick);
     preview.addEventListener("click", this._handleAltTextOkButtonClick);
@@ -820,26 +795,18 @@ export default class ComposerEditor extends Component {
 
   @on("willDestroyElement")
   _composerClosed() {
-    const input = this.element.querySelector(".d-editor-input");
     const preview = this.element.querySelector(".d-editor-preview-wrapper");
 
-    if (this.allowUpload) {
+    if (this.composer.allowUpload) {
       this.uppyComposerUpload.teardown();
     }
 
     this.appEvents.trigger(`${this.composerEventPrefix}:will-close`);
 
-    next(() => {
-      // need to wait a bit for the "slide down" transition of the composer
-      discourseLater(
-        () => this.appEvents.trigger(`${this.composerEventPrefix}:closed`),
-        isTesting() ? 0 : 400
-      );
-    });
-
-    input?.removeEventListener(
-      "scroll",
-      this._throttledSyncEditorAndPreviewScroll
+    // need to wait a bit for the "slide down" transition of the composer
+    discourseLater(
+      () => this.appEvents.trigger(`${this.composerEventPrefix}:closed`),
+      400
     );
 
     preview?.removeEventListener("click", this._handleAltTextCancelButtonClick);
@@ -859,11 +826,11 @@ export default class ComposerEditor extends Component {
   onExpandPopupMenuOptions(toolbarEvent) {
     const selected = toolbarEvent.selected;
     toolbarEvent.selectText(selected.start, selected.end - selected.start);
-    this.storeToolbarState(toolbarEvent);
+    this.composer.storeToolbarState(toolbarEvent);
   }
 
   showPreview() {
-    this.send("togglePreview");
+    this.composer.togglePreview();
   }
 
   _isInQuote(element) {
@@ -896,16 +863,20 @@ export default class ComposerEditor extends Component {
       id: "quote",
       group: "fontStyles",
       icon: "far-comment",
-      sendAction: this.importQuote,
+      sendAction: this.composer.importQuote,
       title: "composer.quote_post_title",
       unshift: true,
     });
 
-    if (this.allowUpload && this.uploadIcon && this.site.desktopView) {
+    if (
+      this.composer.allowUpload &&
+      this.composer.uploadIcon &&
+      this.site.desktopView
+    ) {
       toolbar.addButton({
         id: "upload",
         group: "insertions",
-        icon: this.uploadIcon,
+        icon: this.composer.uploadIcon,
         title: "upload",
         sendAction: this.showUploadModal,
       });
@@ -932,6 +903,40 @@ export default class ComposerEditor extends Component {
       this._decorateCookedElement(preview);
     }
 
-    this.afterRefresh(preview);
+    this.composer.afterRefresh(preview);
+  }
+
+  @computed("composer.formTemplateIds")
+  get selectedFormTemplateId() {
+    if (this._selectedFormTemplateId) {
+      return this._selectedFormTemplateId;
+    }
+
+    return (
+      this.composer.model.formTemplateId || this.composer.formTemplateIds?.[0]
+    );
+  }
+
+  set selectedFormTemplateId(value) {
+    this._selectedFormTemplateId = value;
+  }
+
+  @action
+  updateSelectedFormTemplateId(formTemplateId) {
+    this.selectedFormTemplateId = formTemplateId;
+  }
+
+  @discourseComputed(
+    "composer.formTemplateIds",
+    "composer.model.replyingToTopic",
+    "composer.model.editingPost"
+  )
+  showFormTemplateForm(formTemplateIds, replyingToTopic, editingPost) {
+    return formTemplateIds?.length > 0 && !replyingToTopic && !editingPost;
+  }
+
+  @action
+  showUploadModal() {
+    document.getElementById(this.fileUploadElementId).click();
   }
 }

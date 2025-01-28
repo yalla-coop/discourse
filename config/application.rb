@@ -90,7 +90,8 @@ module Discourse
     # tiny file needed by site settings
     require "highlight_js"
 
-    config.load_defaults 7.1
+    config.load_defaults 7.2
+    config.yjit = GlobalSetting.yjit_enabled
     config.active_record.cache_versioning = false # our custom cache class doesn’t support this
     config.action_controller.forgery_protection_origin_check = false
     config.active_record.belongs_to_required_by_default = false
@@ -234,7 +235,11 @@ module Discourse
 
     # Use discourse-fonts gem to symlink fonts and generate .scss file
     fonts_path = File.join(config.root, "public/fonts")
-    Discourse::Utils.atomic_ln_s(DiscourseFonts.path_for_fonts, fonts_path)
+    if !File.exist?(fonts_path) || File.realpath(fonts_path) != DiscourseFonts.path_for_fonts
+      STDERR.puts "Symlinking fonts from discourse-fonts gem"
+      File.delete(fonts_path) if File.exist?(fonts_path)
+      Discourse::Utils.atomic_ln_s(DiscourseFonts.path_for_fonts, fonts_path)
+    end
 
     require "stylesheet/manager"
     require "svg_sprite"

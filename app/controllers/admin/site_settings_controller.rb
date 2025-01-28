@@ -39,15 +39,19 @@ class Admin::SiteSettingsController < Admin::AdminController
 
     previous_value = value_or_default(SiteSetting.get(id)) if update_existing_users
 
-    SiteSetting::Update.call(service_params.merge(setting_name: id, new_value: value)) do
-      on_success do |contract:|
+    SiteSetting::Update.call(params: { setting_name: id, new_value: value }, guardian:) do
+      on_success do |params:|
         if update_existing_users
-          SiteSettingUpdateExistingUsers.call(id, contract.new_value, previous_value)
+          SiteSettingUpdateExistingUsers.call(id, params.new_value, previous_value)
         end
         render body: nil
       end
       on_failed_policy(:setting_is_visible) do
         raise Discourse::InvalidParameters, I18n.t("errors.site_settings.site_setting_is_hidden")
+      end
+      on_failed_policy(:setting_is_shadowed_globally) do
+        raise Discourse::InvalidParameters,
+              I18n.t("errors.site_settings.site_setting_is_shadowed_globally")
       end
       on_failed_policy(:setting_is_configurable) do
         raise Discourse::InvalidParameters,

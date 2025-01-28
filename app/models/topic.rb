@@ -286,7 +286,17 @@ class Topic < ActiveRecord::Base
   has_many :tags, through: :topic_tags, dependent: :destroy # dependent destroy applies to the topic_tags records
   has_many :tag_users, through: :tags
 
+  has_many :moved_posts_as_old_topic,
+           class_name: "MovedPost",
+           foreign_key: :old_topic_id,
+           dependent: :destroy
+  has_many :moved_posts_as_new_topic,
+           class_name: "MovedPost",
+           foreign_key: :new_topic_id,
+           dependent: :destroy
+
   has_one :top_topic
+  has_one :topic_hot_score
   has_one :shared_draft, dependent: :destroy
   has_one :published_page
 
@@ -556,7 +566,8 @@ class Topic < ActiveRecord::Base
 
   # Returns hot topics since a date for display in email digest.
   def self.for_digest(user, since, opts = nil)
-    opts = opts || {}
+    opts ||= {}
+
     period = ListController.best_period_for(since)
 
     topics =
@@ -599,30 +610,29 @@ class Topic < ActiveRecord::Base
     # Remove category topics
     topics = topics.where.not(id: Category.select(:topic_id).where.not(topic_id: nil))
 
+    # Remove suppressed categories
+    if SiteSetting.digest_suppress_categories.present?
+      topics =
+        topics.where.not(category_id: SiteSetting.digest_suppress_categories.split("|").map(&:to_i))
+    end
+
+    # Remove suppressed tags
+    if SiteSetting.digest_suppress_tags.present?
+      tag_ids = Tag.where_name(SiteSetting.digest_suppress_tags.split("|")).pluck(:id)
+
+      topics =
+        topics.where.not(id: TopicTag.where(tag_id: tag_ids).select(:topic_id)) if tag_ids.present?
+    end
+
     # Remove muted and shared draft categories
     remove_category_ids =
       CategoryUser.where(
         user_id: user.id,
         notification_level: CategoryUser.notification_levels[:muted],
       ).pluck(:category_id)
-    if SiteSetting.digest_suppress_categories.present?
-      topics =
-        topics.where(
-          "topics.category_id NOT IN (?)",
-          SiteSetting.digest_suppress_categories.split("|").map(&:to_i),
-        )
-    end
-    if SiteSetting.digest_suppress_tags.present?
-      tag_ids = Tag.where_name(SiteSetting.digest_suppress_tags.split("|")).pluck(:id)
-      if tag_ids.present?
-        topics =
-          topics.joins("LEFT JOIN topic_tags tg ON topics.id = tg.topic_id").where(
-            "tg.tag_id NOT IN (?) OR tg.tag_id IS NULL",
-            tag_ids,
-          )
-      end
-    end
+
     remove_category_ids << SiteSetting.shared_drafts_category if SiteSetting.shared_drafts_enabled?
+
     if remove_category_ids.present?
       remove_category_ids.uniq!
       topics =
@@ -891,7 +901,8 @@ class Topic < ActiveRecord::Base
       WHERE
         topics.archetype <> 'private_message' AND
         X.topic_id = topics.id AND
-        Y.topic_id = topics.id AND (
+        Y.topic_id = topics.id AND
+        Z.topic_id = topics.id AND (
           topics.highest_staff_post_number <> X.highest_post_number OR
           topics.highest_post_number <> Y.highest_post_number OR
           topics.last_posted_at <> Y.last_posted_at OR
@@ -936,7 +947,8 @@ class Topic < ActiveRecord::Base
       WHERE
         topics.archetype = 'private_message' AND
         X.topic_id = topics.id AND
-        Y.topic_id = topics.id AND (
+        Y.topic_id = topics.id AND
+        Z.topic_id = topics.id AND (
           topics.highest_staff_post_number <> X.highest_post_number OR
           topics.highest_post_number <> Y.highest_post_number OR
           topics.last_posted_at <> Y.last_posted_at OR
@@ -1172,6 +1184,7 @@ class Topic < ActiveRecord::Base
         end
 
         topic_user.destroy
+        MessageBus.publish("/topic/#{id}", { type: "remove_allowed_user" }, user_ids: [user.id])
         return true
       end
     end
@@ -1185,16 +1198,18 @@ class Topic < ActiveRecord::Base
       SiteSetting.max_allowed_message_recipients
   end
 
-  def invite_group(user, group)
+  def invite_group(user, group, should_notify: true)
     TopicAllowedGroup.create!(topic_id: self.id, group_id: group.id)
     self.allowed_groups.reload
 
     last_post =
       self.posts.order("post_number desc").where("not hidden AND posts.deleted_at IS NULL").first
     if last_post
-      Jobs.enqueue(:post_alert, post_id: last_post.id)
       add_small_action(user, "invited_group", group.name)
-      Jobs.enqueue(:group_pm_alert, user_id: user.id, group_id: group.id, post_id: last_post.id)
+      if should_notify
+        Jobs.enqueue(:post_alert, post_id: last_post.id)
+        Jobs.enqueue(:group_pm_alert, user_id: user.id, group_id: group.id, post_id: last_post.id)
+      end
     end
 
     # If the group invited includes the OP of the topic as one of is members,
@@ -1295,6 +1310,9 @@ class Topic < ActiveRecord::Base
         moved_by,
         post_ids,
         move_to_pm: opts[:archetype].present? && opts[:archetype] == "private_message",
+        options: {
+          freeze_original: opts[:freeze_original],
+        },
       )
 
     if opts[:destination_topic_id]

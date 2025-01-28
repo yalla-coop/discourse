@@ -56,7 +56,6 @@ describe "Admin New Features Page", type: :system do
       expect(new_features_page).to have_learn_more_link
       expect(new_features_page).to have_no_emoji
       expect(new_features_page).to have_date("November 2023")
-      expect(new_features_page).to have_version("3.3.0.beta4")
     end
 
     within find(".admin-config-area-card:last-child") do
@@ -64,7 +63,6 @@ describe "Admin New Features Page", type: :system do
       expect(new_features_page).to have_learn_more_link
       expect(new_features_page).to have_no_emoji
       expect(new_features_page).to have_date("August 2023")
-      expect(new_features_page).to have_version("3.3.0.beta3")
     end
   end
 
@@ -90,7 +88,7 @@ describe "Admin New Features Page", type: :system do
     expect(new_features_page).to have_no_screenshot
   end
 
-  it "displays experimental feature toggle" do
+  it "displays experimental feature toggle and has the correct state" do
     DiscourseUpdates.stubs(:new_features).returns(
       [
         {
@@ -105,11 +103,56 @@ describe "Admin New Features Page", type: :system do
           "created_at" => "2023-11-10T02:52:41.462Z",
           "updated_at" => "2023-11-10T04:28:47.020Z",
           "experiment_setting" => "experimental_form_templates",
+          "experiment_enabled" => true,
         },
       ],
     )
     new_features_page.visit
-    expect(new_features_page).to have_toggle_experiment_button
+    expect(new_features_page).to have_toggle_experiment_button(true)
+  end
+
+  it "displays experimental text next to feature title when feature is experimental" do
+    DiscourseUpdates.stubs(:new_features).returns(
+      [
+        {
+          "id" => 7,
+          "user_id" => 1,
+          "emoji" => "😍",
+          "title" => "New feature",
+          "description" => "New feature description",
+          "link" => "https://meta.discourse.org",
+          "tier" => [],
+          "discourse_version" => "",
+          "created_at" => "2023-11-10T02:52:41.462Z",
+          "updated_at" => "2023-11-10T04:28:47.020Z",
+          "experiment_setting" => "experimental_form_templates",
+          "experiment_enabled" => true,
+        },
+      ],
+    )
+    new_features_page.visit
+    expect(new_features_page).to have_experimental_text
+  end
+
+  it "does not display experimental text next to feature title when feature is not experimental" do
+    DiscourseUpdates.stubs(:new_features).returns(
+      [
+        {
+          "id" => 7,
+          "user_id" => 1,
+          "emoji" => "😍",
+          "title" => "New feature",
+          "description" => "New feature description",
+          "link" => "https://meta.discourse.org",
+          "tier" => [],
+          "discourse_version" => "",
+          "created_at" => "2023-11-10T02:52:41.462Z",
+          "updated_at" => "2023-11-10T04:28:47.020Z",
+        },
+      ],
+    )
+    new_features_page.visit
+    expect(new_features_page).to have_no_experimental_text
   end
 
   it "displays a new feature indicator on the sidebar and clears it when navigating to what's new" do

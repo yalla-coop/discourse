@@ -97,3 +97,12 @@ export const SITE_SETTING_REQUIRES_CONFIRMATION_TYPES = {
   simple: "simple",
   user_option: "user_option",
 };
+
+export const MAX_UNOPTIMIZED_CATEGORIES = 1000;
+
+export const USER_FIELD_FLAGS = [
+  "editable",
+  "show_on_profile",
+  "show_on_user_card",
+  "searchable",
+];

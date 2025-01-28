@@ -47,13 +47,17 @@ RSpec.describe Category do
 
     it "should delete associated sidebar_section_links when category is destroyed" do
       category_sidebar_section_link = Fabricate(:category_sidebar_section_link)
-      Fabricate(:category_sidebar_section_link, linkable: category_sidebar_section_link.linkable)
-      tag_sidebar_section_link = Fabricate(:tag_sidebar_section_link)
+      category_sidebar_section_link_2 =
+        Fabricate(:category_sidebar_section_link, linkable: category_sidebar_section_link.linkable)
 
       expect { category_sidebar_section_link.linkable.destroy! }.to change {
         SidebarSectionLink.count
       }.from(12).to(10)
-      expect(SidebarSectionLink.last).to eq(tag_sidebar_section_link)
+      expect(
+        SidebarSectionLink.where(
+          id: [category_sidebar_section_link.id, category_sidebar_section_link_2.id],
+        ).count,
+      ).to eq(0)
     end
   end
 
@@ -470,13 +474,13 @@ RSpec.describe Category do
     end
 
     it "deletes permalink when category slug is reused" do
-      Fabricate(:permalink, url: "/c/bikeshed-category")
+      Fabricate(:permalink, url: "/c/bikeshed-category", category_id: 42)
       Fabricate(:category_with_definition, slug: "bikeshed-category")
       expect(Permalink.count).to eq(0)
     end
 
     it "deletes permalink when sub category slug is reused" do
-      Fabricate(:permalink, url: "/c/main-category/sub-category")
+      Fabricate(:permalink, url: "/c/main-category/sub-category", category_id: 42)
       main_category = Fabricate(:category_with_definition, slug: "main-category")
       Fabricate(
         :category_with_definition,

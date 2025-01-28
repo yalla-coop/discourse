@@ -14,13 +14,19 @@ import { Promise } from "rsvp";
 import { ajax } from "discourse/lib/ajax";
 import { url } from "discourse/lib/computed";
 import cookie, { removeCookie } from "discourse/lib/cookie";
+import discourseComputed from "discourse/lib/decorators";
+import deprecated from "discourse/lib/deprecated";
+import { isTesting } from "discourse/lib/environment";
 import { longDate } from "discourse/lib/formatter";
+import { getOwnerWithFallback } from "discourse/lib/get-owner";
+import getURL, { getURLWithCDN } from "discourse/lib/get-url";
+import discourseLater from "discourse/lib/later";
 import { NotificationLevels } from "discourse/lib/notification-levels";
 import PreloadStore from "discourse/lib/preload-store";
+import singleton from "discourse/lib/singleton";
 import { emojiUnescape } from "discourse/lib/text";
 import { userPath } from "discourse/lib/url";
 import { defaultHomepage, escapeExpression } from "discourse/lib/utilities";
-import Singleton from "discourse/mixins/singleton";
 import Badge from "discourse/models/badge";
 import Bookmark from "discourse/models/bookmark";
 import Category from "discourse/models/category";
@@ -33,13 +39,7 @@ import UserBadge from "discourse/models/user-badge";
 import UserDraftsStream from "discourse/models/user-drafts-stream";
 import UserPostsStream from "discourse/models/user-posts-stream";
 import UserStream from "discourse/models/user-stream";
-import { isTesting } from "discourse-common/config/environment";
-import deprecated from "discourse-common/lib/deprecated";
-import { getOwnerWithFallback } from "discourse-common/lib/get-owner";
-import getURL, { getURLWithCDN } from "discourse-common/lib/get-url";
-import discourseLater from "discourse-common/lib/later";
-import discourseComputed from "discourse-common/utils/decorators";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
 
 export const SECOND_FACTOR_METHODS = {
   TOTP: 1,
@@ -108,6 +108,7 @@ let userOptionFields = [
   "dark_scheme_id",
   "dynamic_favicon",
   "enable_quoting",
+  "enable_smart_lists",
   "enable_defer",
   "automatically_unpin_topics",
   "digest_after_minutes",
@@ -120,7 +121,8 @@ let userOptionFields = [
   "allow_private_messages",
   "enable_allowed_pm_users",
   "homepage_id",
-  "hide_profile_and_presence",
+  "hide_profile",
+  "hide_presence",
   "text_size",
   "title_count_mode",
   "timezone",
@@ -172,7 +174,36 @@ function userOption(userOptionKey) {
   });
 }
 
+@singleton
 export default class User extends RestModel.extend(Evented) {
+  static createCurrent() {
+    const userJson = PreloadStore.get("currentUser");
+    if (userJson) {
+      userJson.isCurrent = true;
+
+      if (userJson.primary_group_id) {
+        const primaryGroup = userJson.groups.find(
+          (group) => group.id === userJson.primary_group_id
+        );
+        if (primaryGroup) {
+          userJson.primary_group_name = primaryGroup.name;
+        }
+      }
+
+      if (!userJson.user_option.timezone) {
+        userJson.user_option.timezone = moment.tz.guess();
+        this._saveTimezone(userJson);
+      }
+
+      const store = getOwnerWithFallback(this).lookup("service:store");
+      const currentUser = store.createRecord("user", userJson);
+      currentUser.statusManager.trackStatus();
+      return currentUser;
+    }
+
+    return null;
+  }
+
   @service appEvents;
   @service userTips;
 
@@ -182,10 +213,12 @@ export default class User extends RestModel.extend(Evented) {
   @userOption("mailing_list_mode") mailing_list_mode;
   @userOption("external_links_in_new_tab") external_links_in_new_tab;
   @userOption("enable_quoting") enable_quoting;
+  @userOption("enable_smart_lists") enable_smart_lists;
   @userOption("dynamic_favicon") dynamic_favicon;
   @userOption("automatically_unpin_topics") automatically_unpin_topics;
   @userOption("likes_notifications_disabled") likes_notifications_disabled;
-  @userOption("hide_profile_and_presence") hide_profile_and_presence;
+  @userOption("hide_profile") hide_profile;
+  @userOption("hide_presence") hide_presence;
   @userOption("title_count_mode") title_count_mode;
   @userOption("enable_defer") enable_defer;
   @userOption("timezone") timezone;
@@ -986,7 +1019,7 @@ export default class User extends RestModel.extend(Evented) {
         data: { context: window.location.pathname },
       });
     } else {
-      return Promise.reject(I18n.t("user.delete_yourself_not_allowed"));
+      return Promise.reject(i18n("user.delete_yourself_not_allowed"));
     }
   }
 
@@ -1084,9 +1117,7 @@ export default class User extends RestModel.extend(Evented) {
   }
 
   canManageGroup(group) {
-    return group.get("automatic")
-      ? false
-      : group.get("can_admin_group") || group.get("is_group_owner");
+    return group.get("can_admin_group") || group.get("is_group_owner");
   }
 
   @discourseComputed("groups.@each.title", "badges.[]")
@@ -1251,40 +1282,11 @@ export default class User extends RestModel.extend(Evented) {
   }
 }
 
-User.reopenClass(Singleton, {
+User.reopenClass({
   // Find a `User` for a given username.
   findByUsername(username, options) {
     const user = User.create({ username });
     return user.findDetails(options);
-  },
-
-  // TODO: Use app.register and junk Singleton
-  createCurrent() {
-    const userJson = PreloadStore.get("currentUser");
-    if (userJson) {
-      userJson.isCurrent = true;
-
-      if (userJson.primary_group_id) {
-        const primaryGroup = userJson.groups.find(
-          (group) => group.id === userJson.primary_group_id
-        );
-        if (primaryGroup) {
-          userJson.primary_group_name = primaryGroup.name;
-        }
-      }
-
-      if (!userJson.user_option.timezone) {
-        userJson.user_option.timezone = moment.tz.guess();
-        this._saveTimezone(userJson);
-      }
-
-      const store = getOwnerWithFallback(this).lookup("service:store");
-      const currentUser = store.createRecord("user", userJson);
-      currentUser.statusManager.trackStatus();
-      return currentUser;
-    }
-
-    return null;
   },
 
   checkUsername(username, email, for_user_id) {

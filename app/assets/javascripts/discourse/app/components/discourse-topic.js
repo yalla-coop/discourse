@@ -7,9 +7,9 @@ import { classNameBindings } from "@ember-decorators/component";
 import { observes } from "@ember-decorators/object";
 import $ from "jquery";
 import ClickTrack from "discourse/lib/click-track";
+import { bind } from "discourse/lib/decorators";
 import { highlightPost } from "discourse/lib/utilities";
 import Scrolling from "discourse/mixins/scrolling";
-import { bind } from "discourse-common/utils/decorators";
 
 @classNameBindings(
   "multiSelect",
@@ -25,6 +25,20 @@ export default class DiscourseTopic extends Component.extend(Scrolling) {
   menuVisible = true;
   SHORT_POST = 1200;
   dockAt = 0;
+
+  init() {
+    super.init(...arguments);
+    this.appEvents.on("discourse:focus-changed", this, "gotFocus");
+    this.appEvents.on("post:highlight", this, "_highlightPost");
+  }
+
+  willDestroy() {
+    super.willDestroy(...arguments);
+
+    // this happens after route exit, stuff could have trickled in
+    this.appEvents.off("discourse:focus-changed", this, "gotFocus");
+    this.appEvents.off("post:highlight", this, "_highlightPost");
+  }
 
   @observes("enteredAt")
   _enteredTopic() {
@@ -43,12 +57,6 @@ export default class DiscourseTopic extends Component.extend(Scrolling) {
     }
   }
 
-  init() {
-    super.init(...arguments);
-    this.appEvents.on("discourse:focus-changed", this, "gotFocus");
-    this.appEvents.on("post:highlight", this, "_highlightPost");
-  }
-
   didInsertElement() {
     super.didInsertElement(...arguments);
 
@@ -59,14 +67,6 @@ export default class DiscourseTopic extends Component.extend(Scrolling) {
       ".cooked a, a.track-link",
       (e) => ClickTrack.trackClick(e, getOwner(this))
     );
-  }
-
-  willDestroy() {
-    super.willDestroy(...arguments);
-
-    // this happens after route exit, stuff could have trickled in
-    this.appEvents.off("discourse:focus-changed", this, "gotFocus");
-    this.appEvents.off("post:highlight", this, "_highlightPost");
   }
 
   willDestroyElement() {

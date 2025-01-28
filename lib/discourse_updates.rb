@@ -132,7 +132,8 @@ module DiscourseUpdates
     end
 
     def new_features_payload
-      response = Excon.new(new_features_endpoint).request(expects: [200], method: :Get)
+      response =
+        Excon.new(new_features_endpoint).request(expects: [200], method: :Get, read_timeout: 5)
       response.body
     end
 
@@ -141,7 +142,9 @@ module DiscourseUpdates
       Discourse.redis.set(new_features_key, payload)
     end
 
-    def new_features
+    def new_features(force_refresh: false)
+      update_new_features if force_refresh
+
       entries =
         begin
           JSON.parse(Discourse.redis.get(new_features_key))
@@ -153,8 +156,14 @@ module DiscourseUpdates
       entries.map! do |item|
         next item if !item["experiment_setting"]
 
-        item["experiment_setting"] = nil if !SiteSetting.respond_to?(item["experiment_setting"]) ||
-          SiteSetting.type_supervisor.get_type(item["experiment_setting"].to_sym) != :bool
+        if !SiteSetting.respond_to?(item["experiment_setting"]) ||
+             SiteSetting.type_supervisor.get_type(item["experiment_setting"].to_sym) != :bool
+          item["experiment_setting"] = nil
+          item["experiment_enabled"] = false
+        else
+          item["experiment_enabled"] = SiteSetting.send(item["experiment_setting"].to_sym) if item
+        end
+
         item
       end
 

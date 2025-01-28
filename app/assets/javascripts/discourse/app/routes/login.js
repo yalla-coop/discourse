@@ -11,7 +11,8 @@ export default class LoginRoute extends DiscourseRoute {
   beforeModel() {
     if (
       !this.siteSettings.login_required &&
-      !this.siteSettings.experimental_full_page_login
+      (!this.siteSettings.full_page_login ||
+        this.siteSettings.enable_discourse_connect)
     ) {
       this.router
         .replaceWith(`/${defaultHomepage()}`)
@@ -21,7 +22,9 @@ export default class LoginRoute extends DiscourseRoute {
   }
 
   model() {
-    return StaticPage.find("login");
+    if (this.siteSettings.login_required) {
+      return StaticPage.find("login");
+    }
   }
 
   setupController(controller) {
@@ -31,5 +34,9 @@ export default class LoginRoute extends DiscourseRoute {
     controller.set("canSignUp", canSignUp);
     controller.set("flashType", "");
     controller.set("flash", "");
+
+    if (this.siteSettings.login_required) {
+      controller.set("showLogin", false);
+    }
   }
 }

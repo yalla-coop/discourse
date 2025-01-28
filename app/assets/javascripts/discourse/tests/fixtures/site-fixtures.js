@@ -60,6 +60,8 @@ export default {
       anonymous_top_menu_items: ["latest", "hot", "categories"],
       uncategorized_category_id: 17,
       is_readonly: false,
+      full_name_required_for_signup: false,
+      full_name_visible_in_signup: true,
       categories: [
         {
           id: 3,
@@ -724,7 +726,6 @@ export default {
           can_revoke: true,
         },
       ],
-      displayed_about_plugin_stat_groups: ["chat_messages"],
       hashtag_configurations: { "topic-composer": ["category", "tag"] },
       hashtag_icons: { "category": "folder", "tag": "tag" },
       anonymous_sidebar_sections: [
@@ -803,6 +804,14 @@ export default {
               icon: "certificate",
               external: false,
               segment: "secondary",
+            },
+            {
+              id: 338,
+              name: "Invite",
+              value: "/new-invite",
+              icon: "paper-plane",
+              external: false,
+              segment: "primary",
             },
           ],
           slug: "community",

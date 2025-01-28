@@ -6,6 +6,11 @@
 
 de:
   js:
+    admin:
+      logs:
+        staff_actions:
+          actions:
+            delete_automation: Automatisierung löschen
     discourse_automation:
       title: Automatisierung
       create: Erstellen
@@ -14,7 +19,8 @@ de:
       select_trigger: Auslöser auswählen
       confirm_automation_reset: Diese Aktion setzt die Skript- und Auslöseroptionen zurück. Der neue Zustand wird gespeichert. Willst du fortfahren?
       confirm_automation_trigger: Diese Aktion löst die Automatisierung aus. Willst du fortfahren?
-      no_automation_yet: Du hast noch keine Automatisierung erstellt.
+      no_automation_yet: Du hast noch keine Automatisierungen erstellt. Wähle unten eine Option, um loszulegen.
+      filter_placeholder: Nach Namen oder Beschreibung filtern …
       edit_automation:
         trigger_section:
           forced: Dieser Auslöser wird vom Skript erzwungen.
@@ -161,10 +167,10 @@ de:
               description: Optional. Wird nur ausgelöst, wenn das Thema des Beitrags in dieser Kategorie ist
             restricted_group:
               label: Gruppe
-              description: Optional. Wird nur ausgelöst, wenn das Thema des Beitrags eine persönliche Nachricht im Posteingang dieser Gruppe ist
+              description: Optional. Wird nur ausgelöst, wenn der Beitrag eine persönliche Nachricht im Posteingang dieser Gruppe ist
             restricted_groups:
               label: Gruppen
-              description: Optional, wird nur ausgelöst, wenn das Thema des Beitrags eine private Nachricht in einem der Posteingänge der Gruppe ist
+              description: Optional. Wird nur ausgelöst, wenn der Beitrag eine persönliche Nachricht im Posteingang einer der Gruppen ist
             ignore_group_members:
               label: Gruppenmitglieder ignorieren
               description: Den Auslöser überspringen, falls der Absender ein Mitglied der oben angegebenen Gruppe ist
@@ -178,7 +184,7 @@ de:
               label: Nur erstes Thema
               description: Wird nur ausgelöst, wenn das Thema das erste Thema ist, das ein Benutzer erstellt hat
             skip_via_email:
-              label: "Per E-Mail überspringen"
+              label: "„Per E-Mail“ überspringen"
               description: "Den Auslöser überspringen, wenn der Beitrag per E-Mail erstellt wurde"
           created: Erstellt
           edited: Bearbeitet
@@ -222,6 +228,10 @@ de:
               label: Gültige Vertrauensstufen
               description: Wird nur ausgelöst, wenn ein Beitrag von einem Benutzer mit diesen Vertrauensstufen erstellt wird. Standardmäßig eine beliebige Vertrauensstufe
         topic_tags_changed:
+          trigger_on_modes:
+            tags_added_or_removed: Schlagwörter hinzugefügt oder entfernt
+            tags_added: Schlagwörter hinzugefügt
+            tags_removed: Schlagwörter entfernt
           fields:
             watching_categories:
               label: Überwachte Kategorien
@@ -229,9 +239,11 @@ de:
             watching_tags:
               label: Überwachte Schlagwörter
               description: Wird nur bei Themen mit einem dieser Schlagwörter ausgelöst
+            trigger_on:
+              label: Auslösen wenn
             trigger_with_pms:
-              label: Auslösen mit PNs
-              description: Wird auch ausgelöst, wenn die Tags in einer PN geändert wurden
+              label: Auslösen mit PN
+              description: Wird auch ausgelöst, wenn die Schlagwörter in einer PN geändert wurden
         after_post_cook:
           fields:
             valid_trust_levels:
@@ -390,6 +402,7 @@ de:
           fields:
             custom_field_name:
               label: "Name des benutzerdefinierten Benutzerfelds"
+      unnamed_automation: "Automatisierung ohne Titel"
       models:
         script:
           name:
@@ -406,6 +419,8 @@ de:
             label: Skript
           version:
             label: Version
+          status:
+            label: Status
           enabled:
             label: Aktiviert
           disabled:

@@ -52,7 +52,7 @@ class TranslationOverride < ActiveRecord::Base
   validate :check_MF_string, if: :message_format?
 
   attribute :status, :integer
-  enum status: { up_to_date: 0, outdated: 1, invalid_interpolation_keys: 2, deprecated: 3 }
+  enum :status, { up_to_date: 0, outdated: 1, invalid_interpolation_keys: 2, deprecated: 3 }
 
   scope :mf_locales,
         ->(locale) { not_deprecated.where(locale: locale).where("translation_key LIKE '%_MF'") }
@@ -69,7 +69,7 @@ class TranslationOverride < ActiveRecord::Base
 
     translation_override = find_or_initialize_by(params)
     sanitized_value =
-      translation_override.sanitize_field(value, additional_attributes: ["data-auto-route"])
+      translation_override.sanitize_field(value, additional_attributes: %w[data-auto-route target])
     original_translation =
       I18n.overrides_disabled { I18n.t(transform_pluralized_key(key), locale: :en) }
 

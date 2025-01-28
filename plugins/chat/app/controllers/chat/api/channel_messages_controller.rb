@@ -67,8 +67,7 @@ class Chat::Api::ChannelMessagesController < Chat::ApiController
   def create
     Chat::MessageRateLimiter.run!(current_user)
 
-    # users can't force a thread through JSON API
-    Chat::CreateMessage.call(service_params.merge(force_thread: false)) do
+    Chat::CreateMessage.call(service_params) do
       on_success do |message_instance:|
         render json: success_json.merge(message_id: message_instance.id)
       end
@@ -76,6 +75,7 @@ class Chat::Api::ChannelMessagesController < Chat::ApiController
       on_failed_policy(:no_silenced_user) { raise Discourse::InvalidAccess }
       on_model_not_found(:channel) { raise Discourse::NotFound }
       on_failed_policy(:allowed_to_join_channel) { raise Discourse::InvalidAccess }
+      on_failed_policy(:accept_blocks) { raise Discourse::InvalidAccess }
       on_model_not_found(:membership) { raise Discourse::NotFound }
       on_failed_policy(:ensure_reply_consistency) { raise Discourse::NotFound }
       on_failed_policy(:allowed_to_create_message_in_channel) do |policy|

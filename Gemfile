@@ -6,13 +6,13 @@ source "https://rubygems.org"
 
 gem "bootsnap", require: false, platform: :mri
 
-gem "actionmailer", "~> 7.1.0"
-gem "actionpack", "~> 7.1.0"
-gem "actionview", "~> 7.1.0"
-gem "activemodel", "~> 7.1.0"
-gem "activerecord", "~> 7.1.0"
-gem "activesupport", "~> 7.1.0"
-gem "railties", "~> 7.1.0"
+gem "actionmailer", "~> 7.2.0"
+gem "actionpack", "~> 7.2.0"
+gem "actionview", "~> 7.2.0"
+gem "activemodel", "~> 7.2.0"
+gem "activerecord", "~> 7.2.0"
+gem "activesupport", "~> 7.2.0"
+gem "railties", "~> 7.2.0"
 gem "sprockets-rails"
 
 gem "json"
@@ -99,7 +99,7 @@ gem "sidekiq"
 gem "mini_scheduler"
 
 gem "execjs", require: false
-gem "mini_racer"
+gem "mini_racer", "0.17.pre12"
 
 gem "highline", require: false
 
@@ -284,6 +284,9 @@ group :migrations, optional: true do
 
   # CLI
   gem "ruby-progressbar"
+
+  # non-cryptographic hashing algorithm for generating placeholder IDs
+  gem "digest-xxhash"
 end
 
 gem "dry-initializer", "~> 3.1"

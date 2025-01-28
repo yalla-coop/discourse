@@ -10,6 +10,9 @@ import Uppy from "@uppy/core";
 import DropTarget from "@uppy/drop-target";
 import XHRUpload from "@uppy/xhr-upload";
 import { ajax, updateCsrfToken } from "discourse/lib/ajax";
+import { bind } from "discourse/lib/decorators";
+import getUrl from "discourse/lib/get-url";
+import { deepMerge } from "discourse/lib/object";
 import {
   bindFileInputChangeListener,
   displayErrorForUpload,
@@ -19,10 +22,7 @@ import UppyS3Multipart from "discourse/lib/uppy/s3-multipart";
 import UppyWrapper from "discourse/lib/uppy/wrapper";
 import UppyChecksum from "discourse/lib/uppy-checksum-plugin";
 import UppyChunkedUploader from "discourse/lib/uppy-chunked-uploader-plugin";
-import getUrl from "discourse-common/lib/get-url";
-import { deepMerge } from "discourse-common/lib/object";
-import { bind } from "discourse-common/utils/decorators";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
 
 export const HUGE_FILE_THRESHOLD_BYTES = 104_857_600; // 100MB
 
@@ -73,7 +73,7 @@ function lazyMergeConfig(config) {
   return mergedConfig;
 }
 
-const REQUIRED_CONFIG_KEYS = ["id", "uploadDone"];
+const REQUIRED_CONFIG_KEYS = ["id", "uploadDone", "type"];
 function validateConfig(config) {
   for (const key of REQUIRED_CONFIG_KEYS) {
     if (!config[key]) {
@@ -186,7 +186,7 @@ export default class UppyUpload {
 
         if (tooMany) {
           this.dialog.alert(
-            I18n.t("post.errors.too_many_dragged_and_dropped_files", {
+            i18n("post.errors.too_many_dragged_and_dropped_files", {
               count: this.allowMultipleFiles ? maxFiles : 1,
             })
           );
@@ -210,11 +210,8 @@ export default class UppyUpload {
       this.uploadProgress = progress;
     });
 
-    this.uppyWrapper.uppyInstance.on("upload", (data) => {
-      this.uppyWrapper.addNeedProcessing(data.fileIDs.length);
-      const files = data.fileIDs.map((fileId) =>
-        this.uppyWrapper.uppyInstance.getFile(fileId)
-      );
+    this.uppyWrapper.uppyInstance.on("upload", (uploadId, files) => {
+      this.uppyWrapper.addNeedProcessing(files.length);
       this.processing = true;
       this.cancellable = false;
       files.forEach((file) => {
@@ -287,6 +284,9 @@ export default class UppyUpload {
     this.uppyWrapper.uppyInstance.on(
       "upload-error",
       (file, error, response) => {
+        if (response.aborted) {
+          return; // User cancelled the upload
+        }
         this.#removeInProgressUpload(file.id);
         displayErrorForUpload(response || error, this.siteSettings, file.name);
         this.#reset();
@@ -402,6 +402,7 @@ export default class UppyUpload {
   #useXHRUploads() {
     this.uppyWrapper.uppyInstance.use(XHRUpload, {
       endpoint: this.#xhrUploadUrl(),
+      shouldRetry: () => false,
       headers: () => ({
         "X-CSRF-Token": this.session.csrfToken,
       }),
@@ -420,6 +421,7 @@ export default class UppyUpload {
   #useS3Uploads() {
     this.#usingS3Uploads = true;
     this.uppyWrapper.uppyInstance.use(AwsS3, {
+      shouldUseMultipart: false,
       getUploadParameters: (file) => {
         const data = {
           file_name: file.name,
@@ -463,7 +465,7 @@ export default class UppyUpload {
 
   #xhrUploadUrl() {
     const uploadUrl = this.config.uploadUrl || this.config.uploadRootPath;
-    return getUrl(uploadUrl) + ".json?client_id=" + this.messageBus?.clientId;
+    return getUrl(uploadUrl) + ".json?client_id=" + this.messageBus.clientId;
   }
 
   #bindFileInputChange() {

@@ -3,7 +3,7 @@
 describe "Topic" do
   let!(:raw) { "this is me testing a new topic by automation" }
   let!(:title) { "This is a new topic created by automation" }
-  fab!(:category) { Fabricate(:category) }
+  fab!(:category)
   fab!(:tag1) { Fabricate(:tag) }
   fab!(:tag2) { Fabricate(:tag) }
 
@@ -167,12 +167,11 @@ describe "Topic" do
     end
 
     context "when creating the post fails" do
-      before do
-        @orig_logger = Rails.logger
-        Rails.logger = @fake_logger = FakeLogger.new
-      end
+      let(:fake_logger) { FakeLogger.new }
 
-      after { Rails.logger = @orig_logger }
+      before { Rails.logger.broadcast_to(fake_logger) }
+
+      after { Rails.logger.stop_broadcasting_to(fake_logger) }
 
       it "logs a warning" do
         expect { UserUpdater.new(user, user).update(location: "Japan") }.to change {

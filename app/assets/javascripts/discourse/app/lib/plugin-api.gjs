@@ -3,7 +3,7 @@
 // docs/CHANGELOG-JAVASCRIPT-PLUGIN-API.md whenever you change the version
 // using the format described at https://keepachangelog.com/en/1.0.0/.
 
-export const PLUGIN_API_VERSION = "1.37.2";
+export const PLUGIN_API_VERSION = "2.0.0";
 
 import $ from "jquery";
 import { h } from "virtual-dom";
@@ -23,6 +23,7 @@ import { forceDropdownForMenuPanels as glimmerForceDropdownForMenuPanels } from 
 import { addGlobalNotice } from "discourse/components/global-notice";
 import { headerButtonsDAG } from "discourse/components/header";
 import { headerIconsDAG } from "discourse/components/header/icons";
+import { registeredTabs } from "discourse/components/more-topics";
 import { addWidgetCleanCallback } from "discourse/components/mount-widget";
 import { addPluginOutletDecorator } from "discourse/components/plugin-connector";
 import {
@@ -40,10 +41,8 @@ import { addOnKeyUpCallback } from "discourse/components/search-menu/search-term
 import { REFRESH_COUNTS_APP_EVENT_NAME as REFRESH_USER_SIDEBAR_CATEGORIES_SECTION_COUNTS_APP_EVENT_NAME } from "discourse/components/sidebar/user/categories-section";
 import { addTopicParticipantClassesCallback } from "discourse/components/topic-map/topic-participant";
 import { setDesktopScrollAreaHeight } from "discourse/components/topic-timeline/container";
-import { addTopicTitleDecorator } from "discourse/components/topic-title";
 import { setNotificationsLimit as setUserMenuNotificationsLimit } from "discourse/components/user-menu/notifications-list";
 import { addUserMenuProfileTabItem } from "discourse/components/user-menu/profile-tab-content";
-import { addLegacyStat as addLegacyAboutPageStat } from "discourse/controllers/about";
 import { addDiscoveryQueryParam } from "discourse/controllers/discovery/list";
 import { registerFullPageSearchType } from "discourse/controllers/full-page-search";
 import { registerCustomPostMessageCallback as registerCustomPostMessageCallback1 } from "discourse/controllers/topic";
@@ -66,14 +65,24 @@ import classPrepend, {
   withPrependsRolledBack,
 } from "discourse/lib/class-prepend";
 import { addPopupMenuOption } from "discourse/lib/composer/custom-popup-menu-options";
+import deprecated from "discourse/lib/deprecated";
 import { registerDesktopNotificationHandler } from "discourse/lib/desktop-notifications";
 import { downloadCalendar } from "discourse/lib/download-calendar";
+import { isTesting } from "discourse/lib/environment";
+import { getOwnerWithFallback } from "discourse/lib/get-owner";
 import { registerHashtagType } from "discourse/lib/hashtag-type-registry";
 import {
   registerHighlightJSLanguage,
   registerHighlightJSPlugin,
 } from "discourse/lib/highlight-syntax";
-import KeyboardShortcuts from "discourse/lib/keyboard-shortcuts";
+import {
+  iconNode,
+  registerIconRenderer,
+  replaceIcon,
+} from "discourse/lib/icon-library";
+import KeyboardShortcuts, {
+  disableDefaultKeyboardShortcuts,
+} from "discourse/lib/keyboard-shortcuts";
 import { registerModelTransformer } from "discourse/lib/model-transformers";
 import { registerNotificationTypeRenderer } from "discourse/lib/notification-types-manager";
 import { addGTMPageChangedCallback } from "discourse/lib/page-tracker";
@@ -117,6 +126,7 @@ import Composer, {
   registerCustomizationCallback,
 } from "discourse/models/composer";
 import { addNavItem } from "discourse/models/nav-item";
+import { _addTrackedPostProperty } from "discourse/models/post";
 import { registerCustomLastUnreadUrlCallback } from "discourse/models/topic";
 import {
   addSaveableUserField,
@@ -150,17 +160,27 @@ import {
   queryRegistry,
   reopenWidget,
 } from "discourse/widgets/widget";
-import { isTesting } from "discourse-common/config/environment";
-import deprecated from "discourse-common/lib/deprecated";
-import { getOwnerWithFallback } from "discourse-common/lib/get-owner";
-import {
-  iconNode,
-  registerIconRenderer,
-  replaceIcon,
-} from "discourse-common/lib/icon-library";
 import { addImageWrapperButton } from "discourse-markdown-it/features/image-controls";
 import { CUSTOM_USER_SEARCH_OPTIONS } from "select-kit/components/user-chooser";
 import { modifySelectKit } from "select-kit/mixins/plugin-api";
+
+const DEPRECATED_POST_MENU_WIDGETS = [
+  "post-menu",
+  "post-user-tip-shim",
+  "small-user-list",
+];
+
+const POST_MENU_DEPRECATION_OPTIONS = {
+  since: "v3.4.0.beta3-dev",
+  id: "discourse.post-menu-widget-overrides",
+  url: "https://meta.discourse.org/t/341014",
+};
+
+export const RAW_TOPIC_LIST_DEPRECATION_OPTIONS = {
+  since: "v3.4.0.beta4-dev",
+  id: "discourse.hbr-topic-list-overrides",
+  url: "https://meta.discourse.org/t/343404",
+};
 
 const appliedModificationIds = new WeakMap();
 
@@ -285,6 +305,17 @@ class PluginApi {
    * ```
    **/
   modifyClass(resolverName, changes, opts) {
+    if (
+      resolverName === "component:topic-list" ||
+      resolverName === "component:topic-list-item" ||
+      resolverName === "raw-view:topic-status"
+    ) {
+      deprecated(
+        `Modifying '${resolverName}' with 'modifyClass' is deprecated. Use the value transformer 'topic-list-columns' and other new topic-list plugin APIs instead.`,
+        RAW_TOPIC_LIST_DEPRECATION_OPTIONS
+      );
+    }
+
     const klass = this._resolveClass(resolverName, opts);
     if (!klass) {
       return;
@@ -322,6 +353,17 @@ class PluginApi {
    * ```
    **/
   modifyClassStatic(resolverName, changes, opts) {
+    if (
+      resolverName === "component:topic-list" ||
+      resolverName === "component:topic-list-item" ||
+      resolverName === "raw-view:topic-status"
+    ) {
+      deprecated(
+        `Modifying '${resolverName}' with 'modifyClass' is deprecated. Use the value transformer 'topic-list-columns' and other new topic-list plugin APIs instead.`,
+        RAW_TOPIC_LIST_DEPRECATION_OPTIONS
+      );
+    }
+
     const klass = this._resolveClass(resolverName, opts);
     if (!klass) {
       return;
@@ -399,7 +441,7 @@ class PluginApi {
    *
    * Example: to abort the expected behavior based on a condition
    * ```
-   * api.registerValueTransformer("example-transformer", ({next, context}) => {
+   * api.registerBehaviorTransformer("example-transformer", ({next, context}) => {
    *   if (context.property) {
    *     // not calling next() on a behavior transformer aborts executing the expected behavior
    *
@@ -416,9 +458,10 @@ class PluginApi {
    * behavior. Notice that this includes the default behavior and if next() is not called in your transformer's callback
    * the default behavior will be completely overridden
    * @param {*} [behaviorCallback.context] the optional context in which the behavior is being transformed
+   * @returns {boolean} True if the transformer exists, false otherwise.
    */
   registerBehaviorTransformer(transformerName, behaviorCallback) {
-    _registerTransformer(
+    return _registerTransformer(
       transformerName,
       transformerTypes.BEHAVIOR,
       behaviorCallback
@@ -483,9 +526,10 @@ class PluginApi {
    * mutating the input value, return the same output for the same input and not have any side effects.
    * @param {*} valueCallback.value the value to be transformed
    * @param {*} [valueCallback.context] the optional context in which the value is being transformed
+   * @returns {boolean} True if the transformer exists, false otherwise.
    */
   registerValueTransformer(transformerName, valueCallback) {
-    _registerTransformer(
+    return _registerTransformer(
       transformerName,
       transformerTypes.VALUE,
       valueCallback
@@ -588,6 +632,21 @@ class PluginApi {
    **/
   addKeyboardShortcut(shortcut, callback, opts = {}) {
     KeyboardShortcuts.addShortcut(shortcut, callback, opts);
+  }
+
+  /**
+   * This function is used to disable a "default" keyboard shortcut. You can pass
+   * an array of shortcut bindings as strings to disable them.
+   *
+   * Please note that this function must be called from a pre-initializer.
+   *
+   * Example:
+   * ```
+   * api.disableDefaultKeyboardShortcuts(['command+f', 'shift+c']);
+   * ```
+   **/
+  disableDefaultKeyboardShortcuts(bindings) {
+    disableDefaultKeyboardShortcuts(bindings);
   }
 
   /**
@@ -769,6 +828,24 @@ class PluginApi {
   }
 
   /**
+   * Adds tracked properties to the post model.
+   *
+   * This method is used to mark properties as tracked for post updates.
+   *
+   * It will also add the properties to the list of Post's attributes passed to
+   * widgets.
+   *
+   * You'll need to do this if you've added properties to a Post and want to use
+   * them when you're rendering.
+   *
+   * @param {...string} names - The names of the properties to be tracked.
+   */
+  addTrackedPostProperties(...names) {
+    names.forEach((name) => _addTrackedPostProperty(name));
+    includeAttributes(...names); // compatibility with widget's attributes
+  }
+
+  /**
    * Add a new button below a post with your plugin.
    *
    * The `callback` function will be called whenever the post menu is rendered,
@@ -815,6 +892,11 @@ class PluginApi {
    *  }
    **/
   addPostMenuButton(name, callback) {
+    deprecated(
+      "`api.addPostMenuButton` has been deprecated. Use the value transformer `post-menu-buttons` instead.",
+      POST_MENU_DEPRECATION_OPTIONS
+    );
+
     apiExtraButtons[name] = callback;
     addButton(name, callback);
   }
@@ -885,6 +967,11 @@ class PluginApi {
    * ```
    **/
   removePostMenuButton(name, callback) {
+    deprecated(
+      "`api.removePostMenuButton` has been deprecated. Use the value transformer `post-menu-buttons` instead.",
+      POST_MENU_DEPRECATION_OPTIONS
+    );
+
     removeButton(name, callback);
   }
 
@@ -905,6 +992,11 @@ class PluginApi {
    * });
    **/
   replacePostMenuButton(name, widget) {
+    deprecated(
+      "`api.replacePostMenuButton` has been deprecated. Use the value transformer `post-menu-buttons` instead.",
+      POST_MENU_DEPRECATION_OPTIONS
+    );
+
     replaceButton(name, widget);
   }
 
@@ -1974,33 +2066,6 @@ class PluginApi {
   }
 
   /**
-   * Allows altering the topic title in the topic list, and in the topic view
-   *
-   * topicTitleType can be `topic-title` or `topic-list-item-title`
-   *
-   * For example, to replace the topic title:
-   *
-   * ```
-   * api.decorateTopicTitle((topicModel, node, topicTitleType) => {
-   *   node.innerText = "my new topic title";
-   * });
-   * ```
-   *
-   * @deprecated because modifying an Ember-rendered DOM tree can lead to very unexpected errors. Use plugin outlet connectors instead
-   **/
-  decorateTopicTitle(callback) {
-    deprecated(
-      "decorateTopicTitle is deprecated because modifying an Ember-rendered DOM tree can lead to very unexpected errors. Use plugin outlet connectors instead",
-      {
-        id: "discourse.decorate-topic-title",
-        since: "3.2",
-        dropFrom: "3.3",
-      }
-    );
-    addTopicTitleDecorator(callback);
-  }
-
-  /**
    * Allows a different limit to be set for fetching recent notifications for the user menu
    *
    * Example setting limit to 5:
@@ -2224,6 +2289,7 @@ class PluginApi {
   addSaveableUserField(fieldName) {
     addSaveableUserField(fieldName);
   }
+
   addSaveableUserOptionField(fieldName) {
     addSaveableUserOptionField(fieldName);
   }
@@ -2486,7 +2552,6 @@ class PluginApi {
         pluginId: `${mountedComponent}/${widgetKey}/${appEvent}`,
 
         didInsertElement() {
-          // eslint-disable-next-line ember/no-ember-super-in-es-classes
           this._super();
           this.dispatch(appEvent, widgetKey);
         },
@@ -3193,24 +3258,20 @@ class PluginApi {
    * And the mode must be one of "sidebar" or "top", which controls
    * where in the admin plugin show UI the links will be displayed.
    */
-  addAdminPluginConfigurationNav(pluginId, mode, links) {
+  addAdminPluginConfigurationNav(pluginId, ...links) {
     if (!pluginId) {
       // eslint-disable-next-line no-console
       console.warn(consolePrefix(), "A pluginId must be provided!");
       return;
     }
 
+    // TODO (Ted - 2024-01-27): Remove once usage discontinued in plugins.
     const validModes = [PLUGIN_NAV_MODE_SIDEBAR, PLUGIN_NAV_MODE_TOP];
-    if (!validModes.includes(mode)) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        consolePrefix(),
-        `${mode} is an invalid mode for admin plugin config pages, only ${validModes} are usable.`
-      );
-      return;
+    if (validModes.includes(links[0])) {
+      links.shift();
     }
 
-    registerAdminPluginConfigNav(pluginId, mode, links);
+    registerAdminPluginConfigNav(pluginId, links.flat());
   }
 
   /**
@@ -3250,11 +3311,10 @@ class PluginApi {
    */
   addAboutPageActivity(name, func) {
     addAboutPageActivity(name, func);
-    addLegacyAboutPageStat(name);
   }
 
   /**
-   * Registers a component class that will be rendered within the AdminPageHeader component
+   * Registers a component class that will be rendered within the DPageHeader component
    * only on plugins using the AdminPluginConfigPage and the new plugin "show" route.
    *
    * This component will be passed an `@actions` argument, with Primary, Default, Danger,
@@ -3271,7 +3331,50 @@ class PluginApi {
     registerPluginHeaderActionComponent(pluginId, componentClass);
   }
 
-  // eslint-disable-next-line no-unused-vars
+  /**
+   * Registers a new tab to be displayed in "more topics" area at the bottom of a topic page.
+   *
+   * ```gjs
+   *  api.registerMoreTopicsTab({
+   *    id: "other-topics",
+   *    name: i18n("other_topics.tab"),
+   *    component: <template>tbd</template>,
+   *    condition: ({ topic }) => topic.otherTopics?.length > 0,
+   *  });
+   * ```
+   *
+   * You can additionally use more-topics-tabs value transformer to conditionally show/hide
+   * specific tabs.
+   *
+   * ```js
+   * api.registerValueTransformer("more-topics-tabs", ({ value, context }) => {
+   *   if (context.user?.aFeatureFlag) {
+   *     // Remove "suggested" from the topics page
+   *     return value.filter(
+   *       (tab) =>
+   *         context.currentContext !== "topic" ||
+   *         tab.id !== "suggested-topics"
+   *     );
+   *   }
+   * });
+   * ```
+   *
+   * @callback tabCondition
+   * @param {Object} opts
+   * @param {"topic"|"pm"} opts.context - the type of the current page
+   * @param {Topic} opts.topic - the current topic
+   *
+   * @param {Object} tab
+   * @param {string} tab.id - an identifier used in more-topics-tabs value transformer
+   * @param {string} tab.name - a name displayed on the tab
+   * @param {string} tab.icon - an optional icon displayed on the tab
+   * @param {Class} tab.component - contents of the tab
+   * @param {tabCondition} tab.condition - an optional callback to conditionally show the tab
+   */
+  registerMoreTopicsTab(tab) {
+    registeredTabs.push(tab);
+  }
+
   #deprecatedWidgetOverride(widgetName, override) {
     // insert here the code to handle widget deprecations, e.g. for the header widgets we used:
     // if (DEPRECATED_HEADER_WIDGETS.includes(widgetName)) {
@@ -3285,6 +3388,13 @@ class PluginApi {
     //     }
     //   );
     // }
+
+    if (DEPRECATED_POST_MENU_WIDGETS.includes(widgetName)) {
+      deprecated(
+        `The ${widgetName} widget has been deprecated and ${override} is no longer a supported override.`,
+        POST_MENU_DEPRECATION_OPTIONS
+      );
+    }
   }
 }
 
@@ -3335,11 +3445,12 @@ function getPluginApi(version) {
 }
 
 /**
- * withPluginApi(version, apiCodeCallback, opts)
+ * Executes the provided callback function with the `PluginApi` object if the specified API version is available.
  *
- * Helper to version our client side plugin API. Pass the version of the API that your
- * plugin is coded against. If that API is available, the `apiCodeCallback` function will
- * be called with the `PluginApi` object.
+ * @param {number} version - The version of the API that the plugin is coded against.
+ * @param {(api: PluginApi, opts: object) => void} apiCodeCallback - The callback function to execute if the API version is available
+ * @param {object} [opts] - Optional additional options to pass to the callback function.
+ * @returns {*} The result of the `callback` function, if executed
  */
 export function withPluginApi(version, apiCodeCallback, opts) {
   opts = opts || {};

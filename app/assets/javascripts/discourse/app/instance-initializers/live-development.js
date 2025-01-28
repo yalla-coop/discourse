@@ -1,7 +1,7 @@
 import { setOwner } from "@ember/owner";
 import { service } from "@ember/service";
-import discourseLater from "discourse-common/lib/later";
-import { bind } from "discourse-common/utils/decorators";
+import { bind } from "discourse/lib/decorators";
+import discourseLater from "discourse/lib/later";
 
 // Use the message bus for live reloading of components for faster development.
 class LiveDevelopmentInit {
@@ -51,8 +51,11 @@ class LiveDevelopmentInit {
         // Refresh if necessary
         document.location.reload(true);
       } else if (me === "development-mode-theme-changed") {
-        if (window.location.pathname.startsWith("/admin/customize/themes")) {
-          // don't refresh users on routes which make theme changes - would be very inconvenient.
+        if (
+          window.location.pathname.startsWith("/admin/customize/themes") ||
+          window.location.pathname.startsWith("/admin/config/look-and-feel")
+        ) {
+          // Don't refresh users on routes which make theme changes - would be very inconvenient.
           // Instead, refresh on their next route navigation.
           this.session.requiresRefresh = true;
         } else {

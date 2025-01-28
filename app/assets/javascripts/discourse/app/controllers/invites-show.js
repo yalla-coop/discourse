@@ -1,28 +1,33 @@
+import { tracked } from "@glimmer/tracking";
 import Controller from "@ember/controller";
 import EmberObject, { action } from "@ember/object";
+import { dependentKeyCompat } from "@ember/object/compat";
 import { alias, bool, not, readOnly } from "@ember/object/computed";
 import { isEmpty } from "@ember/utils";
 import { ajax } from "discourse/lib/ajax";
 import { extractError } from "discourse/lib/ajax-error";
+import discourseComputed from "discourse/lib/decorators";
+import getUrl from "discourse/lib/get-url";
+import NameValidationHelper from "discourse/lib/name-validation-helper";
 import DiscourseURL from "discourse/lib/url";
 import { emailValid } from "discourse/lib/utilities";
-import NameValidation from "discourse/mixins/name-validation";
 import PasswordValidation from "discourse/mixins/password-validation";
 import UserFieldsValidation from "discourse/mixins/user-fields-validation";
 import UsernameValidation from "discourse/mixins/username-validation";
 import { findAll as findLoginMethods } from "discourse/models/login-method";
-import getUrl from "discourse-common/lib/get-url";
-import discourseComputed from "discourse-common/utils/decorators";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
 
 export default class InvitesShowController extends Controller.extend(
   PasswordValidation,
   UsernameValidation,
-  NameValidation,
   UserFieldsValidation
 ) {
+  @tracked accountUsername;
+  @tracked isDeveloper;
   queryParams = ["t"];
-
+  nameValidationHelper = new NameValidationHelper(this);
+  successMessage = null;
+  @readOnly("model.is_invite_link") isInviteLink;
   @readOnly("model.invited_by") invitedBy;
   @alias("model.email") email;
   @alias("email") accountEmail;
@@ -33,16 +38,26 @@ export default class InvitesShowController extends Controller.extend(
   @alias("model.hidden_email") hiddenEmail;
   @alias("model.email_verified_by_link") emailVerifiedByLink;
   @alias("model.different_external_email") differentExternalEmail;
-  @alias("model.username") accountUsername;
   @not("externalAuthsOnly") passwordRequired;
-  @readOnly("model.is_invite_link") isInviteLink;
-
-  successMessage = null;
   errorMessage = null;
   userFields = null;
   authOptions = null;
   rejectedEmails = [];
   maskPassword = true;
+
+  @action
+  setAccountUsername(event) {
+    this.accountUsername = event.target.value;
+  }
+
+  get nameTitle() {
+    return this.nameValidationHelper.nameTitle;
+  }
+
+  @dependentKeyCompat
+  get nameValidation() {
+    return this.nameValidationHelper.nameValidation;
+  }
 
   authenticationComplete(options) {
     const props = {
@@ -65,23 +80,14 @@ export default class InvitesShowController extends Controller.extend(
 
   @discourseComputed
   welcomeTitle() {
-    return I18n.t("invites.welcome_to", {
+    return i18n("invites.welcome_to", {
       site_name: this.siteSettings.title,
     });
   }
 
-  @discourseComputed("existingUserId")
-  subheaderMessage(existingUserId) {
-    if (existingUserId) {
-      return I18n.t("invites.existing_user_can_redeem");
-    } else {
-      return I18n.t("create_account.subheader_title");
-    }
-  }
-
   @discourseComputed("email")
   yourEmailMessage(email) {
-    return I18n.t("invites.your_email", { email });
+    return i18n("invites.your_email", { email });
   }
 
   @discourseComputed
@@ -165,10 +171,13 @@ export default class InvitesShowController extends Controller.extend(
   }
 
   @discourseComputed
+  showFullname() {
+    return this.site.full_name_visible_in_signup;
+  }
+
+  @discourseComputed
   fullnameRequired() {
-    return (
-      this.siteSettings.full_name_required || this.siteSettings.enable_names
-    );
+    return this.site.full_name_required_for_signup;
   }
 
   @discourseComputed(
@@ -192,7 +201,7 @@ export default class InvitesShowController extends Controller.extend(
     if (hiddenEmail && !differentExternalEmail) {
       return EmberObject.create({
         ok: true,
-        reason: I18n.t("user.email.ok"),
+        reason: i18n("user.email.ok"),
       });
     }
 
@@ -206,7 +215,7 @@ export default class InvitesShowController extends Controller.extend(
     if (rejectedEmails.includes(email)) {
       return EmberObject.create({
         failed: true,
-        reason: I18n.t("user.email.invalid"),
+        reason: i18n("user.email.invalid"),
       });
     }
 
@@ -218,14 +227,14 @@ export default class InvitesShowController extends Controller.extend(
       if (externalAuthEmail === email) {
         return EmberObject.create({
           ok: true,
-          reason: I18n.t("user.email.authenticated", {
+          reason: i18n("user.email.authenticated", {
             provider,
           }),
         });
       } else {
         return EmberObject.create({
           failed: true,
-          reason: I18n.t("user.email.invite_auth_email_invalid", {
+          reason: i18n("user.email.invite_auth_email_invalid", {
             provider,
           }),
         });
@@ -235,20 +244,20 @@ export default class InvitesShowController extends Controller.extend(
     if (emailVerifiedByLink) {
       return EmberObject.create({
         ok: true,
-        reason: I18n.t("user.email.authenticated_by_invite"),
+        reason: i18n("user.email.authenticated_by_invite"),
       });
     }
 
     if (emailValid(email)) {
       return EmberObject.create({
         ok: true,
-        reason: I18n.t("user.email.ok"),
+        reason: i18n("user.email.ok"),
       });
     }
 
     return EmberObject.create({
       failed: true,
-      reason: I18n.t("user.email.invalid"),
+      reason: i18n("user.email.invalid"),
     });
   }
 
@@ -267,7 +276,7 @@ export default class InvitesShowController extends Controller.extend(
   @discourseComputed
   disclaimerHtml() {
     if (this.site.tos_url && this.site.privacy_policy_url) {
-      return I18n.t("create_account.disclaimer", {
+      return i18n("create_account.disclaimer", {
         tos_link: this.site.tos_url,
         privacy_link: this.site.privacy_policy_url,
       });
@@ -279,15 +288,23 @@ export default class InvitesShowController extends Controller.extend(
     if (!url) {
       return;
     }
-    return I18n.t("create_account.associate", {
+    return i18n("create_account.associate", {
       associate_link: url,
-      provider: I18n.t(`login.${provider}.name`),
+      provider: i18n(`login.${provider}.name`),
     });
   }
 
   @action
   togglePasswordMask() {
     this.toggleProperty("maskPassword");
+  }
+
+  @action
+  scrollInputIntoView(event) {
+    event.target.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
   }
 
   @action
@@ -321,10 +338,7 @@ export default class InvitesShowController extends Controller.extend(
     })
       .then((result) => {
         if (result.success) {
-          this.set(
-            "successMessage",
-            result.message || I18n.t("invites.success")
-          );
+          this.set("successMessage", result.message || i18n("invites.success"));
           if (result.redirect_to) {
             DiscourseURL.redirectTo(result.redirect_to);
           }
@@ -337,15 +351,11 @@ export default class InvitesShowController extends Controller.extend(
           ) {
             this.rejectedEmails.pushObject(result.values.email);
           }
-          if (
-            result.errors &&
-            result.errors.password &&
-            result.errors.password.length > 0
-          ) {
+          if (result.errors?.["user_password.password"]?.length > 0) {
             this.rejectedPasswords.pushObject(this.accountPassword);
             this.rejectedPasswordsMessages.set(
               this.accountPassword,
-              result.errors.password[0]
+              result.errors["user_password.password"][0]
             );
           }
           if (result.message) {

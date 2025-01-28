@@ -7,6 +7,31 @@ in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2025-01-07
+
+- Removed `decorateTopicTitle`. This has been deprecated for more than a year, and we are not aware of any remaining uses in the ecosystem.
+
+## [1.39.2] - 2024-12-19
+
+- Removed the deprecation of `includePostAttributes` for now.
+
+## [1.39.1] - 2024-12-18
+
+- Renamed `addTrackedPostProperty` to `addTrackedPostProperties` to allow plugins/TCs to add multiple new tracked properties to the post model.
+- Deprecated `includePostAttributes` in favor of `addTrackedPostProperties`.
+
+## [1.39.0] - 2024-11-27
+
+- Added `addTrackedPostProperty` which allows plugins/TCs to add a new tracked property to the post model.
+
+## [1.38.0] - 2024-10-30
+
+- Added `registerMoreTopicsTab` and "more-topics-tabs" value transformer that allows to add or remove new tabs to the "more topics" (suggested/related) area.
+
+## [1.37.3] - 2024-10-24
+
+- Added `disableDefaultKeyboardShortcuts` which allows plugins/TCs to disable default keyboard shortcuts.
+
 ## [1.37.2] - 2024-10-02
 
 - Fixed comments and text references to Font Awesome 5 in favor of the more generic Font Awesome due to core now having the latest version and no longer needing to specify version 5.
@@ -21,7 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.36.0] - 2024-08-06
 
-- Added `addLogSearchLinkClickedCallbacks` which allows plugins/TCs to register a callback when a search link is clicked and before a search log is created 
+- Added `addLogSearchLinkClickedCallbacks` which allows plugins/TCs to register a callback when a search link is clicked and before a search log is created
 
 ## [1.35.0] - 2024-07-30
 

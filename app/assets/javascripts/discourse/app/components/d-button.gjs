@@ -7,9 +7,10 @@ import { htmlSafe } from "@ember/template";
 import { or } from "truth-helpers";
 import GlimmerComponentWithDeprecatedParentView from "discourse/components/glimmer-component-with-deprecated-parent-view";
 import concatClass from "discourse/helpers/concat-class";
-import icon from "discourse-common/helpers/d-icon";
-import deprecated from "discourse-common/lib/deprecated";
-import I18n from "discourse-i18n";
+import icon from "discourse/helpers/d-icon";
+import element from "discourse/helpers/element";
+import deprecated from "discourse/lib/deprecated";
+import { i18n } from "discourse-i18n";
 
 const ACTION_AS_STRING_DEPRECATION_ARGS = [
   "DButton no longer supports @action as a string. Please refactor to use an closure action instead.",
@@ -18,6 +19,7 @@ const ACTION_AS_STRING_DEPRECATION_ARGS = [
 
 export default class DButton extends GlimmerComponentWithDeprecatedParentView {
   @service router;
+  @service capabilities;
 
   @notEmpty("args.icon") btnIcon;
 
@@ -50,21 +52,21 @@ export default class DButton extends GlimmerComponentWithDeprecatedParentView {
 
   get computedTitle() {
     if (this.args.title) {
-      return I18n.t(this.args.title);
+      return i18n(this.args.title);
     }
     return this.args.translatedTitle;
   }
 
   get computedLabel() {
     if (this.args.label) {
-      return I18n.t(this.args.label);
+      return htmlSafe(i18n(this.args.label));
     }
     return this.args.translatedLabel;
   }
 
   get computedAriaLabel() {
     if (this.args.ariaLabel) {
-      return I18n.t(this.args.ariaLabel);
+      return i18n(this.args.ariaLabel);
     }
     if (this.args.translatedAriaLabel) {
       return this.args.translatedAriaLabel;
@@ -76,6 +78,15 @@ export default class DButton extends GlimmerComponentWithDeprecatedParentView {
       return "true";
     }
     if (this.args.ariaExpanded === false) {
+      return "false";
+    }
+  }
+
+  get computedAriaPressed() {
+    if (this.args.ariaPressed === true) {
+      return "true";
+    }
+    if (this.args.ariaPressed === false) {
       return "false";
     }
   }
@@ -104,6 +115,7 @@ export default class DButton extends GlimmerComponentWithDeprecatedParentView {
 
   _triggerAction(event) {
     const { action: actionVal, route, routeModels } = this.args;
+    const isIOS = this.capabilities?.isIOS;
 
     if (actionVal || route) {
       if (actionVal) {
@@ -119,19 +131,35 @@ export default class DButton extends GlimmerComponentWithDeprecatedParentView {
             );
           }
         } else if (typeof actionVal === "object" && actionVal.value) {
-          // Using `next()` to optimise INP
-          next(() =>
+          if (isIOS) {
+            // Don't optimise INP in iOS
+            // it results in focus events not being triggered
             forwardEvent
               ? actionVal.value(actionParam, event)
-              : actionVal.value(actionParam)
-          );
+              : actionVal.value(actionParam);
+          } else {
+            // Using `next()` to optimise INP
+            next(() =>
+              forwardEvent
+                ? actionVal.value(actionParam, event)
+                : actionVal.value(actionParam)
+            );
+          }
         } else if (typeof actionVal === "function") {
-          // Using `next()` to optimise INP
-          next(() =>
+          if (isIOS) {
+            // Don't optimise INP in iOS
+            // it results in focus events not being triggered
             forwardEvent
               ? actionVal(actionParam, event)
-              : actionVal(actionParam)
-          );
+              : actionVal(actionParam);
+          } else {
+            // Using `next()` to optimise INP
+            next(() =>
+              forwardEvent
+                ? actionVal(actionParam, event)
+                : actionVal(actionParam)
+            );
+          }
         }
       } else if (route) {
         if (routeModels) {
@@ -152,18 +180,14 @@ export default class DButton extends GlimmerComponentWithDeprecatedParentView {
   }
 
   get wrapperElement() {
-    const { href, type } = this.args;
-
-    return href
-      ? <template><a href={{href}} ...attributes>{{yield}}</a></template>
-      : <template>
-          <button type={{or type "button"}} ...attributes>{{yield}}</button>
-        </template>;
+    return element(this.args.href ? "a" : "button");
   }
 
   <template>
     {{! template-lint-disable no-pointer-down-event-binding }}
     <this.wrapperElement
+      href={{@href}}
+      type={{unless @href (or @type "button")}}
       {{! For legacy compatibility. Prefer passing class as attributes. }}
       class={{concatClass
         @class
@@ -177,6 +201,7 @@ export default class DButton extends GlimmerComponentWithDeprecatedParentView {
       form={{@form}}
       aria-controls={{@ariaControls}}
       aria-expanded={{this.computedAriaExpanded}}
+      aria-pressed={{this.computedAriaPressed}}
       tabindex={{@tabindex}}
       disabled={{this.isDisabled}}
       title={{this.computedTitle}}
@@ -200,7 +225,7 @@ export default class DButton extends GlimmerComponentWithDeprecatedParentView {
 
       {{~#if this.computedLabel~}}
         <span class="d-button-label">
-          {{~htmlSafe this.computedLabel~}}
+          {{~this.computedLabel~}}
           {{~#if @ellipsis~}}
             &hellip;
           {{~/if~}}

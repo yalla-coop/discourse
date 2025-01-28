@@ -46,7 +46,7 @@ module Chat
           INNER JOIN user_chat_thread_memberships ON user_chat_thread_memberships.thread_id = chat_threads.id
           INNER JOIN user_chat_channel_memberships ON user_chat_channel_memberships.chat_channel_id = chat_messages.chat_channel_id
           INNER JOIN chat_messages AS original_message ON original_message.id = chat_threads.original_message_id
-          AND chat_messages.thread_id = memberships.thread_id
+          WHERE chat_messages.thread_id = memberships.thread_id
           AND chat_messages.user_id != :user_id
           AND user_chat_thread_memberships.user_id = :user_id
           AND chat_messages.id > COALESCE(user_chat_thread_memberships.last_read_message_id, 0)
@@ -60,7 +60,23 @@ module Chat
           AND user_chat_channel_memberships.muted = false
           AND user_chat_channel_memberships.user_id = :user_id
         ) AS unread_count,
-        0 as mention_count,
+        (
+          SELECT COUNT(*) AS mention_count
+          FROM notifications
+          INNER JOIN chat_messages ON chat_messages.id = (data::json->>'chat_message_id')::bigint
+          INNER JOIN chat_channels ON chat_channels.id = chat_messages.chat_channel_id
+          INNER JOIN user_chat_channel_memberships AS uccm ON uccm.chat_channel_id = chat_messages.chat_channel_id
+          INNER JOIN user_chat_thread_memberships AS uctm ON uctm.thread_id = chat_messages.thread_id AND uctm.user_id = :user_id
+          WHERE NOT read
+          AND notifications.user_id = :user_id
+          AND notifications.notification_type = :notification_type_mention
+          AND uccm.user_id = :user_id
+          AND chat_channels.threading_enabled
+          AND chat_messages.deleted_at IS NULL
+          AND chat_messages.thread_id = memberships.thread_id
+          AND (uctm.id IS NOT NULL AND chat_messages.id > COALESCE(uctm.last_read_message_id, 0))
+          AND NOT uccm.muted
+        ) AS mention_count,
         (
           SELECT COUNT(*) AS watched_threads_unread_count
           FROM chat_messages
@@ -123,6 +139,7 @@ module Chat
         limit: MAX_THREADS,
         tracking_level: ::Chat::UserChatThreadMembership.notification_levels[:tracking],
         watching_level: ::Chat::UserChatThreadMembership.notification_levels[:watching],
+        notification_type_mention: ::Notification.types[:chat_mention],
       )
     end
   end

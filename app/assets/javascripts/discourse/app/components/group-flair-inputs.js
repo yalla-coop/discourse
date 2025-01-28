@@ -4,11 +4,11 @@ import { classNames } from "@ember-decorators/component";
 import { observes, on } from "@ember-decorators/object";
 import $ from "jquery";
 import { ajax } from "discourse/lib/ajax";
-import discourseDebounce from "discourse-common/lib/debounce";
-import getURL from "discourse-common/lib/get-url";
-import { convertIconClass } from "discourse-common/lib/icon-library";
-import discourseComputed from "discourse-common/utils/decorators";
-import I18n from "discourse-i18n";
+import discourseDebounce from "discourse/lib/debounce";
+import discourseComputed from "discourse/lib/decorators";
+import getURL from "discourse/lib/get-url";
+import { convertIconClass } from "discourse/lib/icon-library";
+import { i18n } from "discourse-i18n";
 
 @classNames("group-flair-inputs")
 export default class GroupFlairInputs extends Component {
@@ -75,7 +75,7 @@ export default class GroupFlairInputs extends Component {
   @discourseComputed("flairPreviewImage")
   flairPreviewLabel(flairPreviewImage) {
     const key = flairPreviewImage ? "image" : "icon";
-    return I18n.t(`groups.flair_preview_${key}`);
+    return i18n(`groups.flair_preview_${key}`);
   }
 
   @action

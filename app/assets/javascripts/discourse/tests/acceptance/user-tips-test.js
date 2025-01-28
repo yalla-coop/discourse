@@ -2,7 +2,7 @@ import { visit } from "@ember/test-helpers";
 import { test } from "qunit";
 import pretender, { response } from "discourse/tests/helpers/create-pretender";
 import { acceptance } from "discourse/tests/helpers/qunit-helpers";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
 
 acceptance("User Tips - first_notification", function (needs) {
   needs.user({ new_personal_messages_notifications_count: 1 });
@@ -26,7 +26,7 @@ acceptance("User Tips - first_notification", function (needs) {
     await visit("/t/internationalization-localization/280");
     assert
       .dom(".user-tip__title")
-      .hasText(I18n.t("user_tips.first_notification.title"));
+      .hasText(i18n("user_tips.first_notification.title"));
 
     assert.verifySteps(
       ["endpoint called"],
@@ -45,20 +45,30 @@ acceptance("User Tips - topic_timeline", function (needs) {
     await visit("/t/internationalization-localization/280");
     assert
       .dom(".user-tip__title")
-      .hasText(I18n.t("user_tips.topic_timeline.title"));
+      .hasText(i18n("user_tips.topic_timeline.title"));
   });
 });
 
-acceptance("User Tips - post_menu", function (needs) {
-  needs.user();
-  needs.site({ user_tips: { post_menu: 3 } });
+["enabled", "disabled"].forEach((postMenuMode) => {
+  acceptance(
+    `User Tips - post_menu (glimmer_post_menu_mode = ${postMenuMode})`,
+    function (needs) {
+      needs.user();
+      needs.site({ user_tips: { post_menu: 3 } });
+      needs.settings({
+        glimmer_post_menu_mode: postMenuMode,
+      });
 
-  test("Shows post menu user tip", async function (assert) {
-    this.siteSettings.enable_user_tips = true;
+      test("Shows post menu user tip", async function (assert) {
+        this.siteSettings.enable_user_tips = true;
 
-    await visit("/t/internationalization-localization/280");
-    assert.dom(".user-tip__title").hasText(I18n.t("user_tips.post_menu.title"));
-  });
+        await visit("/t/internationalization-localization/280");
+        assert
+          .dom(".user-tip__title")
+          .hasText(i18n("user_tips.post_menu.title"));
+      });
+    }
+  );
 });
 
 acceptance("User Tips - topic_notification_levels", function (needs) {
@@ -72,7 +82,7 @@ acceptance("User Tips - topic_notification_levels", function (needs) {
 
     assert
       .dom(".user-tip__title")
-      .hasText(I18n.t("user_tips.topic_notification_levels.title"));
+      .hasText(i18n("user_tips.topic_notification_levels.title"));
   });
 });
 
@@ -86,6 +96,6 @@ acceptance("User Tips - suggested_topics", function (needs) {
     await visit("/t/internationalization-localization/280");
     assert
       .dom(".user-tip__title")
-      .hasText(I18n.t("user_tips.suggested_topics.title"));
+      .hasText(i18n("user_tips.suggested_topics.title"));
   });
 });

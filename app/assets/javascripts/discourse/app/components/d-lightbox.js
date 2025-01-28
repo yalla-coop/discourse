@@ -2,6 +2,8 @@ import Component from "@glimmer/component";
 import { tracked } from "@glimmer/tracking";
 import { service } from "@ember/service";
 import { htmlSafe } from "@ember/template";
+import { bind } from "discourse/lib/decorators";
+import discourseLater from "discourse/lib/later";
 import {
   ANIMATION_DURATION,
   KEYBOARD_SHORTCUTS,
@@ -20,8 +22,6 @@ import {
   setCarouselScrollPosition,
   setSiteThemeColor,
 } from "discourse/lib/lightbox/helpers";
-import discourseLater from "discourse-common/lib/later";
-import { bind } from "discourse-common/utils/decorators";
 
 export default class DLightbox extends Component {
   @service appEvents;
@@ -47,6 +47,11 @@ export default class DLightbox extends Component {
   titleElementId = TITLE_ELEMENT_ID;
   animationDuration = ANIMATION_DURATION;
   scrollPosition = 0;
+
+  willDestroy() {
+    super.willDestroy(...arguments);
+    this.cleanup();
+  }
 
   get layoutType() {
     return window.innerWidth > window.innerHeight
@@ -486,10 +491,5 @@ export default class DLightbox extends Component {
         behavior: "instant",
       });
     }
-  }
-
-  willDestroy() {
-    super.willDestroy(...arguments);
-    this.cleanup();
   }
 }

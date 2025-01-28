@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module SvgSprite
-  SVG_ICONS ||=
+  SVG_ICONS =
     Set.new(
       %w[
         address-book
@@ -146,6 +146,7 @@ module SvgSprite
         file-lines
         filter
         flag
+        flask
         folder
         folder-open
         forward
@@ -522,8 +523,7 @@ License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL
     new_name = remap_from_fa5(new_name)
 
     if icon_name != new_name
-      # TODO: Enable message once core and official themes/plugins are updated
-      # Discourse.deprecate("The icon `#{icon_name}` is deprecated. Use `#{new_name}` instead.")
+      Discourse.deprecate("The icon `#{icon_name}` is deprecated. Use `#{new_name}` instead.")
       return new_name
     end
 

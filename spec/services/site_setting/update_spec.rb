@@ -6,7 +6,7 @@ RSpec.describe SiteSetting::Update do
   end
 
   describe ".call" do
-    subject(:result) { described_class.call(**params, **options, **dependencies) }
+    subject(:result) { described_class.call(params:, options:, **dependencies) }
 
     fab!(:admin)
     let(:params) { { setting_name:, new_value: } }
@@ -46,6 +46,15 @@ RSpec.describe SiteSetting::Update do
           expect { result }.to change { SiteSetting.max_category_nesting }.to(3)
         end
       end
+    end
+
+    context "when a user changes a setting shadowed by a global variable" do
+      let(:setting_name) { :max_category_nesting }
+      let(:new_value) { 3 }
+
+      before { SiteSetting.stubs(:shadowed_settings).returns(Set.new([:max_category_nesting])) }
+
+      it { is_expected.to fail_a_policy(:setting_is_shadowed_globally) }
     end
 
     context "when the user changes a visible setting" do

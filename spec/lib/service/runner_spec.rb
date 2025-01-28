@@ -38,7 +38,7 @@ RSpec.describe Service::Runner do
   class FailedContractService
     include Service::Base
 
-    contract do
+    params do
       attribute :test
 
       validates :test, presence: true
@@ -48,7 +48,7 @@ RSpec.describe Service::Runner do
   class SuccessContractService
     include Service::Base
 
-    contract {}
+    params {}
   end
 
   class FailureWithModelService
@@ -147,8 +147,28 @@ RSpec.describe Service::Runner do
     end
   end
 
+  class FailureTryService
+    include Service::Base
+
+    try { step :raising_step }
+
+    def raising_step
+      raise "BOOM"
+    end
+  end
+
+  class SuccessTryService
+    include Service::Base
+
+    try { step :non_raising_step }
+
+    def non_raising_step
+      true
+    end
+  end
+
   describe ".call" do
-    subject(:runner) { described_class.call(service, &actions_block) }
+    subject(:runner) { described_class.call(service, dependencies, &actions_block) }
 
     let(:actions_block) { object.instance_eval(actions) }
     let(:service) { SuccessWithModelService }
@@ -157,18 +177,12 @@ RSpec.describe Service::Runner do
           on_success { |fake_model:| [result, fake_model] }
         end
       BLOCK
+    let(:dependencies) { { guardian: stub, params: {} } }
     let(:object) do
       Class
         .new(ApplicationController) do
           def request
             OpenStruct.new
-          end
-
-          def params
-            ActionController::Parameters.new
-          end
-
-          def guardian
           end
         end
         .new
@@ -431,6 +445,30 @@ RSpec.describe Service::Runner do
 
         it "does not run the provided block" do
           expect(runner).not_to eq :model_errors
+        end
+      end
+    end
+
+    context "when using the on_exceptions action" do
+      let(:actions) { <<-BLOCK }
+        proc do |result|
+          on_exceptions { |exception| exception.message == "BOOM" }
+        end
+      BLOCK
+
+      context "when the service fails" do
+        let(:service) { FailureTryService }
+
+        it "runs the provided block" do
+          expect(runner).to be true
+        end
+      end
+
+      context "when the service does not fail" do
+        let(:service) { SuccessTryService }
+
+        it "does not run the provided block" do
+          expect(runner).not_to eq true
         end
       end
     end

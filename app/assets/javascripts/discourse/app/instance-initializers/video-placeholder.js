@@ -1,8 +1,8 @@
 import { spinnerHTML } from "discourse/helpers/loading-spinner";
+import { iconHTML } from "discourse/lib/icon-library";
+import discourseLater from "discourse/lib/later";
 import { withPluginApi } from "discourse/lib/plugin-api";
-import { iconHTML } from "discourse-common/lib/icon-library";
-import discourseLater from "discourse-common/lib/later";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
 
 export default {
   initialize(owner) {
@@ -46,7 +46,7 @@ export default {
               notice.innerHTML =
                 iconHTML("triangle-exclamation") +
                 " " +
-                I18n.t("cannot_render_video");
+                i18n("cannot_render_video");
 
               parentDiv.appendChild(notice);
             }

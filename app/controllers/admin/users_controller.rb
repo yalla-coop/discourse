@@ -32,7 +32,7 @@ class Admin::UsersController < Admin::StaffController
   def index
     users = ::AdminUserIndexQuery.new(params).find_users
 
-    opts = {}
+    opts = { include_can_be_deleted: true, include_silence_reason: true }
     if params[:show_emails] == "true"
       StaffActionLogger.new(current_user).log_show_emails(users, context: request.path)
       opts[:emails_desired] = true
@@ -121,10 +121,10 @@ class Admin::UsersController < Admin::StaffController
 
   def suspend
     User::Suspend.call(service_params) do
-      on_success do |contract:, user:, full_reason:|
+      on_success do |params:, user:, full_reason:|
         render_json_dump(
           suspension: {
-            suspend_reason: contract.reason,
+            suspend_reason: params.reason,
             full_suspend_reason: full_reason,
             suspended_till: user.suspended_till,
             suspended_at: user.suspended_at,
@@ -398,6 +398,28 @@ class Admin::UsersController < Admin::StaffController
                    ),
                },
                status: 403
+      end
+    end
+  end
+
+  def destroy_bulk
+    # capture service_params outside the hijack block to avoid thread safety
+    # issues
+    service_arg = service_params
+
+    hijack do
+      User::BulkDestroy.call(service_arg) do
+        on_success { render json: { deleted: true } }
+
+        on_failed_contract do |contract|
+          render json: failed_json.merge(errors: contract.errors.full_messages), status: 400
+        end
+
+        on_failed_policy(:can_delete_users) do
+          render json: failed_json.merge(errors: [I18n.t("user.cannot_bulk_delete")]), status: 403
+        end
+
+        on_model_not_found(:users) { render json: failed_json, status: 404 }
       end
     end
   end

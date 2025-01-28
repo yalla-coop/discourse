@@ -1,5 +1,4 @@
 // Styles for /admin/plugins
-
 .admin-contents.admin-plugins {
   .controls {
     .settings-button {
@@ -7,10 +6,21 @@
     }
   }
 
-  .admin-plugins-list {
-    .plugin-version {
+  .d-admin-table.admin-plugins-list {
+    .admin-plugins-list__version {
+      width: 14%;
+
       @include breakpoint("tablet") {
         text-align: right;
+        width: auto;
+      }
+    }
+
+    .d-admin-row__controls {
+      width: 10%;
+
+      @include breakpoint("tablet") {
+        width: auto;
       }
     }
 
@@ -64,18 +74,18 @@
     margin-bottom: var(--space-6);
   }
 
-  .admin-nav-submenu {
+  .d-nav-submenu {
     background: transparent;
     border-bottom: 1px solid var(--primary-low);
 
     .horizontal-overflow-nav {
       background: transparent;
 
-      &:before {
+      &::before {
         display: none;
       }
 
-      &:after {
+      &::after {
         display: none;
       }
     }
@@ -121,12 +131,5 @@
 .admin-plugin-filtered-site-settings {
   &__filter {
     width: 100%;
-  }
-}
-
-.admin-plugin-config-area {
-  &__empty-list {
-    padding: 1em;
-    border: 1px solid var(--primary-low);
   }
 }

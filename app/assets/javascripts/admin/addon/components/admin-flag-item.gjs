@@ -13,7 +13,7 @@ import concatClass from "discourse/helpers/concat-class";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
 import { SYSTEM_FLAG_IDS } from "discourse/lib/constants";
-import i18n from "discourse-common/helpers/i18n";
+import { i18n } from "discourse-i18n";
 import DMenu from "float-kit/components/d-menu";
 
 export default class AdminFlagItem extends Component {
@@ -88,6 +88,7 @@ export default class AdminFlagItem extends Component {
       this.dMenu.close();
     });
   }
+
   @action
   edit() {
     this.router.transitionTo("adminConfig.flags.edit", this.args.flag);
@@ -146,7 +147,7 @@ export default class AdminFlagItem extends Component {
         <div class="d-admin-row__controls-options">
 
           <DButton
-            class="btn-small admin-flag-item__edit"
+            class="btn-default btn-small admin-flag-item__edit"
             @action={{this.edit}}
             @label="admin.config_areas.flags.edit"
             @disabled={{not this.canEdit}}
@@ -159,6 +160,7 @@ export default class AdminFlagItem extends Component {
               @title={{i18n "admin.config_areas.flags.more_options.title"}}
               @icon="ellipsis-vertical"
               @onRegisterApi={{this.onRegisterApi}}
+              @class="btn-default"
             >
               <:content>
                 <DropdownMenu as |dropdown|>
@@ -167,7 +169,7 @@ export default class AdminFlagItem extends Component {
                       <DButton
                         @label="admin.config_areas.flags.more_options.move_up"
                         @icon="arrow-up"
-                        @class="btn-transparent admin-flag-item__move-up"
+                        class="btn-transparent admin-flag-item__move-up"
                         @action={{this.moveUp}}
                       />
                     </dropdown.item>
@@ -177,7 +179,7 @@ export default class AdminFlagItem extends Component {
                       <DButton
                         @label="admin.config_areas.flags.more_options.move_down"
                         @icon="arrow-down"
-                        @class="btn-transparent admin-flag-item__move-down"
+                        class="btn-transparent admin-flag-item__move-down"
                         @action={{this.moveDown}}
                       />
                     </dropdown.item>
@@ -187,7 +189,7 @@ export default class AdminFlagItem extends Component {
                     <DButton
                       @label="admin.config_areas.flags.delete"
                       @icon="trash-can"
-                      class="btn-transparent admin-flag-item__delete"
+                      class="btn-transparent btn-danger admin-flag-item__delete"
                       @action={{this.delete}}
                       @disabled={{not this.canEdit}}
                       @title={{this.deleteTitle}}

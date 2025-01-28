@@ -1,13 +1,13 @@
 import { get } from "@ember/object";
 import { htmlSafe } from "@ember/template";
 import categoryVariables from "discourse/helpers/category-variables";
+import getURL from "discourse/lib/get-url";
+import { helperContext, registerRawHelper } from "discourse/lib/helpers";
+import { iconHTML } from "discourse/lib/icon-library";
 import { applyValueTransformer } from "discourse/lib/transformer";
 import { escapeExpression } from "discourse/lib/utilities";
 import Category from "discourse/models/category";
-import getURL from "discourse-common/lib/get-url";
-import { helperContext, registerRawHelper } from "discourse-common/lib/helpers";
-import { iconHTML } from "discourse-common/lib/icon-library";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
 
 let _renderer = defaultCategoryLinkRenderer;
 
@@ -106,7 +106,7 @@ export default categoryLinkHTML;
 registerRawHelper("category-link", categoryLinkHTML);
 
 function buildTopicCount(count) {
-  return `<span class="topic-count" aria-label="${I18n.t(
+  return `<span class="topic-count" aria-label="${i18n(
     "category_row.topic_count",
     { count }
   )}">&times; ${count}</span>`;
@@ -192,7 +192,7 @@ export function defaultCategoryLinkRenderer(category, opts) {
   }
 
   if (opts.subcategoryCount) {
-    html += `<span class="plus-subcategories">${I18n.t(
+    html += `<span class="plus-subcategories">${i18n(
       "category_row.subcategory_count",
       { count: opts.subcategoryCount }
     )}</span>`;

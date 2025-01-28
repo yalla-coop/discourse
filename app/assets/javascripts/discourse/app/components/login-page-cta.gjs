@@ -1,6 +1,6 @@
 import DButton from "discourse/components/d-button";
 import PluginOutlet from "discourse/components/plugin-outlet";
-import i18n from "discourse-common/helpers/i18n";
+import { i18n } from "discourse-i18n";
 
 const LoginPageCta = <template>
   <div class="login-page-cta">
@@ -20,7 +20,7 @@ const LoginPageCta = <template>
         {{/unless}}
 
         {{#if @showSignupLink}}
-          <span class="signup-page-cta__no-account-yet">
+          <span class="login-page-cta__no-account-yet">
             {{i18n "create_account.no_account_yet"}}
           </span>
           <DButton

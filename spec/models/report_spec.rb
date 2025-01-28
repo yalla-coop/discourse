@@ -312,6 +312,49 @@ RSpec.describe Report do
     end
   end
 
+  describe "page_view_legacy_total_reqs" do
+    before do
+      freeze_time(Time.now.at_midnight)
+      Theme.clear_default!
+    end
+
+    let(:report) { Report.find("page_view_legacy_total_reqs") }
+
+    context "with no data" do
+      it "works" do
+        expect(report.data).to be_empty
+      end
+    end
+
+    context "with data" do
+      before do
+        CachedCounting.reset
+        CachedCounting.enable
+        ApplicationRequest.enable
+      end
+
+      after do
+        CachedCounting.reset
+        ApplicationRequest.disable
+        CachedCounting.disable
+      end
+
+      it "works and does not count browser or mobile pageviews" do
+        3.times { ApplicationRequest.increment!(:page_view_crawler) }
+        8.times { ApplicationRequest.increment!(:page_view_logged_in) }
+        6.times { ApplicationRequest.increment!(:page_view_logged_in_browser) }
+        2.times { ApplicationRequest.increment!(:page_view_logged_in_mobile) }
+        2.times { ApplicationRequest.increment!(:page_view_anon) }
+        1.times { ApplicationRequest.increment!(:page_view_anon_browser) }
+        4.times { ApplicationRequest.increment!(:page_view_anon_mobile) }
+
+        CachedCounting.flush
+
+        expect(report.data.sum { |r| r[:y] }).to eq(13)
+      end
+    end
+  end
+
   describe "page_view_total_reqs" do
     before do
       freeze_time(Time.now.at_midnight)
@@ -656,7 +699,7 @@ RSpec.describe Report do
 
     context "with flags" do
       let(:flagger) { Fabricate(:user, refresh_auto_groups: true) }
-      let(:post) { Fabricate(:post, user: flagger) }
+      let(:post) { Fabricate(:post, user: Fabricate(:user)) }
 
       before { freeze_time }
 
@@ -679,6 +722,26 @@ RSpec.describe Report do
         expect(row[:flagger_avatar_template]).to be_present
         expect(row[:resolution]).to eq("No action")
         expect(row[:response_time]).to eq(nil)
+      end
+
+      it "exports the CSV of the report correctly" do
+        result =
+          PostActionCreator.new(flagger, post, PostActionType.types[:spam], message: "bad").perform
+
+        result.reviewable.perform(flagger, :agree_and_hide)
+        expect(result.success).to eq(true)
+        expect(report.data).to be_present
+
+        exporter = Jobs::ExportCsvFile.new
+        exporter.entity = "report"
+        exporter.extra = HashWithIndifferentAccess.new(name: "flags_status")
+        exporter.current_user = flagger
+        exported_csv = []
+        exporter.report_export { |entry| exported_csv << entry }
+        expect(exported_csv[0]).to eq(["Type", "Assigned", "Poster", "Flagger", "Resolution time"])
+        expect(exported_csv[1]).to eq(
+          ["spam", flagger.username, post.user.username, flagger.username, "0.0"],
+        )
       end
     end
   end
@@ -993,12 +1056,11 @@ RSpec.describe Report do
   end
 
   describe "unexpected error on report initialization" do
-    before do
-      @orig_logger = Rails.logger
-      Rails.logger = @fake_logger = FakeLogger.new
-    end
+    let(:fake_logger) { FakeLogger.new }
 
-    after { Rails.logger = @orig_logger }
+    before { Rails.logger.broadcast_to(fake_logger) }
+
+    after { Rails.logger.stop_broadcasting_to(fake_logger) }
 
     it "returns no report" do
       class ReportInitError < StandardError
@@ -1010,7 +1072,7 @@ RSpec.describe Report do
 
       expect(report).to be_nil
 
-      expect(@fake_logger.errors).to eq(["Couldn’t create report `signups`: <ReportInitError x>"])
+      expect(fake_logger.errors).to eq(["Couldn’t create report `signups`: <ReportInitError x>"])
     end
   end
 

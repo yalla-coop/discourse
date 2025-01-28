@@ -3,6 +3,7 @@ import { action } from "@ember/object";
 import { and, equal } from "@ember/object/computed";
 import { tagName } from "@ember-decorators/component";
 import { observes, on } from "@ember-decorators/object";
+import discourseComputed from "discourse/lib/decorators";
 import {
   defaultTimeShortcuts,
   formatTime,
@@ -11,8 +12,7 @@ import {
   TIME_SHORTCUT_TYPES,
 } from "discourse/lib/time-shortcut";
 import { laterToday, now, parseCustomDatetime } from "discourse/lib/time-utils";
-import discourseComputed from "discourse-common/utils/decorators";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
 
 const BINDINGS = {
   "l t": {
@@ -271,7 +271,7 @@ export default class TimeShortcutPicker extends Component {
   _formatTime(options) {
     options.forEach((option) => {
       if (option.time && option.timeFormatKey) {
-        option.timeFormatted = option.time.format(I18n.t(option.timeFormatKey));
+        option.timeFormatted = option.time.format(i18n(option.timeFormatKey));
       }
     });
   }

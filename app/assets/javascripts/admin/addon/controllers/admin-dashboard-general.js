@@ -2,10 +2,10 @@ import { inject as controller } from "@ember/controller";
 import { computed } from "@ember/object";
 import { service } from "@ember/service";
 import { setting } from "discourse/lib/computed";
-import getURL from "discourse-common/lib/get-url";
-import { makeArray } from "discourse-common/lib/helpers";
-import discourseComputed from "discourse-common/utils/decorators";
-import I18n from "discourse-i18n";
+import discourseComputed from "discourse/lib/decorators";
+import getURL from "discourse/lib/get-url";
+import { makeArray } from "discourse/lib/helpers";
+import { i18n } from "discourse-i18n";
 import AdminDashboard from "admin/models/admin-dashboard";
 import Report from "admin/models/report";
 import AdminDashboardTabController from "./admin-dashboard-tab";
@@ -134,7 +134,7 @@ export default class AdminDashboardGeneralController extends AdminDashboardTabCo
 
   @discourseComputed
   trendingSearchDisabledLabel() {
-    return I18n.t("admin.dashboard.reports.trending_search.disabled", {
+    return i18n("admin.dashboard.reports.trending_search.disabled", {
       basePath: getURL(""),
     });
   }

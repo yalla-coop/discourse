@@ -31,13 +31,8 @@ module PageObjects
         click("#login-link")
       end
 
-      def click_create_account(expect_success: true)
-        try_until_success(timeout: 5) do
-          click(".modal.create-account .btn-primary")
-          if expect_success
-            expect(page).to have_css(".modal.create-account .btn-primary.is-loading")
-          end
-        end
+      def click_create_account
+        click(".modal.create-account .btn-primary")
       end
 
       def has_password_input?
@@ -46,6 +41,14 @@ module PageObjects
 
       def has_no_password_input?
         has_no_css?("#new-account-password")
+      end
+
+      def has_name_input?
+        has_css?("#new-account-name")
+      end
+
+      def has_no_name_input?
+        has_no_css?("#new-account-name")
       end
 
       def fill_input(selector, text)
@@ -101,6 +104,18 @@ module PageObjects
         has_valid_email?
         has_valid_username?
         has_valid_password?
+      end
+
+      def has_disabled_email?
+        find(".create-account-email").has_css?("input[disabled]")
+      end
+
+      def has_disabled_name?
+        find(".create-account__fullname").has_css?("input[disabled]")
+      end
+
+      def has_disabled_username?
+        find(".create-account__username").has_css?("input[disabled]")
       end
 
       def click_social_button(provider)

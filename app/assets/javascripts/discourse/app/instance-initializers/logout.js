@@ -1,8 +1,8 @@
 import { setOwner } from "@ember/owner";
 import { service } from "@ember/service";
+import { bind } from "discourse/lib/decorators";
 import logout from "discourse/lib/logout";
-import { bind } from "discourse-common/utils/decorators";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
 
 let _showingLogout = false;
 
@@ -41,8 +41,8 @@ class LogoutInit {
     _showingLogout = true;
 
     this.dialog.alert({
-      message: I18n.t("logout"),
-      confirmButtonLabel: "house",
+      message: i18n("logout"),
+      confirmButtonLabel: "home",
       didConfirm: logout,
       didCancel: logout,
       shouldDisplayCancel: false,

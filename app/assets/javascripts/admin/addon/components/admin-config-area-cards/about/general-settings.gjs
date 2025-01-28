@@ -5,8 +5,7 @@ import { service } from "@ember/service";
 import Form from "discourse/components/form";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
-import i18n from "discourse-common/helpers/i18n";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
 
 export default class AdminConfigAreasAboutGeneralSettings extends Component {
   @service toasts;
@@ -23,6 +22,7 @@ export default class AdminConfigAreasAboutGeneralSettings extends Component {
       summary: this.args.generalSettings.siteDescription.value,
       extendedDescription:
         this.args.generalSettings.extendedSiteDescription.value,
+      communityTitle: this.args.generalSettings.communityTitle.value,
       aboutBannerImage: this.args.generalSettings.aboutBannerImage.value,
     };
   }
@@ -38,6 +38,7 @@ export default class AdminConfigAreasAboutGeneralSettings extends Component {
             name: data.name,
             summary: data.summary,
             extended_description: data.extendedDescription,
+            community_title: data.communityTitle,
             about_banner_image: data.aboutBannerImage,
           },
         },
@@ -45,7 +46,7 @@ export default class AdminConfigAreasAboutGeneralSettings extends Component {
       this.toasts.success({
         duration: 3000,
         data: {
-          message: I18n.t(
+          message: i18n(
             "admin.config_areas.about.toasts.general_settings_saved"
           ),
         },
@@ -93,6 +94,16 @@ export default class AdminConfigAreasAboutGeneralSettings extends Component {
         as |field|
       >
         <field.Composer />
+      </form.Field>
+
+      <form.Field
+        @name="communityTitle"
+        @title={{i18n "admin.config_areas.about.community_title"}}
+        @description={{i18n "admin.config_areas.about.community_title_help"}}
+        @format="large"
+        as |field|
+      >
+        <field.Input />
       </form.Field>
 
       <form.Field

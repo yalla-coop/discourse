@@ -2,7 +2,6 @@
   // topic map under OP
   border-top: 1px solid var(--primary-low);
   border-bottom: none;
-
   padding-left: calc(
     var(--topic-body-width-padding) + var(--topic-avatar-width)
   );
@@ -43,6 +42,8 @@ body:not(.archetype-private_message) {
     var(--topic-avatar-width) + var(--topic-body-width) +
       (var(--topic-body-width-padding) * 2)
   );
+  padding-block: 0.5em;
+  overflow-anchor: none;
 
   @include breakpoint(mobile-large) {
     font-size: var(--font-down-1);
@@ -91,7 +92,6 @@ body:not(.archetype-private_message) {
   }
 
   &__contents {
-    padding-block: 0.5em;
     flex-grow: 1;
 
     .number {
@@ -393,14 +393,19 @@ body:not(.archetype-private_message) {
         }
       }
     }
-    .badge {
-      grid-area: counter;
-      align-self: start;
-      top: 0.2em;
-    }
+
     .topic-link {
       grid-area: link;
     }
+
+    .topic-link[data-clicks]::before {
+      @include click-counter-badge;
+    }
+
+    .topic-link[data-clicks]::after {
+      display: none;
+    }
+
     .domain {
       grid-area: domain;
       font-size: var(--font-down-2);
@@ -409,6 +414,7 @@ body:not(.archetype-private_message) {
 
     .link-summary {
       width: 100%;
+
       .d-icon {
         color: var(--primary-high);
       }
@@ -422,6 +428,7 @@ body:not(.archetype-private_message) {
       gap: 0.5em;
       padding: 0.75em 1rem;
     }
+
     .poster {
       display: block;
       position: relative;
@@ -431,6 +438,7 @@ body:not(.archetype-private_message) {
         height: 2.25em;
       }
     }
+
     .post-count,
     .avatar-flair {
       position: absolute;
@@ -439,6 +447,7 @@ body:not(.archetype-private_message) {
       align-items: center;
       justify-content: center;
     }
+
     .post-count {
       top: -0.15em;
       right: -0.25em;
@@ -446,6 +455,7 @@ body:not(.archetype-private_message) {
       font-size: var(--font-down-2);
       line-height: var(--line-height-small);
     }
+
     .avatar-flair {
       right: -0.25em;
       bottom: -0.15em;
@@ -467,6 +477,7 @@ body:not(.archetype-private_message) {
         justify-content: space-evenly;
         padding: 0 1rem;
       }
+
       &__count {
         font-size: var(--font-up-4);
         color: var(--primary-high);

@@ -13,6 +13,10 @@ class ReviewablePost < Reviewable
          created_or_edited_by.has_trust_level?(TrustLevel[4])
       return
     end
+    queue_for_review(post)
+  end
+
+  def self.queue_for_review(post)
     system_user = Discourse.system_user
 
     needs_review!(
@@ -155,6 +159,7 @@ end
 #  updated_at              :datetime         not null
 #  force_review            :boolean          default(FALSE), not null
 #  reject_reason           :text
+#  potentially_illegal     :boolean          default(FALSE)
 #
 # Indexes
 #

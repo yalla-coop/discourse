@@ -44,6 +44,10 @@ module PageObjects
           component.find("select").value
         when "composer"
           component.find("textarea").value
+        when "image"
+          url = component.find(".uploaded-image-preview a.lightbox", wait: 10)[:href]
+          sha1 = url.match(/(\h{40})/).captures.first
+          Upload.find_by(sha1:)
         end
       end
 
@@ -121,7 +125,7 @@ module PageObjects
             selector.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
           JS
         when "menu"
-          trigger = component.find(".fk-d-menu__trigger.form-kit__control-menu")
+          trigger = component.find(".fk-d-menu__trigger.form-kit__control-menu-trigger")
           trigger.click
           menu = find("[aria-labelledby='#{trigger["id"]}']")
           item = menu.find(".form-kit__control-menu-item[data-value='#{value}'] .btn")
@@ -152,7 +156,17 @@ module PageObjects
         if control_type == "question"
           component.find(".form-kit__control-radio[value='false']").click
         else
-          raise "'accept' is not supported for control type: #{control_type}"
+          raise "'refuse' is not supported for control type: #{control_type}"
+        end
+      end
+
+      def upload_image(image_path)
+        if control_type == "image"
+          attach_file(image_path) do
+            component.find(".image-upload-controls .btn.btn-default").click
+          end
+        else
+          raise "'upload_image' is not supported for control type: #{control_type}"
         end
       end
 

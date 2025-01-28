@@ -1,13 +1,24 @@
 import Component from "@ember/component";
 import { alias, not } from "@ember/object/computed";
+import { service } from "@ember/service";
 import { observes } from "@ember-decorators/object";
 import $ from "jquery";
-import discourseComputed, { bind } from "discourse-common/utils/decorators";
+import discourseComputed, { bind } from "discourse/lib/decorators";
 
 export default class BasicTopicList extends Component {
+  @service site;
+
   @alias("topicList.loadingMore") loadingMore;
 
   @not("loaded") loading;
+
+  init() {
+    super.init(...arguments);
+    const topicList = this.topicList;
+    if (topicList) {
+      this._initFromTopicList(topicList);
+    }
+  }
 
   @discourseComputed("topicList.loaded")
   loaded() {
@@ -28,14 +39,6 @@ export default class BasicTopicList extends Component {
     if (topicList !== null) {
       this.set("topics", topicList.get("topics"));
       this.rerender();
-    }
-  }
-
-  init() {
-    super.init(...arguments);
-    const topicList = this.topicList;
-    if (topicList) {
-      this._initFromTopicList(topicList);
     }
   }
 

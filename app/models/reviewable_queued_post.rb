@@ -173,7 +173,7 @@ class ReviewableQueuedPost < Reviewable
       original_post: self.payload["raw"],
       site_name: SiteSetting.title,
     }
-    SystemMessage.create_from_system_user(
+    SystemMessage.create(
       self.target_created_by,
       (
         if self.topic.blank?
@@ -257,6 +257,7 @@ end
 #  updated_at              :datetime         not null
 #  force_review            :boolean          default(FALSE), not null
 #  reject_reason           :text
+#  potentially_illegal     :boolean          default(FALSE)
 #
 # Indexes
 #

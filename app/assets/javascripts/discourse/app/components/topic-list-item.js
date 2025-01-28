@@ -11,13 +11,15 @@ import {
 } from "@ember-decorators/component";
 import { observes, on } from "@ember-decorators/object";
 import $ from "jquery";
-import { topicTitleDecorators } from "discourse/components/topic-title";
+import discourseComputed, { bind } from "discourse/lib/decorators";
+import deprecated from "discourse/lib/deprecated";
 import { wantsNewWindow } from "discourse/lib/intercept-click";
+import { RAW_TOPIC_LIST_DEPRECATION_OPTIONS } from "discourse/lib/plugin-api";
+import { RUNTIME_OPTIONS } from "discourse/lib/raw-handlebars-helpers";
+import { findRawTemplate } from "discourse/lib/raw-templates";
+import { applyValueTransformer } from "discourse/lib/transformer";
 import DiscourseURL, { groupPath } from "discourse/lib/url";
-import { RUNTIME_OPTIONS } from "discourse-common/lib/raw-handlebars-helpers";
-import { findRawTemplate } from "discourse-common/lib/raw-templates";
-import discourseComputed, { bind } from "discourse-common/utils/decorators";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
 
 export function showEntrance(e) {
   let target = $(e.target);
@@ -50,6 +52,24 @@ export function navigateToTopic(topic, href) {
 @classNameBindings(":topic-list-item", "unboundClassNames", "topic.visited")
 @attributeBindings("dataTopicId:data-topic-id", "role", "ariaLevel:aria-level")
 export default class TopicListItem extends Component {
+  static reopen() {
+    deprecated(
+      "Modifying topic-list-item with `reopen` is deprecated. Use the value transformer `topic-list-columns` and other new topic-list plugin APIs instead.",
+      RAW_TOPIC_LIST_DEPRECATION_OPTIONS
+    );
+
+    return super.reopen(...arguments);
+  }
+
+  static reopenClass() {
+    deprecated(
+      "Modifying topic-list-item with `reopenClass` is deprecated. Use the value transformer `topic-list-columns` and other new topic-list plugin APIs instead.",
+      RAW_TOPIC_LIST_DEPRECATION_OPTIONS
+    );
+
+    return super.reopenClass(...arguments);
+  }
+
   @service router;
   @service historyStore;
 
@@ -102,17 +122,6 @@ export default class TopicListItem extends Component {
     if (this.includeUnreadIndicator) {
       this.messageBus.subscribe(this.unreadIndicatorChannel, this.onMessage);
     }
-
-    schedule("afterRender", () => {
-      if (this.element && !this.isDestroying && !this.isDestroyed) {
-        const rawTopicLink = this.element.querySelector(".raw-topic-link");
-
-        rawTopicLink &&
-          topicTitleDecorators.forEach((cb) =>
-            cb(this.topic, rawTopicLink, "topic-list-item-title")
-          );
-      }
-    });
   }
 
   willDestroyElement() {
@@ -168,7 +177,7 @@ export default class TopicListItem extends Component {
   newDotText() {
     return this.currentUser && this.currentUser.trust_level > 0
       ? ""
-      : I18n.t("filters.new.lower_title");
+      : i18n("filters.new.lower_title");
   }
 
   @discourseComputed("topic", "lastVisitedTopic")
@@ -218,6 +227,17 @@ export default class TopicListItem extends Component {
 
   @discourseComputed
   expandPinned() {
+    return applyValueTransformer(
+      "topic-list-item-expand-pinned",
+      this._expandPinned,
+      {
+        topic: this.topic,
+        mobileView: this.site.mobileView,
+      }
+    );
+  }
+
+  get _expandPinned() {
     const pinned = this.get("topic.pinned");
     if (!pinned) {
       return false;
@@ -310,14 +330,6 @@ export default class TopicListItem extends Component {
       }
       e.preventDefault();
       return this.navigateToTopic(topic, topic.lastUnreadUrl);
-    }
-
-    if (
-      classList.contains("d-icon-thumbtack") &&
-      target.closest("a.topic-status")
-    ) {
-      this.topic.togglePinnedForUser();
-      return false;
     }
 
     return this.unhandledRowClick(e, topic);

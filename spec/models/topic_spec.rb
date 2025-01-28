@@ -1239,6 +1239,23 @@ RSpec.describe Topic do
             expect(notification.notification_type).to eq(Notification.types[:group_message_summary])
           end
 
+          it "does not create notifications if invite is set to skip notifications" do
+            Fabricate(:post, topic: topic)
+            user_watching = Fabricate(:user)
+
+            group.add(topic.user)
+            group.add(user_watching)
+
+            set_state!(group, topic.user, :watching)
+            set_state!(group, user_watching, :watching)
+
+            Notification.delete_all
+            Jobs.run_immediately!
+            topic.invite_group(topic.user, group, should_notify: false)
+
+            expect(Notification.count).to eq(0)
+          end
+
           it "removes users in topic_allowed_users who are part of the added group" do
             admins = Group[:admins]
             admins.update!(messageable_level: Group::ALIAS_LEVELS[:everyone])
@@ -2341,26 +2358,38 @@ RSpec.describe Topic do
         expect(Topic.for_digest(user, 1.year.ago, top_order: true)).to be_blank
       end
 
-      it "doesn't return topics from suppressed tags" do
-        category = Fabricate(:category_with_definition, created_at: 2.minutes.ago)
-        topic = Fabricate(:topic, category: category, created_at: 1.minute.ago)
-        topic2 = Fabricate(:topic, category: category, created_at: 1.minute.ago)
-        tag = Fabricate(:tag)
-        tag2 = Fabricate(:tag)
-        Fabricate(:topic_tag, topic: topic, tag: tag)
+      it "doesn't return topics with a suppressed tag" do
+        topic_with_tags = Fabricate(:topic, created_at: 1.minute.ago)
+        topic_without_tags = Fabricate(:topic, created_at: 1.minute.ago)
+        topic_with_other_tags = Fabricate(:topic, created_at: 1.minute.ago)
 
-        SiteSetting.digest_suppress_tags = "#{tag.name}|#{tag2.name}"
+        tag_1 = Fabricate(:tag)
+        tag_2 = Fabricate(:tag)
+        tag_3 = Fabricate(:tag)
+
+        Fabricate(:topic_tag, topic: topic_with_tags, tag: tag_1)
+        Fabricate(:topic_tag, topic: topic_with_tags, tag: tag_2)
+
+        Fabricate(:topic_tag, topic: topic_with_other_tags, tag: tag_2)
+        Fabricate(:topic_tag, topic: topic_with_other_tags, tag: tag_3)
+
+        SiteSetting.digest_suppress_tags = "#{tag_1.name}"
+
         topics = Topic.for_digest(user, 1.year.ago, top_order: true)
-        expect(topics).to eq([topic2])
+
+        expect(topics).to contain_exactly(topic_without_tags, topic_with_other_tags)
 
         Fabricate(
           :topic_user,
           user: user,
-          topic: topic,
+          topic: topic_with_tags,
           notification_level: TopicUser.notification_levels[:regular],
         )
 
-        expect(Topic.for_digest(user, 1.year.ago, top_order: true)).to eq([topic2])
+        expect(Topic.for_digest(user, 1.year.ago, top_order: true)).to contain_exactly(
+          topic_without_tags,
+          topic_with_other_tags,
+        )
       end
 
       it "doesn't return topics from TL0 users" do

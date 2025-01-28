@@ -3,6 +3,9 @@ import { isEmpty } from "@ember/utils";
 import { Promise } from "rsvp";
 import { ajax } from "discourse/lib/ajax";
 import { search as searchCategoryTag } from "discourse/lib/category-tag-search";
+import getURL from "discourse/lib/get-url";
+import { deepMerge } from "discourse/lib/object";
+import { findRawTemplate } from "discourse/lib/raw-templates";
 import { emojiUnescape } from "discourse/lib/text";
 import { userPath } from "discourse/lib/url";
 import userSearch from "discourse/lib/user-search";
@@ -12,10 +15,7 @@ import Post from "discourse/models/post";
 import Site from "discourse/models/site";
 import Topic from "discourse/models/topic";
 import User from "discourse/models/user";
-import getURL from "discourse-common/lib/get-url";
-import { deepMerge } from "discourse-common/lib/object";
-import { findRawTemplate } from "discourse-common/lib/raw-templates";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
 
 const translateResultsCallbacks = [];
 const MAX_RECENT_SEARCHES = 5; // should match backend constant with the same name
@@ -191,15 +191,15 @@ export function searchContextDescription(type, name) {
   if (type) {
     switch (type) {
       case "topic":
-        return I18n.t("search.context.topic");
+        return i18n("search.context.topic");
       case "user":
-        return I18n.t("search.context.user", { username: name });
+        return i18n("search.context.user", { username: name });
       case "category":
-        return I18n.t("search.context.category", { category: name });
+        return i18n("search.context.category", { category: name });
       case "tag":
-        return I18n.t("search.context.tag", { tag: name });
+        return i18n("search.context.tag", { tag: name });
       case "private_messages":
-        return I18n.t("search.context.private_messages");
+        return i18n("search.context.private_messages");
     }
   }
 }

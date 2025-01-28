@@ -31,11 +31,8 @@ module PageObjects
         click("#login-link")
       end
 
-      def click_create_account(expect_success: true)
-        try_until_success(timeout: 5) do
-          click(".signup-fullpage .btn-primary")
-          expect(page).to have_css(".signup-fullpage .btn-primary.is-loading") if expect_success
-        end
+      def click_create_account
+        click(".signup-fullpage .btn-primary")
       end
 
       def has_password_input?
@@ -44,6 +41,14 @@ module PageObjects
 
       def has_no_password_input?
         has_no_css?("#new-account-password")
+      end
+
+      def has_name_input?
+        has_css?("#new-account-name")
+      end
+
+      def has_no_name_input?
+        has_no_css?("#new-account-name")
       end
 
       def fill_input(selector, text)
@@ -99,6 +104,18 @@ module PageObjects
         has_valid_email?
         has_valid_username?
         has_valid_password?
+      end
+
+      def has_disabled_email?
+        find(".create-account-email").has_css?("input[disabled]")
+      end
+
+      def has_disabled_name?
+        find(".create-account__fullname").has_css?("input[disabled]")
+      end
+
+      def has_disabled_username?
+        find(".create-account__username").has_css?("input[disabled]")
       end
 
       def click_social_button(provider)

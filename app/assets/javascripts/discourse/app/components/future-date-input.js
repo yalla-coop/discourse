@@ -1,6 +1,7 @@
 import Component from "@ember/component";
 import { action } from "@ember/object";
 import { and, empty, equal } from "@ember/object/computed";
+import discourseComputed from "discourse/lib/decorators";
 import {
   extendedDefaultTimeShortcuts,
   formatTime,
@@ -8,8 +9,7 @@ import {
   TIME_SHORTCUT_TYPES,
   timeShortcuts,
 } from "discourse/lib/time-shortcut";
-import discourseComputed from "discourse-common/utils/decorators";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
 import { FORMAT } from "select-kit/components/future-date-input-selector";
 
 export default class FutureDateInput extends Component {
@@ -36,7 +36,7 @@ export default class FutureDateInput extends Component {
     super.didReceiveAttrs(...arguments);
 
     if (this.label) {
-      this.set("displayLabel", I18n.t(this.label));
+      this.set("displayLabel", i18n(this.label));
     }
 
     if (this.input) {
@@ -80,7 +80,7 @@ export default class FutureDateInput extends Component {
     return shortcuts.map((s) => {
       return {
         id: s.id,
-        name: I18n.t(s.label),
+        name: i18n(s.label),
         time: s.time,
         timeFormatted: formatTime(s),
         icon: s.icon,

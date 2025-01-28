@@ -1,7 +1,7 @@
 import { Promise } from "rsvp";
 import { ajax } from "discourse/lib/ajax";
-import { cook, emojiUnescape, excerpt } from "discourse/lib/text";
-import { escapeExpression } from "discourse/lib/utilities";
+import discourseComputed from "discourse/lib/decorators";
+import { cook, excerpt } from "discourse/lib/text";
 import Category from "discourse/models/category";
 import {
   NEW_PRIVATE_MESSAGE_KEY,
@@ -10,7 +10,6 @@ import {
 import RestModel from "discourse/models/rest";
 import Site from "discourse/models/site";
 import UserDraft from "discourse/models/user-draft";
-import discourseComputed from "discourse-common/utils/decorators";
 
 export default class UserDraftsStream extends RestModel {
   limit = 30;
@@ -82,7 +81,6 @@ export default class UserDraftsStream extends RestModel {
             ) {
               draft.title = draft.data.title;
             }
-            draft.title = emojiUnescape(escapeExpression(draft.title));
             if (draft.data.categoryId) {
               draft.category = Category.findById(draft.data.categoryId) || null;
             }

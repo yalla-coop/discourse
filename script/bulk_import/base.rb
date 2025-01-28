@@ -120,6 +120,7 @@ class BulkImport::Base
       chat_channel: 6,
       chat_thread: 7,
       chat_message: 8,
+      discourse_reactions_reaction: 9,
     )
 
   def create_migration_mappings_table
@@ -309,6 +310,16 @@ class BulkImport::Base
 
     @chat_message_mapping = load_index(MAPPING_TYPES[:chat_message])
     @last_chat_message_id = last_id(Chat::Message)
+
+    if defined?(::DiscourseReactions)
+      puts "Loading reaction indexes..."
+      @discourse_reaction_mapping = load_index(MAPPING_TYPES[:discourse_reactions_reaction])
+      @last_discourse_reaction_id = last_id(DiscourseReactions::Reaction)
+    else
+      puts "Skipping reaction indexes - plugin not installed"
+      @discourse_reaction_mapping = {}
+      @last_discourse_reaction_id = 0
+    end
   end
 
   def use_bbcode_to_md?
@@ -388,6 +399,11 @@ class BulkImport::Base
     if @last_chat_message_id > 0
       @raw_connection.exec(
         "SELECT setval('#{Chat::Message.sequence_name}', #{@last_chat_message_id})",
+      )
+    end
+    if @last_discourse_reaction_id > 0
+      @raw_connection.exec(
+        "SELECT setval('#{DiscourseReactions::Reaction.sequence_name}', #{@last_discourse_reaction_id})",
       )
     end
   end
@@ -473,6 +489,10 @@ class BulkImport::Base
 
   def chat_message_id_from_original_id(id)
     @chat_message_mapping[id.to_s]&.to_i
+  end
+
+  def discourse_reaction_id_from_original_id(id)
+    @discourse_reaction_mapping[id.to_s]&.to_i
   end
 
   GROUP_COLUMNS = %i[
@@ -577,6 +597,7 @@ class BulkImport::Base
     include_tl0_in_digests
     automatically_unpin_topics
     enable_quoting
+    enable_smart_lists
     external_links_in_new_tab
     dynamic_favicon
     new_topic_duration_minutes
@@ -585,6 +606,8 @@ class BulkImport::Base
     like_notification_frequency
     skip_new_user_tips
     hide_profile_and_presence
+    hide_profile
+    hide_presence
     sidebar_link_to_filtered_list
     sidebar_show_count_of_new_items
     timezone
@@ -760,6 +783,8 @@ class BulkImport::Base
 
   POST_VOTING_VOTE_COLUMNS = %i[user_id votable_type votable_id direction created_at]
 
+  TOPIC_VOTING_COLUMNS = %i[topic_id user_id archive created_at updated_at]
+
   BADGE_COLUMNS = %i[
     id
     name
@@ -846,7 +871,7 @@ class BulkImport::Base
 
   CHAT_DIRECT_MESSAGE_CHANNEL_COLUMNS = %i[id group created_at updated_at]
 
-  CHAT_CHANNEL_COLUMNS ||= %i[
+  CHAT_CHANNEL_COLUMNS = %i[
     id
     name
     description
@@ -864,7 +889,7 @@ class BulkImport::Base
     threading_enabled
   ]
 
-  USER_CHAT_CHANNEL_MEMBERSHIP_COLUMNS ||= %i[
+  USER_CHAT_CHANNEL_MEMBERSHIP_COLUMNS = %i[
     chat_channel_id
     user_id
     created_at
@@ -878,9 +903,9 @@ class BulkImport::Base
     last_viewed_at
   ]
 
-  DIRECT_MESSAGE_USER_COLUMNS ||= %i[direct_message_channel_id user_id created_at updated_at]
+  DIRECT_MESSAGE_USER_COLUMNS = %i[direct_message_channel_id user_id created_at updated_at]
 
-  CHAT_THREAD_COLUMNS ||= %i[
+  CHAT_THREAD_COLUMNS = %i[
     id
     channel_id
     original_message_id
@@ -892,7 +917,7 @@ class BulkImport::Base
     replies_count
   ]
 
-  USER_CHAT_THREAD_MEMBERSHIP_COLUMNS ||= %i[
+  USER_CHAT_THREAD_MEMBERSHIP_COLUMNS = %i[
     user_id
     thread_id
     notification_level
@@ -900,7 +925,7 @@ class BulkImport::Base
     updated_at
   ]
 
-  CHAT_MESSAGE_COLUMNS ||= %i[
+  CHAT_MESSAGE_COLUMNS = %i[
     id
     chat_channel_id
     user_id
@@ -916,9 +941,21 @@ class BulkImport::Base
     thread_id
   ]
 
-  CHAT_MESSAGE_REACTION_COLUMNS ||= %i[chat_message_id user_id emoji created_at updated_at]
+  CHAT_MESSAGE_REACTION_COLUMNS = %i[chat_message_id user_id emoji created_at updated_at]
 
-  CHAT_MENTION_COLUMNS ||= %i[chat_message_id target_id type created_at updated_at]
+  CHAT_MENTION_COLUMNS = %i[chat_message_id target_id type created_at updated_at]
+
+  REACTION_USER_COLUMNS = %i[reaction_id user_id created_at updated_at post_id]
+
+  REACTION_COLUMNS = %i[
+    id
+    post_id
+    reaction_type
+    reaction_value
+    reaction_users_count
+    created_at
+    updated_at
+  ]
 
   def create_groups(rows, &block)
     create_records(rows, "group", GROUP_COLUMNS, &block)
@@ -1050,6 +1087,10 @@ class BulkImport::Base
     create_records(rows, "post_voting_vote", POST_VOTING_VOTE_COLUMNS, &block)
   end
 
+  def create_topic_voting_votes(rows, &block)
+    create_records(rows, "topic_voting_vote", TOPIC_VOTING_COLUMNS, &block)
+  end
+
   def create_post_custom_fields(rows, &block)
     create_records(rows, "post_custom_field", POST_CUSTOM_FIELD_COLUMNS, &block)
   end
@@ -1146,6 +1187,14 @@ class BulkImport::Base
 
   def create_chat_mentions(rows, &block)
     create_records(rows, "chat_mention", CHAT_MENTION_COLUMNS, &block)
+  end
+
+  def create_reaction_users(rows, &block)
+    create_records(rows, "discourse_reactions_reaction_user", REACTION_USER_COLUMNS, &block)
+  end
+
+  def create_reactions(rows, &block)
+    create_records_with_mapping(rows, "discourse_reactions_reaction", REACTION_COLUMNS, &block)
   end
 
   def process_group(group)
@@ -1306,6 +1355,7 @@ class BulkImport::Base
     include_tl0_in_digests: SiteSetting.default_include_tl0_in_digests,
     automatically_unpin_topics: SiteSetting.default_topics_automatic_unpin,
     enable_quoting: SiteSetting.default_other_enable_quoting,
+    enable_smart_lists: SiteSetting.default_other_enable_smart_lists,
     external_links_in_new_tab: SiteSetting.default_other_external_links_in_new_tab,
     dynamic_favicon: SiteSetting.default_other_dynamic_favicon,
     new_topic_duration_minutes: SiteSetting.default_other_new_topic_duration_minutes,
@@ -1313,7 +1363,8 @@ class BulkImport::Base
     notification_level_when_replying: SiteSetting.default_other_notification_level_when_replying,
     like_notification_frequency: SiteSetting.default_other_like_notification_frequency,
     skip_new_user_tips: SiteSetting.default_other_skip_new_user_tips,
-    hide_profile_and_presence: SiteSetting.default_hide_profile_and_presence,
+    hide_profile: SiteSetting.default_hide_profile,
+    hide_presence: SiteSetting.default_hide_presence,
     sidebar_link_to_filtered_list: SiteSetting.default_sidebar_link_to_filtered_list,
     sidebar_show_count_of_new_items: SiteSetting.default_sidebar_show_count_of_new_items,
   }
@@ -1554,6 +1605,12 @@ class BulkImport::Base
   def process_post_voting_vote(vote)
     vote[:created_at] ||= NOW
     vote
+  end
+
+  def process_topic_voting_vote(topic_vote)
+    topic_vote[:created_at] ||= NOW
+    topic_vote[:updated_at] ||= NOW
+    topic_vote
   end
 
   def process_user_avatar(avatar)
@@ -1943,6 +2000,24 @@ class BulkImport::Base
     mention[:updated_at] ||= NOW
 
     mention
+  end
+
+  def process_discourse_reactions_reaction_user(reaction_user)
+    reaction_user[:created_at] ||= NOW
+    reaction_user[:updated_at] ||= NOW
+    reaction_user
+  end
+
+  def process_discourse_reactions_reaction(reaction)
+    reaction[:id] = @last_discourse_reaction_id += 1
+    reaction[:created_at] ||= NOW
+    reaction[:updated_at] ||= NOW
+    reaction[:reaction_users_count] ||= 0
+
+    @imported_records[reaction[:original_id].to_s] = reaction[:id]
+    @discourse_reaction_mapping[reaction[:original_id].to_s] = reaction[:id]
+
+    reaction
   end
 
   def create_records(all_rows, name, columns, &block)

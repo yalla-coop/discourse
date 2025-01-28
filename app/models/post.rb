@@ -56,6 +56,15 @@ class Post < ActiveRecord::Base
   has_many :post_revisions
   has_many :revisions, -> { order(:number) }, foreign_key: :post_id, class_name: "PostRevision"
 
+  has_many :moved_posts_as_old_post,
+           class_name: "MovedPost",
+           foreign_key: :old_post_id,
+           dependent: :destroy
+  has_many :moved_posts_as_new_post,
+           class_name: "MovedPost",
+           foreign_key: :new_post_id,
+           dependent: :destroy
+
   has_many :user_actions, foreign_key: :target_post_id
 
   belongs_to :image_upload, class_name: "Upload"
@@ -650,6 +659,7 @@ class Post < ActiveRecord::Base
             "flag_reasons.#{post_action_type_view.types[post_action_type_id]}",
             locale: SiteSetting.default_locale,
             base_path: Discourse.base_path,
+            default: PostActionType.names[post_action_type_id],
           ),
       }
 
@@ -976,7 +986,7 @@ class Post < ActiveRecord::Base
       .count
   end
 
-  MAX_REPLY_LEVEL ||= 1000
+  MAX_REPLY_LEVEL = 1000
 
   def reply_ids(guardian = nil, only_replies_to_single_post: true)
     builder = DB.build(<<~SQL)

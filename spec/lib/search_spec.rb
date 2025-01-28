@@ -804,11 +804,11 @@ RSpec.describe Search do
     end
 
     context "with all topics" do
-      let!(:u1) { Fabricate(:user, username: "fred", name: "bob jones", email: "foo+1@bar.baz") }
-      let!(:u2) { Fabricate(:user, username: "bob", name: "fred jones", email: "foo+2@bar.baz") }
-      let!(:u3) { Fabricate(:user, username: "jones", name: "bob fred", email: "foo+3@bar.baz") }
+      let!(:u1) { Fabricate(:user, username: "fred", name: "bob jones", email: "fred@bar.baz") }
+      let!(:u2) { Fabricate(:user, username: "bob", name: "fred jones", email: "bob@bar.baz") }
+      let!(:u3) { Fabricate(:user, username: "jones", name: "bob fred", email: "jones@bar.baz") }
       let!(:u4) do
-        Fabricate(:user, username: "alice", name: "bob fred", email: "foo+4@bar.baz", admin: true)
+        Fabricate(:user, username: "alice", name: "bob fred", email: "alice@bar.baz", admin: true)
       end
 
       let!(:public_topic) { Fabricate(:topic, user: u1) }
@@ -1098,7 +1098,15 @@ RSpec.describe Search do
       end
 
       it "works in Chinese" do
-        SiteSetting.search_tokenize_chinese_japanese_korean = true
+        SiteSetting.search_tokenize_chinese = true
+        post = new_post("I am not in English 你今天怎麼樣")
+
+        results = Search.execute("你今天", search_context: post.topic)
+        expect(results.posts.map(&:id)).to eq([post.id])
+      end
+
+      it "works in Japanese" do
+        SiteSetting.search_tokenize_japanese = true
         post = new_post("I am not in English 何点になると思いますか")
 
         results = Search.execute("何点になると思", search_context: post.topic)

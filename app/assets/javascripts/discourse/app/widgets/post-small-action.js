@@ -2,14 +2,14 @@ import { computed } from "@ember/object";
 import { htmlSafe } from "@ember/template";
 import { h } from "virtual-dom";
 import { autoUpdatingRelativeAge } from "discourse/lib/formatter";
+import { iconNode } from "discourse/lib/icon-library";
 import { userPath } from "discourse/lib/url";
 import DecoratorHelper from "discourse/widgets/decorator-helper";
 import { avatarFor } from "discourse/widgets/post";
 import PostCooked from "discourse/widgets/post-cooked";
 import RawHtml from "discourse/widgets/raw-html";
 import { createWidget } from "discourse/widgets/widget";
-import { iconNode } from "discourse-common/lib/icon-library";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
 
 export function actionDescriptionHtml(actionCode, createdAt, username, path) {
   const dt = new Date(createdAt);
@@ -25,7 +25,7 @@ export function actionDescriptionHtml(actionCode, createdAt, username, path) {
       who = `<a class="mention" href="${userPath(username)}">@${username}</a>`;
     }
   }
-  return htmlSafe(I18n.t(`action_codes.${actionCode}`, { who, when, path }));
+  return htmlSafe(i18n(`action_codes.${actionCode}`, { who, when, path }));
 }
 
 export function actionDescription(
@@ -73,6 +73,7 @@ const icons = {
   removed_user: "circle-minus",
   removed_group: "circle-minus",
   public_topic: "comment",
+  open_topic: "comment",
   private_topic: "envelope",
   autobumped: "hand-point-right",
 };
@@ -99,7 +100,7 @@ export default createWidget("post-small-action", {
 
   buildAttributes(attrs) {
     return {
-      "aria-label": I18n.t("share.post", {
+      "aria-label": i18n("share.post", {
         postNumber: attrs.post_number,
         username: attrs.username,
       }),

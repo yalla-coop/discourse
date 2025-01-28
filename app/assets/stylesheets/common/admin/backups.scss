@@ -1,5 +1,4 @@
 // Styles for /admin/backups
-
 .admin-backups {
   .before-backup-list-outlet {
     margin-top: 1em;
@@ -11,7 +10,6 @@
     }
 
     .backup-filename {
-      width: 80%;
       text-wrap: balance;
     }
   }

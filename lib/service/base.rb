@@ -18,7 +18,7 @@ module Service
 
     # Simple structure to hold the context of the service during its whole lifecycle.
     class Context
-      delegate :slice, to: :store
+      delegate :slice, :dig, to: :store
 
       def initialize(context = {})
         @store = context.symbolize_keys
@@ -70,7 +70,7 @@ module Service
       end
 
       def inspect_steps
-        Service::StepsInspector.new(self)
+        Service::StepsInspector.new(self).inspect
       end
 
       private
@@ -91,21 +91,17 @@ module Service
     # @!visibility private
     module StepsHelpers
       def model(name = :model, step_name = :"fetch_#{name}", optional: false)
-        steps << ModelStep.new(name, step_name, optional: optional)
+        steps << ModelStep.new(name, step_name, optional:)
       end
 
-      def contract(name = :default, default_values_from: nil, &block)
+      def params(name = :default, default_values_from: nil, &block)
         contract_class = Class.new(Service::ContractBase).tap { _1.class_eval(&block) }
         const_set("#{name.to_s.classify.sub("Default", "")}Contract", contract_class)
-        steps << ContractStep.new(
-          name,
-          class_name: contract_class,
-          default_values_from: default_values_from,
-        )
+        steps << ContractStep.new(name, class_name: contract_class, default_values_from:)
       end
 
       def policy(name = :default, class_name: nil)
-        steps << PolicyStep.new(name, class_name: class_name)
+        steps << PolicyStep.new(name, class_name:)
       end
 
       def step(name)
@@ -115,11 +111,21 @@ module Service
       def transaction(&block)
         steps << TransactionStep.new(&block)
       end
+
+      def options(&block)
+        klass = Class.new(Service::OptionsBase).tap { _1.class_eval(&block) }
+        const_set("Options", klass)
+        steps << OptionsStep.new(:default, class_name: klass)
+      end
+
+      def try(*exceptions, &block)
+        steps << TryStep.new(exceptions, &block)
+      end
     end
 
     # @!visibility private
     class Step
-      attr_reader :name, :method_name, :class_name
+      attr_reader :name, :method_name, :class_name, :instance, :context
 
       def initialize(name, method_name = name, class_name: nil)
         @name = name
@@ -128,24 +134,38 @@ module Service
       end
 
       def call(instance, context)
-        object = class_name&.new(context)
-        method = object&.method(:call) || instance.method(method_name)
-        if method.parameters.any? { _1[0] != :keyreq }
-          raise "In #{type} '#{name}': default values in step implementations are not allowed. Maybe they could be defined in a contract?"
-        end
-        args = context.slice(*method.parameters.select { _1[0] == :keyreq }.map(&:last))
-        context[result_key] = Context.build(object: object)
-        instance.instance_exec(**args, &method)
+        @instance, @context = instance, context
+        context[result_key] = Context.build
+        with_runtime { run_step }
+      end
+
+      def result_key
+        "result.#{type}.#{name}"
       end
 
       private
+
+      def run_step
+        object = class_name&.new(context)
+        method = object&.method(:call) || instance.method(method_name)
+        if !object && method.parameters.any? { _1[0] != :keyreq }
+          raise "In #{type} '#{name}': default values in step implementations are not allowed. Maybe they could be defined in a params or options block?"
+        end
+        args = context.slice(*method.parameters.select { _1[0] == :keyreq }.map(&:last))
+        context[result_key][:object] = object if object
+        instance.instance_exec(**args, &method)
+      end
 
       def type
         self.class.name.split("::").last.downcase.sub(/^(\w+)step$/, "\\1")
       end
 
-      def result_key
-        "result.#{type}.#{name}"
+      def with_runtime
+        started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        yield.tap do
+          ended_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+          context[result_key][:__runtime__] = ended_at - started_at
+        end
       end
     end
 
@@ -158,7 +178,7 @@ module Service
         @optional = optional.present?
       end
 
-      def call(instance, context)
+      def run_step
         context[name] = super
         if !optional && (!context[name] || context[name].try(:empty?))
           raise ArgumentError, "Model not found"
@@ -175,7 +195,7 @@ module Service
 
     # @!visibility private
     class PolicyStep < Step
-      def call(instance, context)
+      def run_step
         if !super
           context[result_key].fail(reason: context[result_key].object&.reason)
           context.fail!
@@ -192,24 +212,32 @@ module Service
         @default_values_from = default_values_from
       end
 
-      def call(instance, context)
+      def run_step
         attributes = class_name.attribute_names.map(&:to_sym)
         default_values = {}
         default_values = context[default_values_from].slice(*attributes) if default_values_from
-        contract = class_name.new(default_values.merge(context.slice(*attributes)))
+        contract =
+          class_name.new(
+            **default_values.merge(context[:params].slice(*attributes)),
+            options: context[:options],
+          )
         context[contract_name] = contract
-        context[result_key] = Context.build
         if contract.invalid?
           context[result_key].fail(errors: contract.errors, parameters: contract.raw_attributes)
           context.fail!
         end
+        contract.freeze
       end
 
       private
 
       def contract_name
-        return :contract if name.to_sym == :default
+        return :params if default?
         :"#{name}_contract"
+      end
+
+      def default?
+        name.to_sym == :default
       end
     end
 
@@ -224,8 +252,41 @@ module Service
         instance_exec(&block)
       end
 
-      def call(instance, context)
+      def run_step
         ActiveRecord::Base.transaction { steps.each { |step| step.call(instance, context) } }
+      end
+    end
+
+    # @!visibility private
+    class TryStep < Step
+      include StepsHelpers
+
+      attr_reader :steps, :exceptions
+
+      def initialize(exceptions, &block)
+        @name = "default"
+        @steps = []
+        @exceptions = exceptions.presence || [StandardError]
+        instance_exec(&block)
+      end
+
+      def run_step
+        steps.each do |step|
+          @current_step = step
+          step.call(instance, context)
+        end
+      rescue *exceptions => e
+        raise e if e.is_a?(Failure)
+        context[@current_step.result_key].fail(raised_exception?: true, exception: e)
+        context[result_key][:exception] = e
+        context.fail!
+      end
+    end
+
+    # @!visibility private
+    class OptionsStep < Step
+      def run_step
+        context[:options] = class_name.new(context[:options])
       end
     end
 
@@ -263,7 +324,7 @@ module Service
     # customized by providing the +name+ argument).
     #
     # @example
-    #   model :channel, :fetch_channel
+    #   model :channel
     #
     #   private
     #
@@ -310,18 +371,18 @@ module Service
     #   end
 
     # @!scope class
-    # @!method contract(name = :default, default_values_from: nil, &block)
+    # @!method params(name = :default, default_values_from: nil, &block)
     # @param name [Symbol] name for this contract
     # @param default_values_from [Symbol] name of the model to get default values from
     # @param block [Proc] a block containing validations
     # Checks the validity of the input parameters.
     # Implements ActiveModel::Validations and ActiveModel::Attributes.
     #
-    # It stores the resulting contract in +context[:contract]+ by default
+    # It stores the resulting contract in +context[:params]+ by default
     # (can be customized by providing the +name+ argument).
     #
     # @example
-    #   contract do
+    #   params do
     #     attribute :name
     #     validates :name, presence: true
     #   end
@@ -361,9 +422,27 @@ module Service
     #     step :log_channel_deletion
     #   end
 
+    # @!scope class
+    # @!method options(&block)
+    # @param block [Proc] a block containing options definition
+    # This is used to define options allowing to parameterize the service
+    # behavior. The resulting options are available in `context[:options]`.
+    #
+    # @example
+    #   options do
+    #     attribute :my_option, :boolean, default: false
+    #   end
+
     # @!visibility private
     def initialize(initial_context = {})
-      @context = Context.build(initial_context.merge(__steps__: self.class.steps))
+      @context =
+        Context.build(
+          initial_context
+            .compact
+            .reverse_merge(params: {})
+            .merge(__steps__: self.class.steps, __service_class__: self.class),
+        )
+      initialize_params
     end
 
     # @!visibility private
@@ -383,6 +462,22 @@ module Service
       step_name = caller_locations(1, 1)[0].base_label
       context["result.step.#{step_name}"].fail(error: message)
       context.fail!
+    end
+
+    private
+
+    def initialize_params
+      klass =
+        Data.define(*context[:params].keys) do
+          alias to_hash to_h
+
+          delegate :slice, :merge, to: :to_h
+
+          def method_missing(*)
+            nil
+          end
+        end
+      context[:params] = klass.new(*context[:params].values)
     end
   end
 end

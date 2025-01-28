@@ -2,6 +2,8 @@ import { cached } from "@glimmer/tracking";
 import { warn } from "@ember/debug";
 import { htmlSafe } from "@ember/template";
 import { adminRouteValid } from "discourse/lib/admin-utilities";
+import { getOwnerWithFallback } from "discourse/lib/get-owner";
+import getURL from "discourse/lib/get-url";
 import PreloadStore from "discourse/lib/preload-store";
 import { ADMIN_NAV_MAP } from "discourse/lib/sidebar/admin-nav-map";
 import BaseCustomSidebarPanel from "discourse/lib/sidebar/base-custom-sidebar-panel";
@@ -9,9 +11,7 @@ import BaseCustomSidebarSection from "discourse/lib/sidebar/base-custom-sidebar-
 import BaseCustomSidebarSectionLink from "discourse/lib/sidebar/base-custom-sidebar-section-link";
 import { ADMIN_PANEL } from "discourse/lib/sidebar/panels";
 import { escapeExpression } from "discourse/lib/utilities";
-import { getOwnerWithFallback } from "discourse-common/lib/get-owner";
-import getURL from "discourse-common/lib/get-url";
-import I18n from "discourse-i18n";
+import I18n, { i18n } from "discourse-i18n";
 
 let additionalAdminSidebarSectionLinks = {};
 
@@ -60,7 +60,7 @@ class SidebarAdminSectionLink extends BaseCustomSidebarSectionLink {
 
   get text() {
     return this.adminSidebarNavLink.label
-      ? I18n.t(this.adminSidebarNavLink.label)
+      ? i18n(this.adminSidebarNavLink.label)
       : this.adminSidebarNavLink.text;
   }
 
@@ -153,7 +153,7 @@ function defineAdminSection(
 
     get text() {
       return this.adminNavSectionData.label
-        ? I18n.t(this.adminNavSectionData.label)
+        ? i18n(this.adminNavSectionData.label)
         : this.adminNavSectionData.text;
     }
 
@@ -203,10 +203,25 @@ export function useAdminNavConfig(navMap) {
           moderator: true,
         },
         {
+          name: "admin_groups",
+          route: "groups",
+          label: "admin.community.sidebar_link.groups",
+          icon: "user-group",
+          moderator: true,
+        },
+        {
           name: "admin_all_site_settings",
           route: "adminSiteSettings",
           label: "admin.advanced.sidebar_link.all_site_settings",
           icon: "gear",
+        },
+        {
+          name: "admin_whats_new",
+          route: "admin.whatsNew",
+          label: "admin.account.sidebar_link.whats_new.title",
+          icon: "gift",
+          keywords: "admin.account.sidebar_link.whats_new.keywords",
+          moderator: true,
         },
       ],
     },
@@ -258,7 +273,7 @@ export function addAdminSidebarSectionLink(sectionName, link) {
   // label must be valid, don't want broken [XYZ translation missing]
   if (
     link.label &&
-    I18n.t(link.label) === I18n.missingTranslation(link.label, null, {})
+    i18n(link.label) === I18n.missingTranslation(link.label, null, {})
   ) {
     // eslint-disable-next-line no-console
     console.debug(
@@ -382,7 +397,7 @@ export default class AdminSidebarPanel extends BaseCustomSidebarPanel {
         if (link.keywords) {
           this.adminSidebarStateManager.setLinkKeywords(
             link.name,
-            I18n.t(link.keywords).split("|")
+            i18n(link.keywords).split("|")
           );
         }
       })
@@ -392,7 +407,9 @@ export default class AdminSidebarPanel extends BaseCustomSidebarPanel {
 
     if (!currentUser.admin && currentUser.moderator) {
       navConfig.forEach((section) => {
-        section.links = section.links.filterBy("moderator");
+        section.links = section.links.filter((link) => {
+          return link.moderator;
+        });
       });
       navConfig = navConfig.filterBy("links.length");
     }
@@ -424,6 +441,6 @@ export default class AdminSidebarPanel extends BaseCustomSidebarPanel {
       ),
     };
 
-    return htmlSafe(I18n.t("sidebar.no_results.description", params));
+    return htmlSafe(i18n("sidebar.no_results.description", params));
   }
 }
